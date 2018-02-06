@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<p><a href="/users/accounts/new" class="new_account">new</a></p>
+{% if accounts %}
+    <table class="table table-striped" id="accounts">
+        {% for account in accounts %}
+            <tr>
+                <td>{{ account }}</td>
+                <td><a href="/users/accounts/{{ account.id }}/" class="see_detail">detail</a></td>
+                <td><a href="/users/accounts/{{ account.id }}/edit" class="edit_detail">edit</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+    {# .... **Now the pagination section** .... #}
+    {% if is_paginated %}
+        <div class="pagination">
+            <span class="page-links">
+                {% if page_obj.has_previous %}
+                    <a href="/users/accounts?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+                <span class="page-current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+                {% if page_obj.has_next %}
+                    <a href="/users/accounts?page={{ page_obj.next_page_number }}">next</a>
+                {% endif %}
+            </span>
+        </div>
+    {% endif %}
+{% else %}
+    <h3>Accounts</h3>
+    <p>No accounts found!!! :(</p>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,42 @@
+# wrapper for abusehelper.core bot
+
+from abusehelper.core import bot
+from oneiros.status_logger import MongodbLogger
+
+
+
+class Bot(bot.ListParam):
+      def __init__(self, *args, **keys):
+         super(Bot, self).__init__(*args, **keys)
+
+class Param(bot.ListParam):
+      def __init__(self, *args, **keys):
+         super(Param, self).__init__(*args, **keys)
+
+class ListParam(bot.ListParam):
+      def __init__(self, *args, **keys):
+         super(ListParam, self).__init__(*args, **keys)
+
+class BoolParam(bot.BoolParam):
+      def __init__(self, *args, **keys):
+         super(BoolParam, self).__init__(*args, **keys)
+
+class IntParam(bot.IntParam):
+      def __init__(self, *args, **keys):
+         super(IntParam, self).__init__(*args, **keys)
+
+class PollingBot(bot.PollingBot):
+      def __init__(self, *args, **keys):
+         super(PollingBot, self).__init__(*args, **keys)
+	 monlog = MongodbLogger()
+         monlog.status({'bot_name': self.bot_name, 
+			 'status':'running',
+			 'message':"Started bot %s" % self.bot_name})	
+
+class ServiceBot(bot.ServiceBot):
+      def __init__(self, *args, **keys):
+         super(ServiceBot, self).__init__(*args, **keys)
+	 monlog = MongodbLogger()
+         monlog.status({'bot_name': self.bot_name, 
+			 'status':'running',
+			 'message':"Started bot %s" % self.bot_name})	

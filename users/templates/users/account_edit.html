@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<form action="" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <div class="form-inline">
+        {% for formset in formsets %}
+            {{ formset.management_form }}
+            {{ formset.non_form_errors }}
+            {% for form in formset %}
+                {{ form.as_p }}
+            {% endfor %}
+        {% endfor %}
+    </div>
+
+    <input type="submit" value="Save" />
+</form>
+
+{% endblock %}

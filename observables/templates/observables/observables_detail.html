@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<p><a href="{{ observable.get_absolute_url }}edit">edit</a></p>
+<p>Id: {{ observable.id }}</p>
+<p>User: {{ observable.author }}</p>
+<p>notes: {{ observable.notes }}</p>
+<p>Created At: {{ observable.created|date:"DATETIME_FORMAT" }}</p>
+<p>Updated At: {{ observable.updated|date:"DATETIME_FORMAT" }}</p>
+<p>First Seen: {{ observable.first_seen|date:"DATETIME_FORMAT" }}</p>
+<p>Last Seen: {{ observable.last_seen|date:"DATETIME_FORMAT" }}</p>
+<p>Expires At: {{ observable.expiration_date|date:"DATETIME_FORMAT" }}</p>
+<p>UUID: {{ observable.uuid }}</p>
+<p>Blacklist: {{ observable.blacklist }}</p>
+<p>Malware Eradication: {{ observable.malware_eradication }}</p>
+<p>Vurnerability Management: {{ observable.vurnerability_management }}</p>
+<p>To IDS: {{ observable.to_ids }}</p>
+<p>Sharing: {{ observable.sharing }}</p>
+<p>Rateing: {{ observable.rateing }}</p>
+
+<p> Values: </p>
+
+{% for ip_value in ip_values %}
+{% for key, value in ip_value.iteritems %}
+<p> {{ key }}: {{ value }} </p>
+
+{% endfor %}
+{% endfor %}
+
+
+
+{% endblock %}

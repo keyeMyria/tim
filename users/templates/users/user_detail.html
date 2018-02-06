@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>User {{ object.username }} details</h1>
+<p><a href="/users/{{ object.id }}/edit" class="edit_detail">edit</a></p>
+<p>Id: {{ object.id }}</p>
+<p>Username: {{ object.username }}</p>
+<p>First name: {{ object.first_name }}</p>
+<p>Last name: {{ object.last_name }}</p>
+<p>Email: {{ object.email }}</p>
+<p>Is active: {{ object.is_active }}</p>
+<p>Is superuser: {{ object.is_superuser }}</p>
+<p>Is staff: {{ object.is_staff }}</p>
+<p>Date joined: {{ object.date_joined|date:"DATETIME_FORMAT" }}</p>
+<p>Last login: {{ object.last_login|date:"DATETIME_FORMAT" }}</p>
+
+{% endblock %}

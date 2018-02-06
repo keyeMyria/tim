@@ -1,0 +1,39 @@
+{% extends "base.html" %} 
+
+{% block content %}
+
+<p><a href="/users/new" class="new_user">new</a></p>
+{% if users %}
+    <table class="table table-striped" id="users">
+        {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td><a href="/users/{{ user.id }}/" class="see_detail">detail</a></td>
+                <td><a href="/users/{{ user.id }}/edit" class="edit_detail">edit</a></td>
+                <td><a href="/users/{{ user.id }}/delete" class="delete_detail">delete</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+    {# .... **Now the pagination section** .... #}
+    {% if is_paginated %}
+        <div class="pagination">
+            <span class="page-links">
+                {% if page_obj.has_previous %}
+                    <a href="/users?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+                <span class="page-current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+                {% if page_obj.has_next %}
+                    <a href="/users?page={{ page_obj.next_page_number }}">next</a>
+                {% endif %}
+            </span>
+        </div>
+    {% endif %}
+{% else %}
+    <h3>Users</h3>
+    <p>No users found!!! :(</p>
+{% endif %}
+
+{% endblock %}

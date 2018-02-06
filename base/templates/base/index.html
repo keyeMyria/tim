@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+  <div class="col-sm-2" >
+  <table class="table">
+    <thead>
+        <tr>Installed Bots</tr>
+      <tr>
+        <th>botname</th>
+        <th>pid</th>
+      </tr>
+    </thead>
+
+            <tr>
+              {% for bot in object_list %}
+                <tr>
+                  <tbody>
+                      {% if bot.state == True %}
+                            <tr class="success">
+                              <td>{{ bot.name }}</td>
+                              <td>{{ bot.pid }}</td>
+                            </tr>
+                      {% elif bot.state == False %}
+                            <tr class="danger">
+                              <td>{{ bot.name }}</td>
+                              <td>{{ bot.pid }}</td>
+                            </tr>
+                      {% endif %}
+                  </tbody>
+                </tr>
+              {% endfor %}
+  </table>
+  </div>
+  <div class="col-sm-10" >
+  <table class="table">
+
+{% load xmpp_tags %}
+{% conversejs_initialize %}
+
+{% endblock %}

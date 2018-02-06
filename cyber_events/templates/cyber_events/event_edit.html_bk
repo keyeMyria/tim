@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% load bootstrap4 %}
+{% load static from staticfiles %}
+{% block scripts %}
+<script src="{% static "cyber_events/js/tabber.js" %}"></script>
+
+{% endblock scripts %}
+
+
+{% block content %}
+
+<div class="container" id="myWizard">
+   <div class="navbar">
+      <div class="navbar-inner">
+            <ul class="nav nav-tabs">
+               <li class="active"><a href="#step1" data-toggle="tab">Step 1</a></li>
+               <li><a href="#step2" data-toggle="tab" class="disable" disabled="">Step 2</a></li>
+               <li><a href="#step3" data-toggle="tab">Step 3</a></li>
+               <li><a href="#step4" data-toggle="tab">Step 4</a></li>
+            </ul>
+      </div>
+   </div>
+   <form class="tab-content" method="post" id="myForm">
+      <div class="tab-pane active" id="step1">
+         <p>Here is the content for the first step...</p>
+         <input class="form-control" id="input1" name="input1" required="">
+         <button class="btn btn-default btn-ok" type="button">OK</button>
+      </div>
+      <div class="tab-pane" id="step2">
+         <p>Here is the content for step 2...</p>
+         <input class="form-control" id="input2" name="input2" required="">
+         <button class="btn btn-default btn-ok" type="button">OK</button>
+      </div>
+      <div class="tab-pane" id="step3">
+         <p>Here is the content for step 3...</p>
+         <input class="form-control" id="input3" name="input3" required="">
+         <input class="form-control" id="input4" name="input4" required="">
+         <button class="btn btn-default btn-ok" type="button">OK</button>
+      </div>
+      <div class="tab-pane" id="step4">
+         <p>This is the last step. You're done.</p>
+         <button class="btn btn-default btn-submit" type="submit">Submit</button>
+      </div>
+   </form>
+</div>
+
+<form action="" method="post", enctype="multipart/form-data", class="form">
+    {% csrf_token %}
+
+
+    <div class="form-inline">
+        <table>
+        {% for field in form %}
+        <tr>
+        <th>{{ field.label }}: </th>
+        <th>{% bootstrap_field field show_label=False layout='inline' %}</th>
+        </tr>
+        {% endfor %}
+        <table>
+     </div>
+
+
+    <input type="submit" value="Save" />
+</form>
+
+{% endblock content %}
+

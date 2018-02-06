@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<a href="/users/organizations/new" class="new-organization">new</a>
+
+{% if organizations %}
+    <table class="table table-striped" id="organizations">
+        {% for organization in organizations %}
+            <tr>
+                <td>{{ organization.id }}</td>
+                <td>{{ organization.name}}</td>
+                <td><a href="/users/organizations/{{ organization.id }}" class="see_detail">detail</a></td>
+                <td><a href="/users/organizations/{{ organization.id }}/edit" class="edit_detail">edit</a></td>
+                <td><a href="/users/organizations/{{ organization.id }}/delete" class="delete_detail">delete</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+    {# .... **Now the pagination section** .... #}
+    {% if is_paginated %}
+        <div class="pagination">
+            <span class="page-links">
+                {% if page_obj.has_previous %}
+                    <a href="/users/organizations?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+                <span class="page-current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+                {% if page_obj.has_next %}
+                    <a href="/users/organizations?page={{ page_obj.next_page_number }}">next</a>
+                {% endif %}
+            </span>
+        </div>
+    {% endif %}
+{% else %}
+    <h3>Organizations</h3>
+    <p>No organizations found!!! :(</p>
+{% endif %}
+
+{% endblock %}

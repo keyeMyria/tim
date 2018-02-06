@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Organization {{ object.name }} details</h1>
+<p><a href="/users/organizations/{{ object.id }}/edit" class="edit_detail">edit</a></p>
+<p>Id: {{ object.id }}</p>
+<p>Name: {{ object.name }}</p>
+<p>IP ranges:</p>
+<ul>
+    {% for ip_range in ip_ranges %}
+        <li>{{ ip_range }}</li>
+    {% endfor %}
+</ul>
+<p>Domains:</p>
+<ul>
+    {% for domain in domains %}
+        <li>{{ domain }}</li> 
+    {% endfor %}
+</ul>
+<p>ASNs:</p>
+<ul>
+    {% for asn in asns %}
+        <li>{{ asn }}</li>
+    {% endfor %}
+</ul>
+<p>Members:</p>
+<ul>
+    {% for member in members %}
+         <li>{{ member.user }}</li>
+    {% endfor %}
+</ul>
+<p>Created At: {{ object.created_at|date:"DATETIME_FORMAT" }}</p>
+<p>Updated At: {{ object.updated_at|date:"DATETIME_FORMAT" }}</p>
+
+{% endblock %}

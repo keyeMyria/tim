@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Account {{ object }} details</h1>
+<p><a href="/users/accounts/{{ object.id }}/edit" class="edit_detail">edit</a></p>
+<p>Id: {{ object.id }}</p>
+<p>User: {{ object.user }}</p>
+<p>Organization: {{ object.organization }}</p>
+<p>Created At: {{ object.created_at|date:"DATETIME_FORMAT" }}</p>
+<p>Updated At: {{ object.updated_at|date:"DATETIME_FORMAT" }}</p>
+
+{% endblock %}

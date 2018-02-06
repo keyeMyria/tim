@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<form action="" method="post", enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="form-inline">
+        {{ form.as_p }}
+        {{ doc_formset.as_p }}
+        {{ geo_formset.as_p }}
+        {% for formset in formsets %}
+            {{ formset.management_form }}
+            {{ formset.non_form_errors }}
+            {% for form in formset %}
+                {{ form.as_p }}
+            {% endfor %}
+        {% endfor %}
+     </div>
+
+
+    <input type="submit" value="Save" />
+</form>
+
+{% endblock %}
