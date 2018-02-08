@@ -162,8 +162,6 @@ class ObservableValueDict(object):
     def post(self):
         return self.post_formsets 
         
-
-
 class ObservableDisplay(DetailView):
     template_name = 'observables/observables_detail.html'
     model = models.Observable
@@ -206,8 +204,8 @@ class ObservableEditView(UserCanViewDataMixin, FormsetMixin, UpdateView):
     fields = '__all__'
     template_name_suffix = '_edit'
     is_update_view = True
-    #formset_classes = [ IpValueFormSet, StrValueFormSet, EmailValueFormSet, FileValueFormSet ]
-    formset_classes = [ EmailValueFormSet, StrValueFormSet ]
+    formset_classes = [ IpValueFormSet, StrValueFormSet, EmailValueFormSet, FileValueFormSet ]
+    #formset_classes = [ EmailValueFormSet, StrValueFormSet ]
 
     def get_success_url(self):
        return reverse('observables:observable_edit', kwargs={'pk': self.kwargs['pk'], 'uuid': self.kwargs['uuid']})
