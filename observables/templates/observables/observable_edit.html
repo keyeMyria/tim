@@ -55,14 +55,6 @@
        </div> 
       {% endif %}
       {% endfor %}
-       <div class="row">
-           <div class="col-sm-1">
-               <a> Geo Location </a>
-           </div>
-           <div class="col-sm-3">
-                {% bootstrap_formset value_formset show_label=False layout='inline' %}
-           </div>
-       </div> 
 
     </div>
 
@@ -74,7 +66,9 @@
     <div class="tab-pane" id="tab3">
     </div>
     <div class="tab-pane" id="tab4">
-       {% bootstrap_formset ip_formset show_label=False layout='inline' %}
+       {% for formset in formsets %}
+        {% bootstrap_formset formset show_label=False layout='inline' %}
+       {% endfor%}
     </div>
 
 {% bootstrap_button "Save" button_type="submit" button_class="btn-primary" %}

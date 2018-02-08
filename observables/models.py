@@ -38,7 +38,7 @@ class ObservableType(models.Model):
 
     name = models.CharField(max_length=25)
     description = models.TextField(null=True, blank=True)
-    type_class = models.CharField(max_length=10, choices=TYPES, default='string')
+    type_class = models.CharField(max_length=25, choices=TYPES, default='string')
 
     def __str__(self):
         return self.name
@@ -80,12 +80,17 @@ class ObservableValueManager(models.Manager):
         return ObservableType.objects.get(id=type_id).type_class
 
 class IpValue(models.Model):
+    obs_type = models.ForeignKey(ObservableType, related_name='ip_value', null=True)
+    ip_value = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name="ip_value", null=True)
     value = models.GenericIPAddressField(unique=True)
 
     def __str__(self):
         return self.value
 
 class StringValue(models.Model):
+    str_type = models.ForeignKey(ObservableType, related_name='str_value', null=True)
+    ip_value = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name="str_value", null=True)
+
     value = models.CharField(max_length=25)
 
     def __str__(self):
@@ -93,31 +98,28 @@ class StringValue(models.Model):
 
 
 class EmailValue(models.Model):
+    str_type = models.ForeignKey(ObservableType, related_name='email_value', null=True)
+    ip_value = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name="email_value", null=True)
+
     value = models.EmailField(null=True)
 
     def __str__(self):
         return self.value
 
 class FileValue(models.Model):
+    str_type = models.ForeignKey(ObservableType, related_name='file_value', null=True)
+    ip_value = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name="file_value", null=True)
+
     value = models.FileField(upload_to='documents/observables/%Y/%m/%d/')
 
     def __str__(self):
         return self.value
 
-class ObservableValue(models.Model):
-
-    obs_type = models.ForeignKey(ObservableType, related_name='obs_types')
-    observable = models.ForeignKey(Observable, related_name='types_obs', null=True)
-
-    def __str__(self):
-        return str(self.id)
-
-class IpValueSelect(models.Model):
-    ip = models.ForeignKey(ObservableValue, on_delete=models.CASCADE, related_name="obsip_value", null=True)
-    value = models.ForeignKey(IpValue, on_delete=models.CASCADE, related_name="ipvalue_value", null=True)
-
-    def __str__(self):
-        return self.value.value
+#class IpValueSelect(models.Model):
+#    ip = models.ForeignKey(ObservableValue, on_delete=models.CASCADE, related_name="ip_value", null=True)
+#
+#    def __str__(self):
+#        return self.value.value
 
 
 

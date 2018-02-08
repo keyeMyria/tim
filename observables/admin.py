@@ -7,9 +7,9 @@ import models
 # Register your models here.
 
 # Inlines 
-class IpValueInline(admin.TabularInline):
-    model = models.IpValueSelect
-    extra = 0 
+#class IpValueInline(admin.TabularInline):
+#    model = models.IpValueSelect
+#    extra = 0 
 
 @admin.register(models.IpValue)
 class ObservableAdmin(admin.ModelAdmin):
@@ -23,7 +23,3 @@ class ObservableAdmin(admin.ModelAdmin):
 class ObservableTypeAdmin(admin.ModelAdmin):
     list_display = ('name', 'description')
 
-@admin.register(models.ObservableValue)
-class ObservableValueAdmin(admin.ModelAdmin):
-    list_display = ('observable', )
-    inlines = [IpValueInline]

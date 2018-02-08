@@ -21,8 +21,8 @@
 
 <p> Values: </p>
 
-{% for ip_value in ip_values %}
-{% for key, value in ip_value.iteritems %}
+{% for value in values %}
+{% for key, value in value.iteritems %}
 <p> {{ key }}: {{ value }} </p>
 
 {% endfor %}
