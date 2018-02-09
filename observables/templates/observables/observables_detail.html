@@ -4,6 +4,7 @@
 
 <p><a href="{{ observable.get_absolute_url }}edit">edit</a></p>
 <p>Id: {{ observable.id }}</p>
+<p>Id: {{ observable.slug }}</p>
 <p>User: {{ observable.author }}</p>
 <p>notes: {{ observable.notes }}</p>
 <p>Created At: {{ observable.created|date:"DATETIME_FORMAT" }}</p>

@@ -38,7 +38,7 @@ class ObservableType(models.Model):
 
     name = models.CharField(max_length=25)
     description = models.TextField(null=True, blank=True)
-    type_class = models.CharField(max_length=25, choices=TYPES, default='string')
+    type_class = models.CharField(max_length=25, choices=TYPES, default=None)
 
     def __str__(self):
         return self.name
@@ -46,9 +46,9 @@ class ObservableType(models.Model):
 
 
 class Observable(models.Model):
-    name = models.CharField(max_length=250)
+    name = models.CharField(max_length=250, unique=True)
     notes = models.TextField(null=True, blank=True)
-    slug = models.SlugField(max_length=250, unique_for_date='created', null=True)
+    slug = models.SlugField(max_length=250, null=True, unique=True)
     author = models.ForeignKey(Account, null=True, related_name='observable_author')
     kill_chain = models.ManyToManyField(KillChain, related_name='obs_kill_chain', blank=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -56,7 +56,7 @@ class Observable(models.Model):
     first_seen = models.DateTimeField(null=True, blank=True)
     last_seen = models.DateTimeField(null=True, blank=True)
     expiration_date = models.DateTimeField(null=True, blank=True)
-    uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
+    uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False, unique=True)
     blacklist = models.BooleanField(default=False)
     malware_eradication = models.BooleanField(default=False)
     vurnerability_management = models.BooleanField(default=False)
@@ -82,16 +82,17 @@ class ObservableValueManager(models.Manager):
 class IpValue(models.Model):
     obs_type = models.ForeignKey(ObservableType, related_name='ip_value', null=True)
     ip_value = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name="ip_value", null=True)
-    value = models.GenericIPAddressField(unique=True)
+
+    value = models.GenericIPAddressField(unique=True, null=True, blank=True)
 
     def __str__(self):
         return self.value
 
 class StringValue(models.Model):
     str_type = models.ForeignKey(ObservableType, related_name='str_value', null=True)
-    ip_value = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name="str_value", null=True)
+    str_value = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name="str_value", null=True)
 
-    value = models.CharField(max_length=25)
+    value = models.CharField(max_length=25, blank=True, unique=True)
 
     def __str__(self):
         return self.value
@@ -99,27 +100,19 @@ class StringValue(models.Model):
 
 class EmailValue(models.Model):
     str_type = models.ForeignKey(ObservableType, related_name='email_value', null=True)
-    ip_value = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name="email_value", null=True)
+    email_value = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name="email_value", null=True)
 
-    value = models.EmailField(null=True)
+    value = models.EmailField(null=True, blank=True, unique=True)
 
     def __str__(self):
         return self.value
 
 class FileValue(models.Model):
     str_type = models.ForeignKey(ObservableType, related_name='file_value', null=True)
-    ip_value = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name="file_value", null=True)
+    file_value = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name="file_value", null=True)
 
-    value = models.FileField(upload_to='documents/observables/%Y/%m/%d/')
+    value = models.FileField(upload_to='documents/observables/%Y/%m/%d/', blank=True)
 
     def __str__(self):
         return self.value
-
-#class IpValueSelect(models.Model):
-#    ip = models.ForeignKey(ObservableValue, on_delete=models.CASCADE, related_name="ip_value", null=True)
-#
-#    def __str__(self):
-#        return self.value.value
-
-
 

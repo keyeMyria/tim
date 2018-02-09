@@ -6,7 +6,7 @@
         <link rel="stylesheet" href={% static "css/bootstrap-datetimepicker.css" %}>
         <script src="{% static "js/moment.js" %}"></script>
         <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
-        <script src="{% static "js/custom.js" %}"></script>
+        <script src="{% static "/observables/js/custom.js" %}"></script>
 
     {% endblock scripts %}
 
@@ -15,9 +15,9 @@
 <!-- Breadcrumbs-->
 <ol class="breadcrumb">
   <li class="breadcrumb-item">
-    <a href="/cyber_events">Events</a>
+    <a href="/observables">Observables</a>
   </li>
-  <li class="breadcrumb-item active">{{ form.title.value}}</li>
+  <li class="breadcrumb-item active">{{ form.title}}</li>
   <li class="breadcrumb-item active">Edit</li>
 </ol>
 <!-- content block with cards-->
@@ -44,6 +44,7 @@
 
     <div class="tab-pane active form-group" id="tab1">
        {% for field in form %}
+        {{ field.errors }}
        {% if not field.name == "notes" %}
        <div class="row">
            <div class="col-sm-1">
@@ -58,17 +59,36 @@
 
     </div>
 
-
     <div class="tab-pane" id="tab2">
        {% bootstrap_field form.notes show_label=False layout='inline' %}
 
     </div>
     <div class="tab-pane" id="tab3">
+       {% for formset in formsets %}
+        {% for form in formset %}
+            {% for field in form %}
+                {{ field.errors }}
+            {% endfor%}
+            {% if not "file_" in form.prefix %}
+            {% bootstrap_formset formset show_label=True layout='inline' %}
+            {% endif %}
+        {% endfor%}
+       {% endfor%}
+
     </div>
     <div class="tab-pane" id="tab4">
        {% for formset in formsets %}
-        {% bootstrap_formset formset show_label=False layout='inline' %}
+        {% for form in formset %}
+            {% for field in form %}
+                {{ field.errors }}
+            {% endfor%}
+
+            {% if "file_" in form.prefix %}
+            {% bootstrap_formset formset show_label=True layout='inline' %}
+            {% endif %}
+        {% endfor%}
        {% endfor%}
+
     </div>
 
 {% bootstrap_button "Save" button_type="submit" button_class="btn-primary" %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load bootstrap4 %}
+{% load static from staticfiles %}
+
+    {% block scripts %}
+        <link rel="stylesheet" href={% static "css/bootstrap-datetimepicker.css" %}>
+        <script src="{% static "js/moment.js" %}"></script>
+        <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
+        <script src="{% static "/observables/js/custom.js" %}"></script>
+
+    {% endblock scripts %}
+
+{% block content %}
+
+<!-- Breadcrumbs-->
+<ol class="breadcrumb">
+  <li class="breadcrumb-item">
+    <a href="/observables">Observables</a>
+  </li>
+  <li class="breadcrumb-item active">{{ form.title}}</li>
+  <li class="breadcrumb-item active">Edit</li>
+</ol>
+<!-- content block with cards-->
+
+
+<div class="container-fluid" id="EventTabs">
+<nav class="navbar navbar-expand-sm navbar-light bg-faded" >
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nav-content" aria-controls="nav-content" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="nav-content">
+        <ul class="nav navbar-nav nav-tabs">
+           <li class="nav-item"><a href="#tab1" data-toggle="tab" class="nav-link" >Details</a></li>
+           <li class="nav-item"><a href="#tab2" data-toggle="tab" class="nav-link" >Description</a></li>
+           <li class="nav-item"><a href="#tab3" data-toggle="tab" class="nav-link" >Observables</a></li>
+           <li class="nav-item"><a href="#tab4" data-toggle="tab" class="nav-link" >Documents</a></li>
+        </ul>
+    </div>
+</nav>
+
+<form action="" method="post", enctype="multipart/form-data", class="tab-content", id="eventEdit">
+{% csrf_token %}
+
+    <div class="tab-pane active form-group" id="tab1">
+       {% for field in form %}
+            {% for field in form %}
+                {{ field.errors }}
+            {% endfor%}
+       {% if not field.name == "notes" %}
+       <div class="row">
+           <div class="col-sm-1">
+               <a> {{ field.label }} </a>
+           </div>
+           <div class="col-sm-3">
+                {% bootstrap_field field exclude="notes" layout='inline'%}
+           </div>
+       </div> 
+      {% endif %}
+      {% endfor %}
+
+    </div>
+
+
+    <div class="tab-pane" id="tab2">
+       {% bootstrap_field form.notes show_label=False layout='inline' %}
+
+    </div>
+    <div class="tab-pane" id="tab3">
+       {% for formset in formsets %}
+        {% for form in formset %}
+            {% for field in form %}
+                {{ field.errors }}
+            {% endfor%}
+            {% if not "file_" in form.prefix %}
+            {% bootstrap_formset formset show_label=True layout='inline' %}
+            {% endif %}
+        {% endfor%}
+       {% endfor%}
+
+    </div>
+    <div class="tab-pane" id="tab4">
+       {% for formset in formsets %}
+        {% for form in formset %}
+            {% for field in form %}
+                {{ field.errors }}
+            {% endfor%}
+            {% if "file_" in form.prefix %}
+            {% bootstrap_formset formset show_label=True layout='inline' %}
+            {% endif %}
+        {% endfor%}
+       {% endfor%}
+
+    </div>
+
+{% bootstrap_button "Save" button_type="submit" button_class="btn-primary" %}
+</form>
+
+</div>
+
+{% endblock content %}
+

@@ -92,76 +92,23 @@ class FormsetMixin(object):
 
 
 class ObservableListView(UserCanViewDataMixin, ListView):
-    queryset = models.Observable.objects.all()
     context_object_name = 'observables'
-    paginate_by = 3
+    paginate_by = 30
     template_name = 'observables/observables_list.html'
+    model = models.Observable
 
-    def get_context_data(self, **kwargs):
-        tag = None
-        context = super(ObservableListView, self).get_context_data(**kwargs)
-        observables = self.queryset 
-
-        context = {'observables': observables,
-                  }
-
-        return context
-
-class ObservableValueDict(object):
-    get_formsets = dict()
-    post_formsets = dict()
-
-    def __init__(self, obs_id, request):
-        self.values = models.ObservableValue.objects.filter(observable=obs_id)
-        self.get_formsets['ip_formset'] = self.get_ip_formset(request)
-        self.post_formsets['ip_formset'] = self.post_ip_formset(request)
-        self.__dict__ = self.get_formsets
-
-    def __getitem__(self, item):
-        return getattr(self, item)
+class CreateObservableView(UserCanViewDataMixin, FormsetMixin, CreateView):
+    form_class = ObservableEditForm
+    template_name_suffix = '_create'
+    formset_classes = [ IpValueFormSet, StrValueFormSet, EmailValueFormSet, FileValueFormSet ]
+    model = models.Observable
 
 
-    def get_ip_formset(self, request):
-        values = self.values.filter(obs_type__type_class='ip_type')
-        ip_values = list()
-        for value in values:
-            ip_data = dict()
-            obs_type = value.obs_type
-            ip_q = value.obsip_value.get()
-            ip = ip_q.value.value
-            ip_data['type'] = obs_type.name
-            ip_data['value'] = ip
-            ip_data['type_class'] = obs_type.type_class
-            ip_data['description'] = obs_type.description
-            ip_values.append(ip_data)
-            obs_q = values.filter(id=value.id)
-        formset = IpValueFormSet(initial=ip_values, form_kwargs={'user': request.user, 'values': values})
-        return formset
-
-    def post_ip_formset(self, request):
-        values = self.values.filter(obs_type__type_class='ip_type')
-        ip_values = list()
-
-        for value in values:
-            ip_value = dict()
-            obs_type = value.obs_type
-            ip = value.obsip_value.get()
-            value = ip.value.value
-            ip_value['type'] = obs_type.name
-            ip_value['value'] = value
-            ip_value['type_class'] = obs_type.type_class
-            ip_value['description'] = obs_type.description
-            ip_values.append(ip_value)
-        formset = IpValueFormSet(request.POST, initial=ip_values, form_kwargs={'user': request.user, 'values': values})
-        return formset
+    def get_success_url(self):
+       return reverse('observables:observable_list')
 
 
-    def get(self):
-        return self.get_formsets 
 
-    def post(self):
-        return self.post_formsets 
-        
 class ObservableDisplay(DetailView):
     template_name = 'observables/observables_detail.html'
     model = models.Observable
@@ -201,11 +148,10 @@ class ObservableDetailView(View):
 
 class ObservableEditView(UserCanViewDataMixin, FormsetMixin, UpdateView):
     model = models.Observable
-    fields = '__all__'
+    form_class = ObservableEditForm
     template_name_suffix = '_edit'
     is_update_view = True
     formset_classes = [ IpValueFormSet, StrValueFormSet, EmailValueFormSet, FileValueFormSet ]
-    #formset_classes = [ EmailValueFormSet, StrValueFormSet ]
 
     def get_success_url(self):
        return reverse('observables:observable_edit', kwargs={'pk': self.kwargs['pk'], 'uuid': self.kwargs['uuid']})
