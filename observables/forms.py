@@ -15,20 +15,28 @@ class ObservableForm(forms.Form):
 
 
 class ObservableEditForm(forms.ModelForm):
-    first_seen = forms.DateField(widget=forms.DateInput(
-                format='%m.%d.%Y', 
-                attrs={'id': 'first_seen_picker'}),
-                input_formats=('%m.%d.%Y',))
+    first_seen = forms.DateField(
+                required=False,
+                widget=forms.DateInput(
+                    format='%m.%d.%Y', 
+                    attrs={'id': 'first_seen_picker', 'class': 'form_datepicker'}),
+                    input_formats=('%m.%d.%Y',)
+                )
 
-    last_seen = forms.DateField(widget=forms.DateInput(
-                format='%m.%d.%Y', 
-                attrs={'id': 'last_seen_picker'}),
-                input_formats=('%m.%d.%Y',))
+    last_seen = forms.DateField(
+                required=False,
+                widget=forms.DateInput(
+                    format='%m.%d.%Y', 
+                    attrs={'id': 'last_seen_picker', 'class': 'form_datepicker'}),
+                    input_formats=('%m.%d.%Y',))
 
-    expiration_date = forms.DateField(widget=forms.DateInput(
-                format='%m.%d.%Y', 
-                attrs={'id': 'expiration_date_picker'}),
-                input_formats=('%m.%d.%Y',))
+    expiration_date = forms.DateField(
+                required=False,
+                widget=forms.DateInput(
+                    format='%m.%d.%Y', 
+                    attrs={'id': 'expiration_date_picker', 'class': 'form_datepicker'}),
+                    input_formats=('%m.%d.%Y',)
+                )
 
 
     class Meta:

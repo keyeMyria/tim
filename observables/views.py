@@ -116,8 +116,8 @@ class ObservableDisplay(DetailView):
     def get_context_data(self, **kwargs):
         context = super(ObservableDisplay, self).get_context_data(**kwargs)
         slug = kwargs['object'].slug
-        observable = get_object_or_404(self.model, slug=slug)
         obs_id = kwargs['object'].id
+        observable = get_object_or_404(self.model, id=obs_id)
 
         
         values = list()

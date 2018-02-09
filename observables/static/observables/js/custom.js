@@ -11,21 +11,24 @@ $( "#eventEdit" ).submit(function( event ) {
   console.log( $( this ).serialize() );
 });
 
-$('#first_seen_picker').datetimepicker({
+$('.form_datepicker').datetimepicker({
+    defaultDate: null,
     focusOnShow: false,
     format: 'DD.MM.YYYY' /*remove this line if you want to use time as well */
 });
 
-$('#last_seen_picker').datetimepicker({
-    focusOnShow: false,
-    format: 'DD.MM.YYYY' /*remove this line if you want to use time as well */
-});
-
-$('#expiration_date_picker').datetimepicker({
-    focusOnShow: false,
-    format: 'DD.MM.YYYY' /*remove this line if you want to use time as well */
-});
-
+//$('#last_seen_picker').datetimepicker({
+//    defaultDate: null ,
+//    focusOnShow: false,
+//    format: 'DD.MM.YYYY' /*remove this line if you want to use time as well */
+//});
+//
+//$('#expiration_date_picker').datetimepicker({
+//    defaultDate: null ,
+//    focusOnShow: false,
+//    format: 'DD.MM.YYYY' /*remove this line if you want to use time as well */
+//});
+//
 
 
 });
