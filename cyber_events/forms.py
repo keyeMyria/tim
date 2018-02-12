@@ -10,22 +10,21 @@ class EmailPostForm(forms.Form):
     comments = forms.CharField(required=False, widget=forms.Textarea)
 
 
-class EventForm(forms.Form):
-    class Meta:
-        model = Event 
-        fields = ('title', 'author', 'description')
+class EventForm(forms.ModelForm):
+    event_date = forms.DateField(
+                required=False,
+                widget=forms.DateInput(
+                    format='%d.%m.%Y', 
+                    attrs={'id': 'event_date_picker', 'class': 'form_datepicker'}),
+                    input_formats=('%d.%m.%Y',)
+                )
 
-class EventEditForm(forms.ModelForm):
+
     class Meta:
         model = Event 
         exclude = ()
-        #fields = ('title', 'author', 'description')
-        widgets = {'event_date': forms.DateInput(attrs={'id': 'datetimepicker6'})}
+        widgets = {}
 
-class NewEventForm(forms.ModelForm):
-    class Meta:
-        model = Event 
-        exclude = ()
 
 
 class CommentForm(forms.ModelForm):
@@ -34,7 +33,6 @@ class CommentForm(forms.ModelForm):
         fields = ('author', 'body')
 
 
-GeoLocationFormSet = inlineformset_factory(models.Event, models.EventGeoLocation, exclude=(), extra=1, can_delete=True)
 DocumentFormSet = inlineformset_factory(models.Event,  # parent form
                                                   models.EventDocument,  # inline-form
                                                   fields=['title', 'doc_type', 'document'], # inline-form fields

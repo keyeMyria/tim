@@ -12,7 +12,7 @@ from django.http import HttpResponseForbidden
 from django.views.generic import FormView
 from django import forms
 from django.views.generic.detail import SingleObjectMixin
-from django.views.generic import DetailView, UpdateView, CreateView
+from django.views.generic import DetailView, UpdateView, CreateView, DeleteView
 from django.http import HttpResponseRedirect
 
 import models
@@ -107,6 +107,21 @@ class CreateObservableView(UserCanViewDataMixin, FormsetMixin, CreateView):
     def get_success_url(self):
        return reverse('observables:observable_list')
 
+class DeleteObservableView(UserCanViewDataMixin, DeleteView):
+    model = models.Observable
+    template_name_suffix = '_delete'
+    success_url = reverse_lazy('observables:observable_list')
+
+    def get_object(self, queryset=None):
+        object = super(DeleteObservableView, self).get_object()
+        user = self.request.user
+        if user.is_superuser:
+            return object
+        else:
+            org = user.account.organization
+            if org == object.account.organization and user.is_staff:
+                return object
+            raise PermissionDenied('Not allowed')
 
 
 class ObservableDisplay(DetailView):

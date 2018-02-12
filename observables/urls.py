@@ -12,4 +12,8 @@ urlpatterns = [
     url(r'^(?P<pk>[-\w]+)/(?P<uuid>[-\w]+)/edit$',
         views.ObservableEditView.as_view(),
         name='observable_edit'),
+    url(r'^(?P<pk>[-\w]+)/(?P<uuid>[-\w]+)/delete$',
+        views.DeleteObservableView.as_view(),
+        name='delete_observable'),
+
 ] 

@@ -16,7 +16,7 @@ from django.views.generic import DetailView, UpdateView, CreateView
 from django.http import HttpResponseRedirect
 
 from .models import Event, EventComment
-from .forms import EmailPostForm, CommentForm, EventForm, EventEditForm, GeoLocationFormSet, DocumentFormSet, NewEventForm
+from .forms import EmailPostForm, CommentForm, EventForm, DocumentFormSet
 import models
 from users.models import User
 from users.views import UserCanViewDataMixin
@@ -27,7 +27,7 @@ class EventListView(UserCanViewDataMixin, ListView):
     queryset = Event.published.all()
     context_object_name = 'events'
     paginate_by = 3
-    template_name = 'cyber_events/list.html'
+    template_name = 'cyber_events/event_list.html'
 
     def get_context_data(self, **kwargs):
         tag = None
@@ -109,8 +109,8 @@ class EventDetailView(View):
         return view(request, *args, **kwargs)
 
 class NewEventView(UserCanViewDataMixin, CreateView):
-    form_class = NewEventForm
-    template_name = 'cyber_events/event_create.html'
+    form_class = EventForm
+    template_name = 'cyber_events/cyber_event_create.html'
 
     def get_object(self, queryset=None):
         obj = super(NewEventView, self).get_object(queryset=queryset)
@@ -123,37 +123,29 @@ class NewEventView(UserCanViewDataMixin, CreateView):
         context = super(NewEventView, self).get_context_data(**kwargs)
         if self.request.POST:
             print "this request: %s" % self.request.FILES
-            context['geo_formset'] = GeoLocationFormSet(self.request.POST, instance=self.object)
             context['doc_formset'] = DocumentFormSet(self.request.POST, self.request.FILES, instance=self.object)
         else:
-            context['geo_formset'] = GeoLocationFormSet(instance=self.object)
             context['doc_formset'] = DocumentFormSet(instance=self.object)
         return context
 
 
 class EventEditView(UserCanViewDataMixin, UpdateView):
     model = models.Event
-    form_class = EventEditForm
+    form_class = EventForm
     template_name = 'cyber_events/event_edit.html'
     is_update_view = True
-    formset_classes = [ GeoLocationFormSet ]
 
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
         context = self.get_context_data()
-        geo_formset = context['geo_formset']
         doc_formset = context['doc_formset']
-        print "this formset: %s" % doc_formset
-        if geo_formset.is_valid() and doc_formset.is_valid():
+        if doc_formset.is_valid():
             self.object = form.save()
             form.instance = self.object
-            geo_formset.save()
             doc_formset.save()
-            print doc_formset
             return HttpResponseRedirect(self.get_success_url())
         else:
-            print "fail"
             return self.render_to_response(self.get_context_data(form=form))
 
 
@@ -168,10 +160,8 @@ class EventEditView(UserCanViewDataMixin, UpdateView):
         context = super(EventEditView, self).get_context_data(**kwargs)
         if self.request.POST:
             print "this request: %s" % self.request.FILES
-            context['geo_formset'] = GeoLocationFormSet(self.request.POST, instance=self.object)
             context['doc_formset'] = DocumentFormSet(self.request.POST, self.request.FILES, instance=self.object)
         else:
-            context['geo_formset'] = GeoLocationFormSet(instance=self.object)
             context['doc_formset'] = DocumentFormSet(instance=self.object)
         return context
 

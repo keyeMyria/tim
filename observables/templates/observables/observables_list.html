@@ -14,8 +14,7 @@
 
 
 {% block content %}
-    <h2><a href="add">ADD NEW</a></h2>
-
+    {% bootstrap_button "Add" button_type="link" button_class="btn-primary" href="add" %}
 
     <table id="BSdataTable" class="table table-striped" cellspacing="0" width="100%">
         <thead class="thead-dark" >
@@ -24,6 +23,7 @@
                 <th>Name</th>
                 <th>Author</th>
                 <th>Created date</th>
+                <th>Delete</th>
             </tr>
         </thead>
         <tbody>
@@ -33,6 +33,7 @@
                 <td><a href="{{ observable.get_absolute_url }}">{{ observable.name }}</a></td>
                 <td>{{ observable.author }}</td>
                 <td>{{ observable.created }}</td>
+                <td><a href="{{ observable.get_absolute_url }}delete">Delete</a></td>
             </tr>
 
         {% endfor %}

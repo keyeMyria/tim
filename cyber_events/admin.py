@@ -18,9 +18,6 @@ class EventCommentsInline(admin.TabularInline):
 #    model = models.EventThreatActor
 #    extra = 1
 
-class EventGeoLocationInline(admin.TabularInline):
-    model = models.EventGeoLocation
-    extra = 0
 
 #class ThreatActorSourcesInline(admin.TabularInline):
 #    model = models.ThreatActorSources
@@ -50,7 +47,7 @@ class EventAdmin(admin.ModelAdmin):
     ordering = ['status', 'created']
 
     #inlines = [EventObservableInline, EventThreatActorInline, EventGeoLocationInline, EventCommentsInline]
-    inlines = [EventGeoLocationInline, EventCommentsInline]
+    inlines = [ EventCommentsInline]
     def get_form(self, request, obj=None, **kwargs):
         form = super(EventAdmin, self).get_form(request, obj=obj, **kwargs)
         form.request = request

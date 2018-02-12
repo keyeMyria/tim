@@ -7,7 +7,8 @@ import uuid
 from django.core.validators import MaxValueValidator, MinValueValidator
 from taggit.managers import TaggableManager
 
-from common.models import Comment, GeoLocation, Motive, Sector, Reporter
+from common.models import Comment, Motive, Sector, Reporter
+from django_countries.fields import CountryField
 from common.managers import UserAccountManager, PublishedManager, ClientsManager
 
 LEVELS = (
@@ -61,6 +62,10 @@ class Event(models.Model):
                                                            MinValueValidator(0)])
 
     reference = models.CharField(max_length=250, null=True, blank=True)
+    country = CountryField(null=True)
+    motive = models.ForeignKey(Motive, related_name='event_motive', null=True, blank=True)
+    sector = models.ForeignKey(Sector, related_name='ev_sector', null=True, blank=True)
+    reporter = models.ForeignKey(Reporter, related_name='ev_reporter', null=True, blank=True)
     tag = TaggableManager() 
    
  
@@ -88,16 +93,6 @@ class EventDocument(models.Model):
 class EventComment(Comment):
     event = models.ForeignKey(Event, related_name='event_comments', null=True, blank=True)
 
-class EventGeoLocation(GeoLocation):
-    location = models.ForeignKey(Event, related_name='ev_geoloc', null=True, blank=True)
-
-class EventMotive(models.Model):
-    motive = models.ForeignKey(Motive, related_name='ev_motive', null=True, blank=True)
-    event = models.ForeignKey(Event, related_name='motive_ev', null=True, blank=True)
-
-class EventSector(models.Model):
-    sector = models.ForeignKey(Sector, related_name='ev_sector', null=True, blank=True)
-    event = models.ForeignKey(Event, related_name='sector_ev', null=True, blank=True)
 
 #class EventThreatActor(models.Model):
 #    threat_actor = models.ForeignKey(ThreatActor, related_name='ev_threat_actor', null=True, blank=True)
@@ -107,9 +102,6 @@ class EventSector(models.Model):
 #    ttp = models.ForeignKey(TTP, related_name='ev_ttp', null=True, blank=True)
 #    event = models.ForeignKey(Event, related_name='ttp_ev', null=True, blank=True)
 
-class EventReporter(models.Model):
-    reporter = models.ForeignKey(Reporter, related_name='ev_reporter', null=True, blank=True)
-    event = models.ForeignKey(Event, related_name='reporter_ev', null=True, blank=True)
 
 #class EventObservable(models.Model):
 #    observable = models.ForeignKey(Observable, related_name='ev_observable', null=True, blank=True)
