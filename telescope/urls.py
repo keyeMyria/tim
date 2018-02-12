@@ -29,6 +29,7 @@ urlpatterns = [
     url(r'^logout/$', auth_views.logout, {'next_page': '/login'}),
     url(r'^cyber_events/', include('cyber_events.urls', namespace='cyber_events', app_name='cyber_events')),
     url(r'^observables/', include('observables.urls', namespace='observables', app_name='observables')),
+    url(r'^common/', include('common.urls', namespace='common', app_name='common')),
 ]
 
 urlpatterns += static(settings.STATIC_URL,

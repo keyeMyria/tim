@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django.db import models
 from users.models import Account
 from django_countries.fields import CountryField
+from django.core.urlresolvers import reverse
 
 
 class Comment(models.Model):
@@ -37,6 +38,10 @@ class Motive(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse('common:motive_detail', args=[self.pk])
+
 
 class Sector(models.Model):
     name = models.CharField(max_length=250)

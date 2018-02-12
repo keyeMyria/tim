@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<p><a href="{{ motive.get_absolute_url }}/edit">edit</a></p>
+<p>Id: {{ motive.id }}</p>
+<p>Name: {{ motive.name }}</p>
+<p>Description: {{ motive.description }}</p>
+
+
+{% endblock %}
