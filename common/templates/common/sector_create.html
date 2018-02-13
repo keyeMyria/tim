@@ -14,24 +14,15 @@
 
 <!-- Breadcrumbs-->
 <ol class="breadcrumb">
-  <li class="breadcrumb-item">
-    <a href="/observables">Observables</a>
-  </li>
-  <li class="breadcrumb-item active">{{ form.title}}</li>
-  <li class="breadcrumb-item active">Edit</li>
-</ol>
-<!-- content block with cards-->
-
-<!-- Breadcrumbs-->
-<ol class="breadcrumb">
-  <li class="breadcrumb-item">
-    <a href="{{ request.META.HTTP_REFERER }}">Sector</a>
-  </li>
     {% if object %}
+        <li class="breadcrumb-item">
+          <a href="{{ request.META.HTTP_REFERER }}">{{ form.name.value}}</a>
+        </li>
+
         {% with request.get_full_path|cut:object.get_absolute_url as path %}
             <li class="breadcrumb-item active">{{ path|cut:"/"|capfirst }}
         {% endwith %}
-    {% else %}
+        {% else %}
             <li class="breadcrumb-item active">Create
     {% endif%}    
 </li>

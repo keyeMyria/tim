@@ -93,3 +93,72 @@ class MotiveDeleteView(UserCanViewDataMixin, DeleteView):
     model = models.Motive
     template_name_suffix = '_delete'
     success_url = reverse_lazy('common:motive_list')
+
+
+# --- Sector ---
+
+class SectorListView(UserCanViewDataMixin, ListView):
+    context_object_name = 'objects'
+    paginate_by = 30
+    template_name_suffix = '_list'
+    model = models.Sector
+
+
+class SectorCreateView(UserCanViewDataMixin, CreateView):
+    #form_class = ObservableEditForm
+    template_name_suffix = '_create'
+    model = models.Sector
+    fields = '__all__'
+
+    def get_success_url(self):
+       return reverse('common:sector_list')
+
+
+class SectorDisplayView(DetailView):
+    model = models.Sector
+    template_name_suffix = '_detail'
+
+    def get_context_data(self, **kwargs):
+        context = super(SectorDisplayView, self).get_context_data(**kwargs)
+        sec_id = kwargs['object'].id
+        sector = get_object_or_404(self.model, id=sec_id)
+
+        
+        context = {'object': sector,
+                  }
+
+        return context
+
+
+class SectorDetailView(View):
+
+    def get(self, request, *args, **kwargs):
+        view = SectorDisplayView.as_view()
+        return view(request, *args, **kwargs)
+
+
+class SectorEditView(UserCanViewDataMixin, UpdateView):
+    model = models.Sector
+    template_name_suffix = '_create'
+    is_update_view = True
+    fields = '__all__'
+
+    def get_success_url(self):
+        return reverse('common:sector_detail', kwargs={'pk' : self.object.pk})
+
+    def get_object(self, queryset=None):
+       object = super(SectorEditView, self).get_object()
+       user = self.request.user
+       if user.is_superuser:
+           return object
+       else:
+           org = user.account.organization
+           if org == object.account.organization and user.is_staff:
+               return object
+           raise PermissionDenied('Not allowed')
+
+
+class SectorDeleteView(UserCanViewDataMixin, DeleteView):
+    model = models.Sector
+    template_name_suffix = '_delete'
+    success_url = reverse_lazy('common:sector_list')

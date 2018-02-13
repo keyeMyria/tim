@@ -50,6 +50,10 @@ class Sector(models.Model):
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return reverse('common:sector_detail', args=[self.pk])
+
+
 
 class Reporter(models.Model):
     name = models.CharField(max_length=250)
@@ -76,6 +80,7 @@ class Subject(models.Model):
     def __str__(self):
         return self.name
 
+
 class KillChain(models.Model):
     name = models.CharField(max_length=25)
     description = models.TextField(null=True, blank=True)
@@ -83,6 +88,7 @@ class KillChain(models.Model):
     def __str__(self):
         return self.name
 
+# Intentsion, under TTP (" what is this TTPs intentsion, what is the effect. ")
 class Intentsion(models.Model):
     name = models.CharField(max_length=25)
     description = models.TextField(null=True, blank=True)
