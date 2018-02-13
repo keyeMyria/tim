@@ -158,29 +158,29 @@ class ThreatActorDeleteView(UserCanViewDataMixin, DeleteView):
     template_name_suffix = '_delete'
     success_url = reverse_lazy('actor:threat_actor_list')
 
-class ConstituentListView(UserCanViewDataMixin, ListView):
+class OrganizationListView(UserCanViewDataMixin, ListView):
     context_object_name = 'objects'
     paginate_by = 30
     template_name_suffix = '_list'
-    model = models.Constituent
+    model = models.Organization
 
 
-class ConstituentCreateView(UserCanViewDataMixin, CreateView):
+class OrganizationCreateView(UserCanViewDataMixin, CreateView):
     #form_class = ObservableEditForm
     template_name_suffix = '_create'
-    model = models.Constituent
+    model = models.Organization
     fields = '__all__'
 
     def get_success_url(self):
-       return reverse('actor:constituent_list')
+       return reverse('actor:organization_list')
 
 
-class ConstituentDisplayView(DetailView):
-    model = models.Constituent
+class OrganizationDisplayView(DetailView):
+    model = models.Organization
     template_name_suffix = '_detail'
 
     def get_context_data(self, **kwargs):
-        context = super(ConstituentDisplayView, self).get_context_data(**kwargs)
+        context = super(OrganizationDisplayView, self).get_context_data(**kwargs)
         sec_id = kwargs['object'].id
         objects = get_object_or_404(self.model, id=sec_id)
 
@@ -191,24 +191,24 @@ class ConstituentDisplayView(DetailView):
         return context
 
 
-class ConstituentDetailView(View):
+class OrganizationDetailView(View):
 
     def get(self, request, *args, **kwargs):
-        view = ConstituentDisplayView.as_view()
+        view = OrganizationDisplayView.as_view()
         return view(request, *args, **kwargs)
 
 
-class ConstituentEditView(UserCanViewDataMixin, UpdateView):
-    model = models.Constituent
+class OrganizationEditView(UserCanViewDataMixin, UpdateView):
+    model = models.Organization
     template_name_suffix = '_create'
     is_update_view = True
     fields = '__all__'
 
     def get_success_url(self):
-        return reverse('actor:constituent_detail', kwargs={'pk' : self.object.pk})
+        return reverse('actor:organization_detail', kwargs={'pk' : self.object.pk})
 
     def get_object(self, queryset=None):
-       object = super(ConstituentEditView, self).get_object()
+       object = super(OrganizationEditView, self).get_object()
        user = self.request.user
        if user.is_superuser:
            return object
@@ -219,76 +219,76 @@ class ConstituentEditView(UserCanViewDataMixin, UpdateView):
            raise PermissionDenied('Not allowed')
 
 
-class ConstituentDeleteView(UserCanViewDataMixin, DeleteView):
-    model = models.Constituent
+class OrganizationDeleteView(UserCanViewDataMixin, DeleteView):
+    model = models.Organization
     template_name_suffix = '_delete'
-    success_url = reverse_lazy('actor:constituent_list')
+    success_url = reverse_lazy('actor:organization_list')
 
 
-class ReporterListView(UserCanViewDataMixin, ListView):
-    context_object_name = 'objects'
-    paginate_by = 30
-    template_name_suffix = '_list'
-    model = models.Reporter
-
-
-class ReporterCreateView(UserCanViewDataMixin, CreateView):
-    #form_class = ObservableEditForm
-    template_name_suffix = '_create'
-    model = models.Reporter
-    fields = '__all__'
-
-    def get_success_url(self):
-       return reverse('actor:reporter_list')
-
-
-class ReporterDisplayView(DetailView):
-    model = models.Reporter
-    template_name_suffix = '_detail'
-
-    def get_context_data(self, **kwargs):
-        context = super(ReporterDisplayView, self).get_context_data(**kwargs)
-        sec_id = kwargs['object'].id
-        objects = get_object_or_404(self.model, id=sec_id)
-
-        
-        context = {'object': objects,
-                  }
-
-        return context
-
-
-class ReporterDetailView(View):
-
-    def get(self, request, *args, **kwargs):
-        view = ReporterDisplayView.as_view()
-        return view(request, *args, **kwargs)
-
-
-class ReporterEditView(UserCanViewDataMixin, UpdateView):
-    model = models.Reporter
-    template_name_suffix = '_create'
-    is_update_view = True
-    fields = '__all__'
-
-    def get_success_url(self):
-        return reverse('actor:reporter_detail', kwargs={'pk' : self.object.pk})
-
-    def get_object(self, queryset=None):
-       object = super(ReporterEditView, self).get_object()
-       user = self.request.user
-       if user.is_superuser:
-           return object
-       else:
-           org = user.account.organization
-           if org == object.account.organization and user.is_staff:
-               return object
-           raise PermissionDenied('Not allowed')
-
-
-class ReporterDeleteView(UserCanViewDataMixin, DeleteView):
-    model = models.Reporter
-    template_name_suffix = '_delete'
-    success_url = reverse_lazy('actor:reporter_list')
-
-
+#class ReporterListView(UserCanViewDataMixin, ListView):
+#    context_object_name = 'objects'
+#    paginate_by = 30
+#    template_name_suffix = '_list'
+#    model = models.Reporter
+#
+#
+#class ReporterCreateView(UserCanViewDataMixin, CreateView):
+#    #form_class = ObservableEditForm
+#    template_name_suffix = '_create'
+#    model = models.Reporter
+#    fields = '__all__'
+#
+#    def get_success_url(self):
+#       return reverse('actor:reporter_list')
+#
+#
+#class ReporterDisplayView(DetailView):
+#    model = models.Reporter
+#    template_name_suffix = '_detail'
+#
+#    def get_context_data(self, **kwargs):
+#        context = super(ReporterDisplayView, self).get_context_data(**kwargs)
+#        sec_id = kwargs['object'].id
+#        objects = get_object_or_404(self.model, id=sec_id)
+#
+#        
+#        context = {'object': objects,
+#                  }
+#
+#        return context
+#
+#
+#class ReporterDetailView(View):
+#
+#    def get(self, request, *args, **kwargs):
+#        view = ReporterDisplayView.as_view()
+#        return view(request, *args, **kwargs)
+#
+#
+#class ReporterEditView(UserCanViewDataMixin, UpdateView):
+#    model = models.Reporter
+#    template_name_suffix = '_create'
+#    is_update_view = True
+#    fields = '__all__'
+#
+#    def get_success_url(self):
+#        return reverse('actor:reporter_detail', kwargs={'pk' : self.object.pk})
+#
+#    def get_object(self, queryset=None):
+#       object = super(ReporterEditView, self).get_object()
+#       user = self.request.user
+#       if user.is_superuser:
+#           return object
+#       else:
+#           org = user.account.organization
+#           if org == object.account.organization and user.is_staff:
+#               return object
+#           raise PermissionDenied('Not allowed')
+#
+#
+#class ReporterDeleteView(UserCanViewDataMixin, DeleteView):
+#    model = models.Reporter
+#    template_name_suffix = '_delete'
+#    success_url = reverse_lazy('actor:reporter_list')
+#
+#

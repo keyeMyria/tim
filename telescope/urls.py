@@ -31,6 +31,7 @@ urlpatterns = [
     url(r'^observables/', include('observables.urls', namespace='observables', app_name='observables')),
     url(r'^common/', include('common.urls', namespace='common', app_name='common')),
     url(r'^actors/', include('actors.urls', namespace='actor', app_name='actor')),
+    url(r'^ttp/', include('ttp.urls', namespace='ttp', app_name='ttp')),
 ]
 
 urlpatterns += static(settings.STATIC_URL,

@@ -20,6 +20,25 @@ class ActorType(models.Model):
         return reverse('actor:actor_type_detail', args=[self.pk])
 
 
+class Organization(models.Model):
+    name = models.CharField(max_length=250, unique=True)
+    author = models.ForeignKey(Account, related_name='constituent_author', null=True)
+    description = models.TextField(null=True, blank=True)
+    type = models.ForeignKey(ActorType, related_name='constituent_type', null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+
+    class Meta:
+        ordering = ('-created',)
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('actor:organization_detail', args=[self.pk])
+
+
 class ThreatActor(models.Model):
     name = models.CharField(max_length=250, unique=True)
     author = models.ForeignKey(Account, related_name='threat_actor_author', null=True)
@@ -47,39 +66,39 @@ class ThreatActor(models.Model):
         return reverse('actor:threat_actor_detail', args=[self.pk])
 
 
-class Reporter(models.Model):
-    name = models.CharField(max_length=250, unique=True)
-    author = models.ForeignKey(Account, related_name='reporter_author', null=True)
-    description = models.TextField(null=True, blank=True)
-    type = models.ForeignKey(ActorType, related_name='reporter_type', null=True)
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
-
-
-    class Meta:
-        ordering = ('-created',)
-
-    def __str__(self):
-        return self.name
-
-    def get_absolute_url(self):
-        return reverse('actor:reporter_detail', args=[self.pk])
-
-
-class Constituent(models.Model):
-    name = models.CharField(max_length=250, unique=True)
-    author = models.ForeignKey(Account, related_name='constituent_author', null=True)
-    description = models.TextField(null=True, blank=True)
-    type = models.ForeignKey(ActorType, related_name='constituent_type', null=True)
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
-
-
-    class Meta:
-        ordering = ('-created',)
-
-    def __str__(self):
-        return self.name
-
-    def get_absolute_url(self):
-        return reverse('actor:constituent_detail', args=[self.pk])
+#class Reporter(models.Model):
+#    name = models.CharField(max_length=250, unique=True)
+#    author = models.ForeignKey(Account, related_name='reporter_author', null=True)
+#    description = models.TextField(null=True, blank=True)
+#    type = models.ForeignKey(ActorType, related_name='reporter_type', null=True)
+#    created = models.DateTimeField(auto_now_add=True)
+#    updated = models.DateTimeField(auto_now=True)
+#
+#
+#    class Meta:
+#        ordering = ('-created',)
+#
+#    def __str__(self):
+#        return self.name
+#
+#    def get_absolute_url(self):
+#        return reverse('actor:reporter_detail', args=[self.pk])
+#
+#
+#class Constituent(models.Model):
+#    name = models.CharField(max_length=250, unique=True)
+#    author = models.ForeignKey(Account, related_name='constituent_author', null=True)
+#    description = models.TextField(null=True, blank=True)
+#    type = models.ForeignKey(ActorType, related_name='constituent_type', null=True)
+#    created = models.DateTimeField(auto_now_add=True)
+#    updated = models.DateTimeField(auto_now=True)
+#
+#
+#    class Meta:
+#        ordering = ('-created',)
+#
+#    def __str__(self):
+#        return self.name
+#
+#    def get_absolute_url(self):
+#        return reverse('actor:constituent_detail', args=[self.pk])

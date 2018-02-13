@@ -7,7 +7,7 @@ import uuid
 from django.core.validators import MaxValueValidator, MinValueValidator
 from taggit.managers import TaggableManager
 
-from common.models import Comment, GeoLocation, Motive, Sector, Reporter, KillChain
+from common.models import Comment, GeoLocation, Motive, Sector, Reporter, KillChain, Intentsion
 from common.managers import UserAccountManager, PublishedManager, ClientsManager
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -22,6 +22,10 @@ class TTPCategory(models.Model):
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return reverse('ttp:ttp_category_detail', args=[self.pk])
+
+
 class TTPType(models.Model):
     name = models.CharField(max_length=250)
     description = models.TextField(null=True, blank=True)
@@ -33,6 +37,10 @@ class TTPType(models.Model):
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return reverse('ttp:ttp_type_detail', args=[self.pk])
+
+
 class TTP(models.Model):
     name = models.CharField(max_length=250)
     description = models.TextField(null=True, blank=True)
@@ -42,8 +50,8 @@ class TTP(models.Model):
     reference = models.CharField(max_length=250, null=True, blank=True)
     hunting = models.BooleanField(default=False)
     complete = models.BooleanField(default=False)
-    kill_chain = models.ManyToManyField(KillChain, related_name='ttp_kill_chain', blank=True)
-    intention = models.ManyToManyField(Intentsion, related_name='ttp_intention', blank=True)
+    kill_chain = models.ForeignKey(KillChain, related_name='ttp_kill_chain', blank=True)
+    intention = models.ForeignKey(Intentsion, related_name='ttp_intention', blank=True)
     first_seen = models.DateTimeField(null=True, blank=True)
     last_seen = models.DateTimeField(null=True, blank=True)
 
@@ -52,4 +60,8 @@ class TTP(models.Model):
         verbose_name_plural = "TTPs" 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse('ttp:ttp_detail', args=[self.pk])
+
 

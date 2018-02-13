@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'bootstrap4',
     'observables',
     'actors',
+    'ttp',
     'rest_framework.authtoken',
     'django.contrib.admin',
     'django.contrib.auth',
