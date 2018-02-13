@@ -11,7 +11,6 @@ from common.models import Comment, GeoLocation, Motive, Sector, Reporter, KillCh
 from common.managers import UserAccountManager, PublishedManager, ClientsManager
 from django.core.exceptions import ObjectDoesNotExist
 
-
 LEVELS = (
     ('critical', 'critical'),
     ('high', 'high'),
@@ -50,7 +49,7 @@ class Observable(models.Model):
     notes = models.TextField(null=True, blank=True)
     slug = models.SlugField(max_length=250, null=True, unique=True)
     author = models.ForeignKey(Account, null=True, related_name='observable_author')
-    kill_chain = models.ManyToManyField(KillChain, related_name='obs_kill_chain', blank=True)
+    kill_chain = models.ForeignKey(KillChain, related_name='obs_kill_chain', blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     first_seen = models.DateTimeField(null=True, blank=True)

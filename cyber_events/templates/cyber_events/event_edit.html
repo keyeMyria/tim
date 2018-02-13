@@ -55,14 +55,6 @@
        </div> 
       {% endif %}
       {% endfor %}
-       <div class="row">
-           <div class="col-sm-1">
-               <a> Geo Location </a>
-           </div>
-           <div class="col-sm-3">
-                {% bootstrap_formset geo_formset show_label=False layout='inline' %}
-           </div>
-       </div> 
 
     </div>
 
@@ -72,6 +64,7 @@
 
     </div>
     <div class="tab-pane" id="tab3">
+       {% bootstrap_formset observables show_label=False layout='inline' %}
     </div>
     <div class="tab-pane" id="tab4">
        {% bootstrap_formset doc_formset show_label=False layout='inline' %}

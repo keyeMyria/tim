@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<p><a href="{{ object.get_absolute_url }}/edit">edit</a></p>
+<p>Id: {{ object.id }}</p>
+<p>Name: {{ object.name }}</p>
+<p>Description: {{ object.description }}</p>
+
+
+{% endblock %}

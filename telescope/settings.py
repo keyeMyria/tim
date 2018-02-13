@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django_countries',
     'bootstrap4',
     'observables',
-    'modelstest',
+    'actors',
     'rest_framework.authtoken',
     'django.contrib.admin',
     'django.contrib.auth',

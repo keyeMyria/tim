@@ -1,0 +1,55 @@
+from django.conf.urls import url, include
+from . import views
+
+urlpatterns = [
+    # post views
+    url(r'^$', views.ActorTypeListView.as_view(), name='actor_type_list'),
+    url(r'^actor_type$', views.ActorTypeListView.as_view(), name='actor_type_list'),
+    url(r'^actor_type/add$', views.ActorTypeCreateView.as_view(), name='actor_type__add'),
+    url(r'^actor_type/(?P<pk>[-\w]+)$',
+        views.ActorTypeDetailView.as_view(),
+        name='actor_type_detail'),
+    url(r'^actor_type/(?P<pk>[-\w]+)/delete$',
+        views.ActorTypeDeleteView.as_view(),
+        name='actor_type_delete'),
+    url(r'^actor_type/(?P<pk>[-\w]+)/edit$',
+        views.ActorTypeEditView.as_view(),
+        name='actor_type_edit'),
+
+    url(r'^threat_actor$', views.ThreatActorListView.as_view(), name='threat_actor_list'),
+    url(r'^threat_actor/add$', views.ThreatActorCreateView.as_view(), name='threat_actor_add'),
+    url(r'^threat_actor/(?P<pk>[-\w]+)$',
+        views.ThreatActorDetailView.as_view(),
+        name='threat_actor_detail'),
+    url(r'^threat_actor/(?P<pk>[-\w]+)/delete$',
+        views.ThreatActorDeleteView.as_view(),
+        name='threat_actor_delete'),
+    url(r'^threat_actor/(?P<pk>[-\w]+)/edit$',
+        views.ThreatActorEditView.as_view(),
+        name='threat_actor_edit'),
+
+    url(r'^constituent$', views.ConstituentListView.as_view(), name='constituent_list'),
+    url(r'^constituent/add$', views.ConstituentCreateView.as_view(), name='constituent_add'),
+    url(r'^constituent/(?P<pk>[-\w]+)$',
+        views.ConstituentDetailView.as_view(),
+        name='constituent_detail'),
+    url(r'^constituent/(?P<pk>[-\w]+)/delete$',
+        views.ConstituentDeleteView.as_view(),
+        name='constituent_delete'),
+    url(r'^constituent/(?P<pk>[-\w]+)/edit$',
+        views.ConstituentEditView.as_view(),
+        name='constituent_edit'),
+
+    url(r'^reporter$', views.ReporterListView.as_view(), name='reporter_list'),
+    url(r'^reporter/add$', views.ReporterCreateView.as_view(), name='reporter_add'),
+    url(r'^reporter/(?P<pk>[-\w]+)$',
+        views.ReporterDetailView.as_view(),
+        name='reporter_detail'),
+    url(r'^reporter/(?P<pk>[-\w]+)/delete$',
+        views.ReporterDeleteView.as_view(),
+        name='reporter_delete'),
+    url(r'^reporter/(?P<pk>[-\w]+)/edit$',
+        views.ReporterEditView.as_view(),
+        name='reporter_edit'),
+
+] 

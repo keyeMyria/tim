@@ -1,0 +1,41 @@
+
+{% extends "base.html" %}
+{% load static from staticfiles %}
+{% load bootstrap4 %}
+
+{% block scripts %}
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+  <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+  <script src="{% static "cyber_objects/js/obj_list.js" %}"></script>
+
+
+{% endblock %}
+
+{% block content %}
+
+    {% bootstrap_button "Add" button_type="link" button_class="btn-primary" href=request.path|add:"/add" %}
+     <table id="BSdataTable" class="table table-striped" cellspacing="0" width="100%">
+        <thead class="thead-dark" >
+            <tr>
+                <th scope="row">Row</th>
+                <th>Name</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for obj in objects %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td><a href="{{ obj.get_absolute_url }}">{{ obj.name }}</a></td>
+                <td><a href="{{ obj.get_absolute_url }}/delete">delete</a>
+                <a href="{{ obj.get_absolute_url }}/edit">edit</a></td>
+
+            </tr>
+
+        {% endfor %}
+        </tbody>
+    </table>
+  
+    {% include "pagination.html" with page=posts %}
+{% endblock %}
+

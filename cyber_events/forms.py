@@ -1,7 +1,8 @@
 from django import forms
 from .models import EventComment, Event
-from django.forms.models import inlineformset_factory
+from django.forms.models import inlineformset_factory, modelformset_factory
 import models
+from observables.models import Observable
 
 class EmailPostForm(forms.Form):
     name = forms.CharField(max_length=25)
@@ -48,5 +49,10 @@ DocumentFormSet = inlineformset_factory(models.Event,  # parent form
                                                   },
                                                   # set to false because cant' delete an non-exsitant instance
                                                   can_delete=True,
+                                                  # how many inline-forms are sent to the template by default
+                                                  extra=1)
+
+ObservablesFormSet = inlineformset_factory(models.Event, models.EventObservable, # inline-form
+                                                  exclude=('',), 
                                                   # how many inline-forms are sent to the template by default
                                                   extra=1)

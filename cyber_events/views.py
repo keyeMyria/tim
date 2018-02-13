@@ -16,7 +16,7 @@ from django.views.generic import DetailView, UpdateView, CreateView
 from django.http import HttpResponseRedirect
 
 from .models import Event, EventComment
-from .forms import EmailPostForm, CommentForm, EventForm, DocumentFormSet
+from .forms import EmailPostForm, CommentForm, EventForm, DocumentFormSet, ObservablesFormSet
 import models
 from users.models import User
 from users.views import UserCanViewDataMixin
@@ -140,10 +140,12 @@ class EventEditView(UserCanViewDataMixin, UpdateView):
         self.object = form.save(commit=False)
         context = self.get_context_data()
         doc_formset = context['doc_formset']
-        if doc_formset.is_valid():
+        observables = context['observables']
+        if doc_formset.is_valid() and observables.is_valid():
             self.object = form.save()
             form.instance = self.object
             doc_formset.save()
+            observables.save()
             return HttpResponseRedirect(self.get_success_url())
         else:
             return self.render_to_response(self.get_context_data(form=form))
@@ -161,8 +163,10 @@ class EventEditView(UserCanViewDataMixin, UpdateView):
         if self.request.POST:
             print "this request: %s" % self.request.FILES
             context['doc_formset'] = DocumentFormSet(self.request.POST, self.request.FILES, instance=self.object)
+            context['observables'] = ObservablesFormSet(self.request.POST, instance=self.object)
         else:
             context['doc_formset'] = DocumentFormSet(instance=self.object)
+            context['observables'] = ObservablesFormSet(instance=self.object)
         return context
 
 

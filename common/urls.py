@@ -27,5 +27,29 @@ urlpatterns = [
         views.SectorEditView.as_view(),
         name='sector_edit'),
 
+    url(r'^intentsion$', views.IntentsionListView.as_view(), name='intentsion_list'),
+    url(r'^intentsion/add$', views.IntentsionCreateView.as_view(), name='intentsion_add'),
+    url(r'^intentsion/(?P<pk>[-\w]+)$',
+        views.IntentsionDetailView.as_view(),
+        name='intentsion_detail'),
+    url(r'^intentsion/(?P<pk>[-\w]+)/delete$',
+        views.IntentsionDeleteView.as_view(),
+        name='intentsion_delete'),
+    url(r'^intentsion/(?P<pk>[-\w]+)/edit$',
+        views.IntentsionEditView.as_view(),
+        name='intentsion_edit'),
+
+    url(r'^killchain$', views.KillChainListView.as_view(), name='killchain_list'),
+    url(r'^killchain/add$', views.KillChainCreateView.as_view(), name='killchain_add'),
+    url(r'^killchain/(?P<pk>[-\w]+)$',
+        views.KillChainDetailView.as_view(),
+        name='killchain_detail'),
+    url(r'^killchain/(?P<pk>[-\w]+)/delete$',
+        views.KillChainDeleteView.as_view(),
+        name='killchain_delete'),
+    url(r'^killchain/(?P<pk>[-\w]+)/edit$',
+        views.KillChainEditView.as_view(),
+        name='killchain_edit'),
+
 
 ] 

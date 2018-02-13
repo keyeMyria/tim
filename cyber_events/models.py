@@ -10,6 +10,7 @@ from taggit.managers import TaggableManager
 from common.models import Comment, Motive, Sector, Reporter
 from django_countries.fields import CountryField
 from common.managers import UserAccountManager, PublishedManager, ClientsManager
+from observables.models import Observable
 
 LEVELS = (
     ('critical', 'critical'),
@@ -68,7 +69,7 @@ class Event(models.Model):
     reporter = models.ForeignKey(Reporter, related_name='ev_reporter', null=True, blank=True)
     tag = TaggableManager() 
    
- 
+
     class Meta:
         ordering = ('-created',)
 
@@ -103,7 +104,7 @@ class EventComment(Comment):
 #    event = models.ForeignKey(Event, related_name='ttp_ev', null=True, blank=True)
 
 
-#class EventObservable(models.Model):
-#    observable = models.ForeignKey(Observable, related_name='ev_observable', null=True, blank=True)
-#    event = models.ForeignKey(Event, related_name='observable_ev', null=True, blank=True)
+class EventObservable(models.Model):
+    observable = models.ForeignKey(Observable, related_name='event', null=True, blank=True)
+    event = models.ForeignKey(Event, related_name='observable', null=True, blank=True)
 

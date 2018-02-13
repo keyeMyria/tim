@@ -30,6 +30,7 @@ urlpatterns = [
     url(r'^cyber_events/', include('cyber_events.urls', namespace='cyber_events', app_name='cyber_events')),
     url(r'^observables/', include('observables.urls', namespace='observables', app_name='observables')),
     url(r'^common/', include('common.urls', namespace='common', app_name='common')),
+    url(r'^actors/', include('actors.urls', namespace='actor', app_name='actor')),
 ]
 
 urlpatterns += static(settings.STATIC_URL,
