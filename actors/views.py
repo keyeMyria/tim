@@ -24,6 +24,8 @@ from django.shortcuts import redirect
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 
+from common.views import FormsetMixin
+from forms import TTPFormSet
 
 class ActorTypeListView(UserCanViewDataMixin, ListView):
     context_object_name = 'objects'
@@ -86,6 +88,8 @@ class ActorTypeEditView(UserCanViewDataMixin, UpdateView):
            raise PermissionDenied('Not allowed')
 
 
+
+
 class ActorTypeDeleteView(UserCanViewDataMixin, DeleteView):
     model = models.ActorType
     template_name_suffix = '_delete'
@@ -132,11 +136,13 @@ class ThreatActorDetailView(View):
         return view(request, *args, **kwargs)
 
 
-class ThreatActorEditView(UserCanViewDataMixin, UpdateView):
+class ThreatActorEditView(UserCanViewDataMixin, FormsetMixin, UpdateView):
     model = models.ThreatActor
+#    form_class = ObservableEditForm
     template_name_suffix = '_create'
     is_update_view = True
-    fields = '__all__'
+    formset_classes = [ TTPFormSet ]
+    fields = ("__all__")
 
     def get_success_url(self):
         return reverse('actor:threat_actor_detail', kwargs={'pk' : self.object.pk})
@@ -225,70 +231,70 @@ class OrganizationDeleteView(UserCanViewDataMixin, DeleteView):
     success_url = reverse_lazy('actor:organization_list')
 
 
-#class ReporterListView(UserCanViewDataMixin, ListView):
-#    context_object_name = 'objects'
-#    paginate_by = 30
-#    template_name_suffix = '_list'
-#    model = models.Reporter
-#
-#
-#class ReporterCreateView(UserCanViewDataMixin, CreateView):
-#    #form_class = ObservableEditForm
-#    template_name_suffix = '_create'
-#    model = models.Reporter
-#    fields = '__all__'
-#
-#    def get_success_url(self):
-#       return reverse('actor:reporter_list')
-#
-#
-#class ReporterDisplayView(DetailView):
-#    model = models.Reporter
-#    template_name_suffix = '_detail'
-#
-#    def get_context_data(self, **kwargs):
-#        context = super(ReporterDisplayView, self).get_context_data(**kwargs)
-#        sec_id = kwargs['object'].id
-#        objects = get_object_or_404(self.model, id=sec_id)
-#
-#        
-#        context = {'object': objects,
-#                  }
-#
-#        return context
-#
-#
-#class ReporterDetailView(View):
-#
-#    def get(self, request, *args, **kwargs):
-#        view = ReporterDisplayView.as_view()
-#        return view(request, *args, **kwargs)
-#
-#
-#class ReporterEditView(UserCanViewDataMixin, UpdateView):
-#    model = models.Reporter
-#    template_name_suffix = '_create'
-#    is_update_view = True
-#    fields = '__all__'
-#
-#    def get_success_url(self):
-#        return reverse('actor:reporter_detail', kwargs={'pk' : self.object.pk})
-#
-#    def get_object(self, queryset=None):
-#       object = super(ReporterEditView, self).get_object()
-#       user = self.request.user
-#       if user.is_superuser:
-#           return object
-#       else:
-#           org = user.account.organization
-#           if org == object.account.organization and user.is_staff:
-#               return object
-#           raise PermissionDenied('Not allowed')
-#
-#
-#class ReporterDeleteView(UserCanViewDataMixin, DeleteView):
-#    model = models.Reporter
-#    template_name_suffix = '_delete'
-#    success_url = reverse_lazy('actor:reporter_list')
-#
-#
+class OrganizationDomainListView(UserCanViewDataMixin, ListView):
+    context_object_name = 'objects'
+    paginate_by = 30
+    template_name_suffix = '_list'
+    model = models.OrganizationDomain
+
+
+class OrganizationDomainCreateView(UserCanViewDataMixin, CreateView):
+    #form_class = ObservableEditForm
+    template_name_suffix = '_create'
+    model = models.OrganizationDomain
+    fields = '__all__'
+
+    def get_success_url(self):
+       return reverse('actor:organization_domain_list')
+
+
+class OrganizationDomainDisplayView(DetailView):
+    model = models.OrganizationDomain
+    template_name_suffix = '_detail'
+
+    def get_context_data(self, **kwargs):
+        context = super(OrganizationDomainDisplayView, self).get_context_data(**kwargs)
+        sec_id = kwargs['object'].id
+        objects = get_object_or_404(self.model, id=sec_id)
+
+        
+        context = {'object': objects,
+                  }
+
+        return context
+
+
+class OrganizationDomainDetailView(View):
+
+    def get(self, request, *args, **kwargs):
+        view = OrganizationDomainDisplayView.as_view()
+        return view(request, *args, **kwargs)
+
+
+class OrganizationDomainEditView(UserCanViewDataMixin, UpdateView):
+    model = models.OrganizationDomain
+    template_name_suffix = '_create'
+    is_update_view = True
+    fields = '__all__'
+
+    def get_success_url(self):
+        return reverse('actor:organization_domain_detail', kwargs={'pk' : self.object.pk})
+
+    def get_object(self, queryset=None):
+       object = super(OrganizationDomainEditView, self).get_object()
+       user = self.request.user
+       if user.is_superuser:
+           return object
+       else:
+           org = user.account.organization
+           if org == object.account.organization and user.is_staff:
+               return object
+           raise PermissionDenied('Not allowed')
+
+
+class OrganizationDomainDeleteView(UserCanViewDataMixin, DeleteView):
+    model = models.OrganizationDomain
+    template_name_suffix = '_delete'
+    success_url = reverse_lazy('actor:organization_domain_list')
+
+

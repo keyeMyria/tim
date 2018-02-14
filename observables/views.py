@@ -84,7 +84,11 @@ class FormsetMixin(object):
         self.object = form.save()
         for formset in formsets:
             formset.instance = self.object
-            formset.save()
+            if not formset.is_multipart():
+                if formset.cleaned_data[0]:
+                    formset.save()
+            else:
+                formset.save()
         return redirect(self.get_success_url())
 
     def form_invalid(self, form, formsets):

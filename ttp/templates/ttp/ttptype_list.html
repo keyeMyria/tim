@@ -14,7 +14,7 @@
 
 
 {% block content %}
-    <p><a href="{{ request.build_absolute_uri }}/add">Add</a></p>
+    <p><a href="{{ request.build_absolute_uri|add:"/add" }}">Add</a></p>
 
 
     <table id="BSdataTable" class="table table-striped" cellspacing="0" width="100%">
@@ -39,6 +39,5 @@
         </tbody>
     </table>
    
-    {% include "pagination.html" with page=posts %}
 {% endblock %}
 

@@ -40,7 +40,7 @@
         <ul class="nav navbar-nav nav-tabs">
            <li class="nav-item"><a href="#tab1" data-toggle="tab" class="nav-link" >Details</a></li>
            <li class="nav-item"><a href="#tab2" data-toggle="tab" class="nav-link" >Description</a></li>
-           <li class="nav-item"><a href="#tab3" data-toggle="tab" class="nav-link" >Observables</a></li>
+           <li class="nav-item"><a href="#tab3" data-toggle="tab" class="nav-link" >TTPs</a></li>
            <li class="nav-item"><a href="#tab4" data-toggle="tab" class="nav-link" >Documents</a></li>
         </ul>
     </div>
@@ -49,8 +49,8 @@
 <form action="" method="post", enctype="multipart/form-data", class="tab-content", id="eventEdit">
 {% csrf_token %}
 
-  {% bootstrap_form form %}
-
+    <div class="tab-pane" id="tab1">
+        {% bootstrap_form form %}
     </div>
 
 
@@ -58,6 +58,14 @@
 
     </div>
     <div class="tab-pane" id="tab3">
+           {% for formset in formsets %}
+            {% for form in formset %}
+                {% for field in form %}
+                    {{ field.errors }}
+                {% endfor%}
+            {% endfor%}
+                {% bootstrap_formset formset show_label=True layout='inline' %}
+           {% endfor%}
 
     </div>
     <div class="tab-pane" id="tab4">

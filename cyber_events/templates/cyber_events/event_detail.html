@@ -23,7 +23,6 @@
     <h1>{{ event.title }}</h1>
     <p class="date">Published {{ event.publish }} by {{ event.author }}</p>
     {{ event.body|linebreaks }}
-    <p><a href="{% url "cyber_events:event_share" event.id %}">Share this event</a></p>
 
     <h2>Similar events</h2>
     {% for event in similar_events %}

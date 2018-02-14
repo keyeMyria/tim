@@ -16,11 +16,23 @@ from django.views.generic import DetailView, UpdateView, CreateView
 from django.http import HttpResponseRedirect
 
 from .models import Event, EventComment
-from .forms import EmailPostForm, CommentForm, EventForm, DocumentFormSet, ObservablesFormSet
+from .forms import CommentForm, EventForm, DocumentFormSet, ObservablesFormSet, ThreatActorsFormSet
 import models
 from users.models import User
 from users.views import UserCanViewDataMixin
 
+
+from django.conf import settings
+from django.http import HttpResponse
+import os
+
+def download(request, path):
+    if os.path.exists(path):
+        with open(path, 'rb') as fh:
+            response = HttpResponse(fh.read(), content_type="application/text")
+            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(path)
+            return response
+    raise Http404
 
 
 class EventListView(UserCanViewDataMixin, ListView):
@@ -132,7 +144,7 @@ class NewEventView(UserCanViewDataMixin, CreateView):
 class EventEditView(UserCanViewDataMixin, UpdateView):
     model = models.Event
     form_class = EventForm
-    template_name = 'cyber_events/event_edit.html'
+    template_name = 'cyber_events/cyber_event_create.html'
     is_update_view = True
 
 
@@ -141,11 +153,13 @@ class EventEditView(UserCanViewDataMixin, UpdateView):
         context = self.get_context_data()
         doc_formset = context['doc_formset']
         observables = context['observables']
-        if doc_formset.is_valid() and observables.is_valid():
+        threat_actor = context['threat_actors']
+        if doc_formset.is_valid() and observables.is_valid() and threat_actor.is_valid():
             self.object = form.save()
             form.instance = self.object
             doc_formset.save()
             observables.save()
+            threat_actor.save()
             return HttpResponseRedirect(self.get_success_url())
         else:
             return self.render_to_response(self.get_context_data(form=form))
@@ -153,10 +167,13 @@ class EventEditView(UserCanViewDataMixin, UpdateView):
 
     def get_object(self, queryset=None):
         obj = super(EventEditView, self).get_object(queryset=queryset)
+        print obj.event_document.values()
         return obj
 
     def get_success_url(self):
-        return reverse('cyber_events:event_edit', kwargs={'year': self.kwargs['year'], 'slug': self.kwargs['slug']})
+        return reverse('cyber_events:event_list')
+
+
 
     def get_context_data(self, **kwargs):
         context = super(EventEditView, self).get_context_data(**kwargs)
@@ -164,9 +181,11 @@ class EventEditView(UserCanViewDataMixin, UpdateView):
             print "this request: %s" % self.request.FILES
             context['doc_formset'] = DocumentFormSet(self.request.POST, self.request.FILES, instance=self.object)
             context['observables'] = ObservablesFormSet(self.request.POST, instance=self.object)
+            context['threat_actors'] = ThreatActorsFormSet(self.request.POST, instance=self.object)
         else:
             context['doc_formset'] = DocumentFormSet(instance=self.object)
             context['observables'] = ObservablesFormSet(instance=self.object)
+            context['threat_actors'] = ThreatActorsFormSet(instance=self.object)
         return context
 
 

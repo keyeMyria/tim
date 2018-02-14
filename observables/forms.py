@@ -38,7 +38,6 @@ class ObservableEditForm(forms.ModelForm):
                     input_formats=('%d.%m.%Y',)
                 )
 
-
     class Meta:
         model = models.Observable 
         exclude = ('slug',)
@@ -47,11 +46,10 @@ class ObservableEditForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         #self.user = kwargs.pop('user', None)
         super(ObservableEditForm, self).__init__(*args, **kwargs)
-        
+ 
     def clean_slug(self):
         data = self.cleaned_data['slug']
         if data:
-            print "You have forgotten about Slug!"
             raise forms.ValidationError("You have forgotten about Slug!")
 
         # Always return a value to use as the new cleaned data, even if

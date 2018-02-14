@@ -27,6 +27,66 @@ from django.shortcuts import redirect
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 
+class FormsetMixin(object):
+    object = None
+
+    def get(self, request, *args, **kwargs):
+        if getattr(self, 'is_update_view', False):
+            self.object = self.get_object()
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        formset_classes = self.get_formset_classes()
+        formsets = self.get_formsets(formset_classes)
+        return self.render_to_response(self.get_context_data(form=form, formsets=formsets))
+
+    def post(self, request, *args, **kwargs):
+        if getattr(self, 'is_update_view', False):
+            self.object = self.get_object()
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        formset_classes = self.get_formset_classes()
+        formsets = self.get_formsets(formset_classes)
+
+        formsets_valid = True
+        for formset in formsets:
+            if not formset.is_valid():
+                formsets_valid = False
+
+        if form.is_valid() and formsets_valid:
+            return self.form_valid(form, formsets)
+        else:
+            return self.form_invalid(form, formsets)
+
+    def get_formset_classes(self):
+        return self.formset_classes
+
+    def get_formsets(self, formset_classes):
+        formsets = []
+        for formset_class in formset_classes:
+            formsets.append(formset_class(**self.get_formset_kwargs()))
+        return formsets;
+
+    def get_formset_kwargs(self):
+        kwargs = {
+            'instance': self.object
+        }
+        if self.request.method in ('POST', 'PUT'):
+            kwargs.update({
+                'data': self.request.POST,
+                'files': self.request.FILES,
+            })
+        return kwargs
+
+    def form_valid(self, form, formsets):
+        self.object = form.save()
+        for formset in formsets:
+            formset.instance = self.object
+            formset.save()
+        return redirect(self.get_success_url())
+
+    def form_invalid(self, form, formsets):
+        return self.render_to_response(self.get_context_data(form=form, formsets=formsets))
+
 
 class MotiveListView(UserCanViewDataMixin, ListView):
     context_object_name = 'motives'

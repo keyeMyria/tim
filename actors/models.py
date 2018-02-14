@@ -7,6 +7,16 @@ from django.db import models
 from common.models import Motive
 from users.models import Account
 from django.core.urlresolvers import reverse
+from ttp.models import TTP
+from django_countries.fields import CountryField
+
+LEVELS = (
+    ('critical', 'critical'),
+    ('high', 'high'),
+    ('medium', 'medium'),
+    ('low', 'low'),
+    ('unknown', 'unknown'),
+)
 
 
 class ActorType(models.Model):
@@ -20,6 +30,22 @@ class ActorType(models.Model):
         return reverse('actor:actor_type_detail', args=[self.pk])
 
 
+class OrganizationDomain(models.Model):
+    name = models.CharField(max_length=250, unique=True)
+    author = models.ForeignKey(Account, related_name='organization_domain', null=True)
+    description = models.TextField(null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    risk = models.CharField(max_length=10, choices=LEVELS, default='unknown')
+
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('actor:organization_domain_detail', args=[self.pk])
+
+
 class Organization(models.Model):
     name = models.CharField(max_length=250, unique=True)
     author = models.ForeignKey(Account, related_name='constituent_author', null=True)
@@ -27,7 +53,8 @@ class Organization(models.Model):
     type = models.ForeignKey(ActorType, related_name='constituent_type', null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-
+    country = CountryField(multiple=True, blank=True)
+    domain = models.ForeignKey(OrganizationDomain, related_name="organization", null=True)
 
     class Meta:
         ordering = ('-created',)
@@ -65,6 +92,10 @@ class ThreatActor(models.Model):
     def get_absolute_url(self):
         return reverse('actor:threat_actor_detail', args=[self.pk])
 
+
+class ThreatActorTTP(models.Model):
+    ttp = models.ForeignKey(TTP, related_name="threat_actor", null=True, blank=True)
+    threat_actor = models.ForeignKey(ThreatActor, related_name="ttp", null=True, blank=True)
 
 #class Reporter(models.Model):
 #    name = models.CharField(max_length=250, unique=True)

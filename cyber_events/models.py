@@ -11,6 +11,7 @@ from common.models import Comment, Motive, Sector, Reporter
 from django_countries.fields import CountryField
 from common.managers import UserAccountManager, PublishedManager, ClientsManager
 from observables.models import Observable
+from actors.models import ThreatActor, Organization
 
 LEVELS = (
     ('critical', 'critical'),
@@ -62,11 +63,12 @@ class Event(models.Model):
                                                validators=[MaxValueValidator(100),
                                                            MinValueValidator(0)])
 
+    #country = CountryField(multiple=True, blank=True)
+    targeted_organization = models.ManyToManyField(Organization, blank=True)
     reference = models.CharField(max_length=250, null=True, blank=True)
-    country = CountryField(null=True)
-    motive = models.ForeignKey(Motive, related_name='event_motive', null=True, blank=True)
-    sector = models.ForeignKey(Sector, related_name='ev_sector', null=True, blank=True)
-    reporter = models.ForeignKey(Reporter, related_name='ev_reporter', null=True, blank=True)
+    motive = models.ManyToManyField(Motive, related_name='event', blank=True)
+    sector = models.ManyToManyField(Sector, related_name='event', blank=True)
+    reporter = models.ManyToManyField(Reporter, related_name='event', blank=True)
     tag = TaggableManager() 
    
 
@@ -95,10 +97,10 @@ class EventComment(Comment):
     event = models.ForeignKey(Event, related_name='event_comments', null=True, blank=True)
 
 
-#class EventThreatActor(models.Model):
-#    threat_actor = models.ForeignKey(ThreatActor, related_name='ev_threat_actor', null=True, blank=True)
-#    event = models.ForeignKey(Event, related_name='threat_actor_ev', null=True, blank=True)
-#
+class EventThreatActor(models.Model):
+    threat_actor = models.ForeignKey(ThreatActor, related_name='event', null=True, blank=True)
+    event = models.ForeignKey(Event, related_name='threat_actor', null=True, blank=True)
+
 #class EventTTP(models.Model):
 #    ttp = models.ForeignKey(TTP, related_name='ev_ttp', null=True, blank=True)
 #    event = models.ForeignKey(Event, related_name='ttp_ev', null=True, blank=True)

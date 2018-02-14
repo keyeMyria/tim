@@ -56,3 +56,8 @@ ObservablesFormSet = inlineformset_factory(models.Event, models.EventObservable,
                                                   exclude=('',), 
                                                   # how many inline-forms are sent to the template by default
                                                   extra=1)
+
+ThreatActorsFormSet = inlineformset_factory(models.Event, models.EventThreatActor, # inline-form
+                                                  exclude=('',), 
+                                                  # how many inline-forms are sent to the template by default
+                                                  extra=1)

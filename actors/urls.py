@@ -39,6 +39,20 @@ urlpatterns = [
     url(r'^organization/(?P<pk>[-\w]+)/edit$',
         views.OrganizationEditView.as_view(),
         name='organization_edit'),
+
+    url(r'^domain$', views.OrganizationDomainListView.as_view(), name='organization_domain_list'),
+    url(r'^domain/add$', views.OrganizationDomainCreateView.as_view(), name='organization_domain_add'),
+    url(r'^domain/(?P<pk>[-\w]+)$',
+        views.OrganizationDomainDetailView.as_view(),
+        name='organization_domain_detail'),
+    url(r'^domain/(?P<pk>[-\w]+)/delete$',
+        views.OrganizationDomainDeleteView.as_view(),
+        name='organization_domain_delete'),
+    url(r'^domain/(?P<pk>[-\w]+)/edit$',
+        views.OrganizationDomainEditView.as_view(),
+        name='organization_domain_edit'),
+
+
 #
 #    url(r'^reporter$', views.ReporterListView.as_view(), name='reporter_list'),
 #    url(r'^reporter/add$', views.ReporterCreateView.as_view(), name='reporter_add'),
