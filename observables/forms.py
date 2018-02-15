@@ -85,30 +85,65 @@ ObservableValueFormSet = modelformset_factory(models.Observable, exclude=(), ext
 class IpForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(IpForm, self).__init__(*args, **kwargs)
-        types = models.ObservableType.objects.filter(type_class='ip_type')
+        #types = models.ObservableType.objects.filter(type_class='ip_type')
+        types = models.ObservableType.objects.all()
 
-        try:
-            set_type = self.instance.value.type_id
-        except:
-            set_type = None
-
-        self.fields['value'].widget = forms.HiddenInput()
         self.fields['obs_type'] = forms.ModelChoiceField(queryset=types,
-                                                         initial=set_type,
                                                          empty_label="( Type )")
 
-        self.fields['ip'] = forms.GenericIPAddressField(initial=self.instance.value)
+        print self.initial
+        if self.initial['ip']:
+            set_value = self.initial['ip']
+        if self.initial['email']:
+            set_value = self.initial['email']
+
+        try:
+            self.fields['value'] = forms.CharField(initial=set_value)
+
+            self.fields['obs_type'] = forms.ModelChoiceField(queryset=types,
+                                                         initial=self.initial['id'],
+                                                         empty_label="( Type )")
+        except:
+            self.fields['value'] = forms.CharField()
+
+#        try:
+#            print "I run"
+#            self.set_type = self.instance.email.type_id
+#            self.set_value = self.instance.email
+#            self.fields['value'] = forms.CharField(initial=self.set_value)
+#
+#            self.fields['obs_type'] = forms.ModelChoiceField(queryset=types,
+#                                                         initial=self.set_type,
+#                                                         empty_label="( Type )")
+
+#        except:
+#            set_type = None
+#            self.set_value = None
+#            self.fields['value'] = forms.CharField()
+
+        #self.fields['ip'].widget = forms.HiddenInput()
+        #self.fields['email'].widget = forms.HiddenInput()
 
     class Meta:
         model = models.ObservableValues
         exclude = ()
 
     def save(self, commit=True):
+        
         instance = super(IpForm, self).save(commit=False)
-        value, created = models.Test.objects.get_or_create(value=self.cleaned_data['ip'],
-                                                           type_id=self.cleaned_data['obs_type'].id)
 
-        instance.value_id = value.id
+        type_class = self.cleaned_data['obs_type'].type_class
+
+        if "ip_type" in type_class:
+            value, created = models.IpValue.objects.get_or_create(value=self.cleaned_data['value'],
+                                                           type_id=self.cleaned_data['obs_type'].id)
+            instance.ip = value
+
+        if "email_type" in type_class:
+            value, created = models.EmailValue.objects.get_or_create(value=self.cleaned_data['value'],
+                                                           type_id=self.cleaned_data['obs_type'].id)
+            instance.email = value
+
         if commit:
             instance.save()
             print "SAVEING"
@@ -137,7 +172,7 @@ IpValueFormSet = inlineformset_factory(models.Observable, models.ObservableValue
                     #formset=IpInlineFormSet,
                     exclude=(),
                     extra=1, 
-                    max_num=1,
+                    max_num=2,
                     validate_max=True, 
                     can_delete=True)
 
@@ -182,34 +217,34 @@ StrValueFormSet = inlineformset_factory(models.Observable, models.StringValue,
                     validate_max=True,
                     can_delete=True)
 
-class EmailForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super(EmailForm, self).__init__(*args, **kwargs)
-        types = models.ObservableType.objects.filter(type_class='email_type')
-        self.fields['str_type'] = forms.ModelChoiceField(queryset=types, empty_label="Add Email")
-
-    class Meta:
-        model = models.EmailValue
-        exclude = ()
-
-
-class EmailInlineFormSet(BaseInlineFormSet):
-    def clean(self):
-        super().clean()
-        # custom validation across forms in the formset
-        for form in self.forms:
-            # your custom formset validation
-            pass
-
-
-
-EmailValueFormSet = inlineformset_factory(models.Observable, models.EmailValue,
-                    form=EmailForm,
-                    exclude=(), 
-                    max_num=1, 
-                    extra=1, 
-                    validate_max=True, 
-                    can_delete=True)
+#class EmailForm(forms.ModelForm):
+#    def __init__(self, *args, **kwargs):
+#        super(EmailForm, self).__init__(*args, **kwargs)
+#        types = models.ObservableType.objects.filter(type_class='email_type')
+#        self.fields['str_type'] = forms.ModelChoiceField(queryset=types, empty_label="Add Email")
+#
+#    class Meta:
+#        model = models.EmailValue
+#        exclude = ()
+#
+#
+#class EmailInlineFormSet(BaseInlineFormSet):
+#    def clean(self):
+#        super().clean()
+#        # custom validation across forms in the formset
+#        for form in self.forms:
+#            # your custom formset validation
+#            pass
+#
+#
+#
+#EmailValueFormSet = inlineformset_factory(models.Observable, models.EmailValue,
+#                    form=EmailForm,
+#                    exclude=(), 
+#                    max_num=1, 
+#                    extra=1, 
+#                    validate_max=True, 
+#                    can_delete=True)
 
 
 class FileForm(forms.ModelForm):

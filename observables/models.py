@@ -79,24 +79,36 @@ class ObservableValueManager(models.Manager):
         return ObservableType.objects.get(id=type_id).type_class
 
 class IpValue(models.Model):
-    obs_type = models.ForeignKey(ObservableType, related_name='ip_value', null=True)
     #ip_value = models.ForeignKey(Observable, null=True, blank=True, on_delete=models.SET_NULL, related_name='ip_value')
 
     value = models.GenericIPAddressField(null=True, blank=True)
+    type = models.ForeignKey(ObservableType, related_name='ip_value', null=True)
 
     def __str__(self):
         return self.value
 
+
+class EmailValue(models.Model):
+    type = models.ForeignKey(ObservableType, related_name='email_value', null=True)
+    #email_value = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name="email_value", null=True)
+
+    value = models.EmailField(null=True, blank=True, unique=True)
+
+    def __str__(self):
+        return self.value
+
+
 class Test(models.Model):
     value = models.GenericIPAddressField(null=True, blank=True)
-    type = models.ForeignKey(ObservableType, related_name='ip_test', null=True)
+    #type = models.ForeignKey(ObservableType, related_name='ip_test', null=True)
 
     def __str__(self):
         return self.value
 
 class ObservableValues(models.Model):
     observable = models.ForeignKey(Observable, null=True, blank=True, on_delete=models.SET_NULL, related_name='values')
-    value = models.ForeignKey(Test, null=True, blank=True, on_delete=models.SET_NULL, related_name='obs_values')
+    ip = models.ForeignKey(IpValue, null=True, blank=True, on_delete=models.SET_NULL, related_name='obs_values')
+    email = models.ForeignKey(EmailValue, null=True, blank=True, on_delete=models.SET_NULL, related_name='obs_values')
 
     def __str__(self):
         return "Test"
@@ -112,14 +124,6 @@ class StringValue(models.Model):
         return self.value
 
 
-class EmailValue(models.Model):
-    str_type = models.ForeignKey(ObservableType, related_name='email_value', null=True)
-    email_value = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name="email_value", null=True)
-
-    value = models.EmailField(null=True, blank=True, unique=True)
-
-    def __str__(self):
-        return self.value
 
 class FileValue(models.Model):
     str_type = models.ForeignKey(ObservableType, related_name='file_value', null=True)
