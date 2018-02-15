@@ -79,28 +79,20 @@ class ObservableValueManager(models.Manager):
         return ObservableType.objects.get(id=type_id).type_class
 
 class IpValue(models.Model):
-    #ip_value = models.ForeignKey(Observable, null=True, blank=True, on_delete=models.SET_NULL, related_name='ip_value')
-
-    value = models.GenericIPAddressField(null=True, blank=True)
-    #type = models.ForeignKey(ObservableType, related_name='ip_value', null=True)
+    value = models.GenericIPAddressField(null=True, blank=True, unique=True)
 
     def __str__(self):
         return self.value
 
 
 class EmailValue(models.Model):
-    #type = models.ForeignKey(ObservableType, related_name='email_value', null=True)
-    #email_value = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name="email_value", null=True)
-
     value = models.EmailField(null=True, blank=True, unique=True)
 
     def __str__(self):
         return self.value
 
-
-class Test(models.Model):
-    value = models.GenericIPAddressField(null=True, blank=True)
-    #type = models.ForeignKey(ObservableType, related_name='ip_test', null=True)
+class StringValue(models.Model):
+    value = models.CharField(max_length=25, blank=True, unique=True)
 
     def __str__(self):
         return self.value
@@ -109,20 +101,13 @@ class ObservableValues(models.Model):
     observable = models.ForeignKey(Observable, null=True, blank=True, on_delete=models.SET_NULL, related_name='values')
     ip = models.ForeignKey(IpValue, null=True, blank=True, on_delete=models.SET_NULL, related_name='obs_values')
     email = models.ForeignKey(EmailValue, null=True, blank=True, on_delete=models.SET_NULL, related_name='obs_values')
+    string = models.ForeignKey(StringValue, null=True, blank=True, on_delete=models.SET_NULL, related_name='obs_values')
     type = models.ForeignKey(ObservableType, related_name='observable_value', null=True)
 
     def __str__(self):
         return "Test"
 
 
-class StringValue(models.Model):
-    str_type = models.ForeignKey(ObservableType, related_name='str_value', null=True)
-    str_value = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name="str_value", null=True)
-
-    value = models.CharField(max_length=25, blank=True, unique=True)
-
-    def __str__(self):
-        return self.value
 
 
 

@@ -18,7 +18,7 @@ from django.http import HttpResponseRedirect
 import models
 from users.models import User
 from users.views import UserCanViewDataMixin
-from forms import ObservableEditForm, ObservableValueFormSet, IpValueFormSet, StrValueFormSet, FileValueFormSet
+from forms import ObservableEditForm, ObservableValueFormSet, IpValueFormSet, FileValueFormSet
 
 
 from django.contrib.auth.models import Group
@@ -104,7 +104,7 @@ class ObservableListView(UserCanViewDataMixin, ListView):
 class CreateObservableView(UserCanViewDataMixin, FormsetMixin, CreateView):
     form_class = ObservableEditForm
     template_name_suffix = '_create'
-    formset_classes = [ IpValueFormSet, StrValueFormSet, FileValueFormSet ]
+    formset_classes = [ IpValueFormSet, FileValueFormSet ]
     model = models.Observable
 
 
@@ -171,7 +171,7 @@ class ObservableEditView(UserCanViewDataMixin, FormsetMixin, UpdateView):
     form_class = ObservableEditForm
     template_name_suffix = '_edit'
     is_update_view = True
-    formset_classes = [ IpValueFormSet, StrValueFormSet, FileValueFormSet ]
+    formset_classes = [ IpValueFormSet, FileValueFormSet ]
 
     def get_success_url(self):
        return reverse('observables:observable_edit', kwargs={'pk': self.kwargs['pk'], 'uuid': self.kwargs['uuid']})

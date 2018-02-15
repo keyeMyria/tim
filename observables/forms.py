@@ -90,11 +90,20 @@ class IpForm(forms.ModelForm):
 
         self.fields['ip'].widget = forms.HiddenInput()
         self.fields['email'].widget = forms.HiddenInput()
+        self.fields['string'].widget = forms.HiddenInput()
         if self.instance.type:
             if "ip_type" in self.instance.type.type_class:
                 self.fields['value'] = forms.CharField(initial=self.instance.ip.value)
+
             if "email_type" in self.instance.type.type_class:
                 self.fields['value'] = forms.CharField(initial=self.instance.email.value)
+
+            if "string_type" in self.instance.type.type_class:
+                try:
+                    self.fields['value'] = forms.CharField(initial=self.instance.string.value)
+                except:
+                    self.fields['value'] = forms.CharField()
+                    pass
         else:
              self.fields['value'] = forms.CharField()
 
@@ -115,6 +124,11 @@ class IpForm(forms.ModelForm):
             value, created = models.EmailValue.objects.get_or_create(value=self.cleaned_data['value'])
             instance.email = value
 
+        if "string_type" in type_class:
+            value, created = models.StringValue.objects.get_or_create(value=self.cleaned_data['value'])
+            instance.string = value
+
+
         if commit:
             instance.save()
         return instance
@@ -125,6 +139,9 @@ class IpForm(forms.ModelForm):
         email = cleaned_data.get("email")
         type_ = cleaned_data.get("type")
         value = cleaned_data.get("value")
+        if not type_:
+            raise forms.ValidationError("Type is mandatory")
+        
         if "ip_type" in type_.type_class:
             try:
                 validate_ipv46_address(value)
@@ -137,27 +154,14 @@ class IpForm(forms.ModelForm):
             except Exception as e:
                 raise forms.ValidationError(e)
 
+        #if "string_type" in type_.type_class:
+        #    if not value:
+        #        raise forms.ValidationError("Don't leave this field empty")
 
-#    def is_valid(self):
-#        if self.instance.type:
-#            print self.cleaned_data
-#            if "ip_type" in self.instance.type.type_class:
-#                valid = validate_ipv46_address(self.cleaned_data['value'])
-#                print self.instance.ip.value
-#                print "Validation", valid
-#            if "email_type" in self.instance.type.type_class:
-#                valid = validate_ipv46_address(self.cleaned_data['value'])
-#
-#                print self.instance
-#                print self.cleaned_data
-#        if self.is_bound and not self.errors:
-#            return True
-#        else:
-#            return False
 
 class IpInlineFormSet(BaseInlineFormSet):
     def clean(self):
-        super().clean()
+        cleaned_data = super(IpInlineFormSet, self).clean()
         # custom validation across forms in the formset
         for form in self.forms:
             # your custom formset validation
@@ -168,6 +172,7 @@ class IpInlineFormSet(BaseInlineFormSet):
 
 IpValueFormSet = inlineformset_factory(models.Observable, models.ObservableValues,
                     form=IpForm,
+                    #can_order=True,
                     #formset=IpInlineFormSet,
                     exclude=(),
                     extra=1, 
@@ -175,75 +180,6 @@ IpValueFormSet = inlineformset_factory(models.Observable, models.ObservableValue
                     validate_max=True, 
                     can_delete=True)
 
-
-#IpValueFormSet = modelformset_factory(models.IpValue, form=IpForm, extra=1, max_num=1)
-#IpValueFormSet = modelformset_factory(models.IpValue, exclude=(), extra=5, max_num=1)
-
-class StringForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super(StringForm, self).__init__(*args, **kwargs)
-        types = models.ObservableType.objects.filter(type_class='string_type')
-        self.fields['str_type'] = forms.ModelChoiceField(queryset=types, empty_label="Add String")
-
-    class Meta:
-        model = models.StringValue
-        exclude = ()
-
-#    def save(self, commit=True):
-#        instance = super(ObservableEditForm, self).save(commit=False)
-#        print instance.value
-#        if commit:
-#            instance.save()
-#        return instance
-
-class StringInlineFormSet(BaseInlineFormSet):
-    def clean(self):
-        super(StringInlineFormSet, self).clean()
-        # custom validation across forms in the formset
-        for form in self.forms:
-            #print help(form.fields['value'])
-            # your custom formset validation
-            if form.is_valid():
-                print "yes"
-            pass
-
-
-StrValueFormSet = inlineformset_factory(models.Observable, models.StringValue,
-                    form=StringForm,
-                    exclude=(),
-                    max_num=1,
-                    extra=1,
-                    validate_max=True,
-                    can_delete=True)
-
-#class EmailForm(forms.ModelForm):
-#    def __init__(self, *args, **kwargs):
-#        super(EmailForm, self).__init__(*args, **kwargs)
-#        types = models.ObservableType.objects.filter(type_class='email_type')
-#        self.fields['str_type'] = forms.ModelChoiceField(queryset=types, empty_label="Add Email")
-#
-#    class Meta:
-#        model = models.EmailValue
-#        exclude = ()
-#
-#
-#class EmailInlineFormSet(BaseInlineFormSet):
-#    def clean(self):
-#        super().clean()
-#        # custom validation across forms in the formset
-#        for form in self.forms:
-#            # your custom formset validation
-#            pass
-#
-#
-#
-#EmailValueFormSet = inlineformset_factory(models.Observable, models.EmailValue,
-#                    form=EmailForm,
-#                    exclude=(), 
-#                    max_num=1, 
-#                    extra=1, 
-#                    validate_max=True, 
-#                    can_delete=True)
 
 
 class FileForm(forms.ModelForm):
