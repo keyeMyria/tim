@@ -6,6 +6,8 @@ import models
 from django.forms.formsets import BaseFormSet
 from django.forms import BaseInlineFormSet
 from django.utils.text import slugify
+from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
+from django.forms.fields import Field, FileField
 
 class ObservableForm(forms.Form):
     class Meta:
@@ -84,12 +86,40 @@ class IpForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(IpForm, self).__init__(*args, **kwargs)
         types = models.ObservableType.objects.filter(type_class='ip_type')
-        self.fields['obs_type'] = forms.ModelChoiceField(queryset=types, empty_label="( None )")
+
+        try:
+            set_type = self.instance.value.type_id
+        except:
+            set_type = None
+
+        self.fields['value'].widget = forms.HiddenInput()
+        self.fields['obs_type'] = forms.ModelChoiceField(queryset=types,
+                                                         initial=set_type,
+                                                         empty_label="( Type )")
+
+        self.fields['ip'] = forms.GenericIPAddressField(initial=self.instance.value)
 
     class Meta:
-        model = models.IpValue
+        model = models.ObservableValues
         exclude = ()
 
+    def save(self, commit=True):
+        instance = super(IpForm, self).save(commit=False)
+        value, created = models.Test.objects.get_or_create(value=self.cleaned_data['ip'],
+                                                           type_id=self.cleaned_data['obs_type'].id)
+
+        instance.value_id = value.id
+        if commit:
+            instance.save()
+            print "SAVEING"
+        return instance
+
+
+    def is_valid(self):
+        if self.is_bound and not self.errors:
+            return True
+        else:
+            return False
 
 class IpInlineFormSet(BaseInlineFormSet):
     def clean(self):
@@ -97,16 +127,23 @@ class IpInlineFormSet(BaseInlineFormSet):
         # custom validation across forms in the formset
         for form in self.forms:
             # your custom formset validation
+            print form
             pass
 
-IpValueFormSet = inlineformset_factory(models.Observable, models.IpValue,
+
+
+IpValueFormSet = inlineformset_factory(models.Observable, models.ObservableValues,
                     form=IpForm,
-                    exclude=(), 
+                    #formset=IpInlineFormSet,
+                    exclude=(),
                     extra=1, 
                     max_num=1,
                     validate_max=True, 
                     can_delete=True)
 
+
+#IpValueFormSet = modelformset_factory(models.IpValue, form=IpForm, extra=1, max_num=1)
+#IpValueFormSet = modelformset_factory(models.IpValue, exclude=(), extra=5, max_num=1)
 
 class StringForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
