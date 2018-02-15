@@ -8,6 +8,8 @@ from django.forms import BaseInlineFormSet
 from django.utils.text import slugify
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.forms.fields import Field, FileField
+from django.core.validators import validate_email, validate_ipv46_address
+
 
 class ObservableForm(forms.Form):
     class Meta:
@@ -85,44 +87,16 @@ ObservableValueFormSet = modelformset_factory(models.Observable, exclude=(), ext
 class IpForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(IpForm, self).__init__(*args, **kwargs)
-        #types = models.ObservableType.objects.filter(type_class='ip_type')
-        types = models.ObservableType.objects.all()
 
-        self.fields['obs_type'] = forms.ModelChoiceField(queryset=types,
-                                                         empty_label="( Type )")
-
-        print self.initial
-        if self.initial['ip']:
-            set_value = self.initial['ip']
-        if self.initial['email']:
-            set_value = self.initial['email']
-
-        try:
-            self.fields['value'] = forms.CharField(initial=set_value)
-
-            self.fields['obs_type'] = forms.ModelChoiceField(queryset=types,
-                                                         initial=self.initial['id'],
-                                                         empty_label="( Type )")
-        except:
-            self.fields['value'] = forms.CharField()
-
-#        try:
-#            print "I run"
-#            self.set_type = self.instance.email.type_id
-#            self.set_value = self.instance.email
-#            self.fields['value'] = forms.CharField(initial=self.set_value)
-#
-#            self.fields['obs_type'] = forms.ModelChoiceField(queryset=types,
-#                                                         initial=self.set_type,
-#                                                         empty_label="( Type )")
-
-#        except:
-#            set_type = None
-#            self.set_value = None
-#            self.fields['value'] = forms.CharField()
-
-        #self.fields['ip'].widget = forms.HiddenInput()
-        #self.fields['email'].widget = forms.HiddenInput()
+        self.fields['ip'].widget = forms.HiddenInput()
+        self.fields['email'].widget = forms.HiddenInput()
+        if self.instance.type:
+            if "ip_type" in self.instance.type.type_class:
+                self.fields['value'] = forms.CharField(initial=self.instance.ip.value)
+            if "email_type" in self.instance.type.type_class:
+                self.fields['value'] = forms.CharField(initial=self.instance.email.value)
+        else:
+             self.fields['value'] = forms.CharField()
 
     class Meta:
         model = models.ObservableValues
@@ -131,30 +105,55 @@ class IpForm(forms.ModelForm):
     def save(self, commit=True):
         
         instance = super(IpForm, self).save(commit=False)
-
-        type_class = self.cleaned_data['obs_type'].type_class
+        type_class = self.cleaned_data['type'].type_class
 
         if "ip_type" in type_class:
-            value, created = models.IpValue.objects.get_or_create(value=self.cleaned_data['value'],
-                                                           type_id=self.cleaned_data['obs_type'].id)
+            value, created = models.IpValue.objects.get_or_create(value=self.cleaned_data['value'])
             instance.ip = value
 
         if "email_type" in type_class:
-            value, created = models.EmailValue.objects.get_or_create(value=self.cleaned_data['value'],
-                                                           type_id=self.cleaned_data['obs_type'].id)
+            value, created = models.EmailValue.objects.get_or_create(value=self.cleaned_data['value'])
             instance.email = value
 
         if commit:
             instance.save()
-            print "SAVEING"
         return instance
 
+    def clean(self):
+        cleaned_data = super(IpForm, self).clean()
+        ip = cleaned_data.get("ip")
+        email = cleaned_data.get("email")
+        type_ = cleaned_data.get("type")
+        value = cleaned_data.get("value")
+        if "ip_type" in type_.type_class:
+            try:
+                validate_ipv46_address(value)
+            except Exception as e:
+                raise forms.ValidationError(e)
 
-    def is_valid(self):
-        if self.is_bound and not self.errors:
-            return True
-        else:
-            return False
+        if "email_type" in type_.type_class:
+            try:
+                validate_email(value)
+            except Exception as e:
+                raise forms.ValidationError(e)
+
+
+#    def is_valid(self):
+#        if self.instance.type:
+#            print self.cleaned_data
+#            if "ip_type" in self.instance.type.type_class:
+#                valid = validate_ipv46_address(self.cleaned_data['value'])
+#                print self.instance.ip.value
+#                print "Validation", valid
+#            if "email_type" in self.instance.type.type_class:
+#                valid = validate_ipv46_address(self.cleaned_data['value'])
+#
+#                print self.instance
+#                print self.cleaned_data
+#        if self.is_bound and not self.errors:
+#            return True
+#        else:
+#            return False
 
 class IpInlineFormSet(BaseInlineFormSet):
     def clean(self):
