@@ -40,7 +40,14 @@ class ObservableType(models.Model):
     type_class = models.CharField(max_length=25, choices=TYPES, default=None)
 
     def __str__(self):
-        return self.name
+        typ_class = self.type_class
+        for typ in self.TYPES:
+            if self.type_class in typ:
+                typ_class = typ[1]
+        if self.name == typ_class:
+            return self.name
+        else:
+            return "%s | %s" % (typ_class, self.name)
 
 
 
