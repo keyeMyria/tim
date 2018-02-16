@@ -3,11 +3,10 @@ from __future__ import unicode_literals
 from django.db import models
 from users.models import Account
 from django_countries.fields import CountryField
-from django.core.urlresolvers import reverse
-
+from django.urls import reverse
 
 class Comment(models.Model):
-    author = models.ForeignKey(Account, null=True, related_name='comment_author')
+    author = models.ForeignKey(Account, null=True, related_name='comment_author', on_delete=models.CASCADE)
     body = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -16,7 +15,6 @@ class Comment(models.Model):
     class Meta:
         ordering = ('created',)
         abstract = True
-
 
 class GeoLocation(models.Model):
     country = CountryField(null=True)
@@ -31,7 +29,6 @@ class GeoLocation(models.Model):
     class Meta:
         abstract = True
 
-
 class Motive(models.Model):
     name = models.CharField(max_length=250)
     description = models.TextField(null=True, blank=True)
@@ -41,7 +38,6 @@ class Motive(models.Model):
 
     def get_absolute_url(self):
         return reverse('common:motive_detail', args=[self.pk])
-
 
 class Sector(models.Model):
     name = models.CharField(max_length=250)
@@ -53,15 +49,12 @@ class Sector(models.Model):
     def get_absolute_url(self):
         return reverse('common:sector_detail', args=[self.pk])
 
-
-
 class Reporter(models.Model):
     name = models.CharField(max_length=250)
     description = models.TextField(null=True, blank=True)
-    
+
     def __str__(self):
         return self.name
-
 
 class SubjectType(models.Model):
     name = models.CharField(max_length=250, unique=True)
@@ -75,11 +68,10 @@ class Subject(models.Model):
     name = models.CharField(max_length=250, unique=True)
     acronym = models.CharField(max_length=250, unique=True)
     description = models.TextField(null=True, blank=True)
-    subject_type = models.ForeignKey(SubjectType, related_name='subject_type', null=True)
-    
+    subject_type = models.ForeignKey(SubjectType, related_name='subject_type', on_delete=models.CASCADE, null=True)
+
     def __str__(self):
         return self.name
-
 
 class KillChain(models.Model):
     name = models.CharField(max_length=25)

@@ -1,19 +1,12 @@
-from django.conf.urls import url, include
+from django.urls import path, include
 from . import views
 
+app_name="observables"
 urlpatterns = [
-    # post views
-    url(r'^$', views.ObservableListView.as_view(), name='observable_list'),
-    url(r'^add$', views.CreateObservableView.as_view(), name='observable_add'),
-    #url(r'^tag/(?P<tag_slug>[-\w]+)/$', views.EventListView.as_view(), name='event_list_by_tag'),
-    url(r'^(?P<pk>[-\w]+)/(?P<uuid>[-\w]+)/$',
-        views.ObservableDetailView.as_view(),
-        name='observable_detail'),
-    url(r'^(?P<pk>[-\w]+)/(?P<uuid>[-\w]+)/edit$',
-        views.ObservableEditView.as_view(),
-        name='observable_edit'),
-    url(r'^(?P<pk>[-\w]+)/(?P<uuid>[-\w]+)/delete$',
-        views.DeleteObservableView.as_view(),
-        name='delete_observable'),
-
+    path(r'', views.ObservableListView.as_view(), name='observable_list'),
+    path(r'add', views.CreateObservableView.as_view(), name='observable_add'),
+    path(r'<pk>/<uuid>', views.ObservableDetailView.as_view(), name='observable_detail'),
+    path(r'<pk>/<uuid>/edit', views.ObservableEditView.as_view(), name='observable_edit'),
+    path(r'<pk>/<uuid>/delete', views.DeleteObservableView.as_view(), name='delete_observable'),
+    path(r'search', include('haystack.urls')),
 ] 

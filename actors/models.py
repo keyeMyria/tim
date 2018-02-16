@@ -6,8 +6,8 @@ from django.db import models
 # Create your models here.
 from common.models import Motive
 from users.models import Account
-from django.core.urlresolvers import reverse
-from ttp.models import TTP
+from django.urls import reverse
+from ttps.models import TTP
 from django_countries.fields import CountryField
 
 LEVELS = (
@@ -32,7 +32,7 @@ class ActorType(models.Model):
 
 class OrganizationDomain(models.Model):
     name = models.CharField(max_length=250, unique=True)
-    author = models.ForeignKey(Account, related_name='organization_domain', null=True)
+    author = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='organization_domain', null=True)
     description = models.TextField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -48,13 +48,13 @@ class OrganizationDomain(models.Model):
 
 class Organization(models.Model):
     name = models.CharField(max_length=250, unique=True)
-    author = models.ForeignKey(Account, related_name='constituent_author', null=True)
+    author = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='constituent_author', null=True)
     description = models.TextField(null=True, blank=True)
-    type = models.ForeignKey(ActorType, related_name='constituent_type', null=True)
+    type = models.ForeignKey(ActorType, on_delete=models.CASCADE, related_name='constituent_type', null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     country = CountryField(multiple=True, blank=True)
-    domain = models.ForeignKey(OrganizationDomain, related_name="organization", null=True)
+    domain = models.ForeignKey(OrganizationDomain, on_delete=models.CASCADE, related_name="organization", null=True)
 
     class Meta:
         ordering = ('-created',)
@@ -68,10 +68,10 @@ class Organization(models.Model):
 
 class ThreatActor(models.Model):
     name = models.CharField(max_length=250, unique=True)
-    author = models.ForeignKey(Account, related_name='threat_actor_author', null=True)
-    motive = models.ForeignKey(Motive, related_name='threat_actor_motive', null=True, blank=True)
+    author = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='threat_actor_author', null=True)
+    motive = models.ForeignKey(Motive, on_delete=models.CASCADE, related_name='threat_actor_motive', null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-    type = models.ForeignKey(ActorType, related_name='threat_actor_type', null=True)
+    type = models.ForeignKey(ActorType, on_delete=models.CASCADE, related_name='threat_actor_type', null=True)
     first_seen = models.DateTimeField(null=True, blank=True)
     last_seen = models.DateTimeField(null=True, blank=True)
     reference = models.CharField(max_length=250, null=True, blank=True)
@@ -94,42 +94,5 @@ class ThreatActor(models.Model):
 
 
 class ThreatActorTTP(models.Model):
-    ttp = models.ForeignKey(TTP, related_name="threat_actor", null=True, blank=True)
-    threat_actor = models.ForeignKey(ThreatActor, related_name="ttp", null=True, blank=True)
-
-#class Reporter(models.Model):
-#    name = models.CharField(max_length=250, unique=True)
-#    author = models.ForeignKey(Account, related_name='reporter_author', null=True)
-#    description = models.TextField(null=True, blank=True)
-#    type = models.ForeignKey(ActorType, related_name='reporter_type', null=True)
-#    created = models.DateTimeField(auto_now_add=True)
-#    updated = models.DateTimeField(auto_now=True)
-#
-#
-#    class Meta:
-#        ordering = ('-created',)
-#
-#    def __str__(self):
-#        return self.name
-#
-#    def get_absolute_url(self):
-#        return reverse('actor:reporter_detail', args=[self.pk])
-#
-#
-#class Constituent(models.Model):
-#    name = models.CharField(max_length=250, unique=True)
-#    author = models.ForeignKey(Account, related_name='constituent_author', null=True)
-#    description = models.TextField(null=True, blank=True)
-#    type = models.ForeignKey(ActorType, related_name='constituent_type', null=True)
-#    created = models.DateTimeField(auto_now_add=True)
-#    updated = models.DateTimeField(auto_now=True)
-#
-#
-#    class Meta:
-#        ordering = ('-created',)
-#
-#    def __str__(self):
-#        return self.name
-#
-#    def get_absolute_url(self):
-#        return reverse('actor:constituent_detail', args=[self.pk])
+    ttp = models.ForeignKey(TTP, on_delete=models.CASCADE, related_name="threat_actor", null=True, blank=True)
+    threat_actor = models.ForeignKey(ThreatActor, on_delete=models.CASCADE, related_name="ttp", null=True, blank=True)

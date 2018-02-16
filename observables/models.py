@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from users.models import Account
 import hashlib
 import uuid
@@ -55,8 +55,8 @@ class Observable(models.Model):
     name = models.CharField(max_length=250, unique=True)
     notes = models.TextField(null=True, blank=True)
     slug = models.SlugField(max_length=250, null=True, unique=True)
-    author = models.ForeignKey(Account, null=True, related_name='observable_author')
-    kill_chain = models.ForeignKey(KillChain, related_name='obs_kill_chain', blank=True, null=True)
+    author = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, related_name='observable_author')
+    kill_chain = models.ForeignKey(KillChain, on_delete=models.SET_NULL, related_name='obs_kill_chain', blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     first_seen = models.DateTimeField(null=True, blank=True)
@@ -109,7 +109,7 @@ class ObservableValues(models.Model):
     ip = models.ForeignKey(IpValue, null=True, blank=True, on_delete=models.SET_NULL, related_name='obs_values')
     email = models.ForeignKey(EmailValue, null=True, blank=True, on_delete=models.SET_NULL, related_name='obs_values')
     string = models.ForeignKey(StringValue, null=True, blank=True, on_delete=models.SET_NULL, related_name='obs_values')
-    type = models.ForeignKey(ObservableType, related_name='observable_value', null=True)
+    type = models.ForeignKey(ObservableType, on_delete=models.CASCADE, related_name='observable_value', null=True)
 
     def __str__(self):
         return "Test"
@@ -119,7 +119,7 @@ class ObservableValues(models.Model):
 
 
 class FileValue(models.Model):
-    str_type = models.ForeignKey(ObservableType, related_name='file_value', null=True)
+    str_type = models.ForeignKey(ObservableType, on_delete=models.CASCADE, related_name='file_value', null=True)
     file_value = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name="file_value", null=True)
 
     value = models.FileField(upload_to='documents/observables/%Y/%m/%d/', blank=True)

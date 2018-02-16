@@ -1,55 +1,35 @@
-from django.conf.urls import url, include
+from django.urls import path
+from .views import IndexView
 from . import views
 
+root = "common/"
+app_name = 'common'
 urlpatterns = [
-    # post views
-    url(r'^motive$', views.MotiveListView.as_view(), name='motive_list'),
-    url(r'^motive/add$', views.MotiveCreateView.as_view(), name='motive_add'),
-    url(r'^motive/(?P<pk>[-\w]+)$',
-        views.MotiveDetailView.as_view(),
-        name='motive_detail'),
-    url(r'^motive/(?P<pk>[-\w]+)/delete$',
-        views.MotiveDeleteView.as_view(),
-        name='motive_delete'),
-    url(r'^motive/(?P<pk>[-\w]+)/edit$',
-        views.MotiveEditView.as_view(),
-        name='motive_edit'),
+    path(r'', IndexView.as_view(), name='index'),
+    path(r'motive', views.MotiveListView.as_view(), name='motive_list'),
+    path(r'motive/add', views.MotiveCreateView.as_view(), name='motive_add'),
+    path(r'motive/<pk>', views.MotiveDetailView.as_view(), name='motive_detail'),
+    path(r'motive/<pk>/delete', views.MotiveDeleteView.as_view(), name='motive_delete'),
+    path(r'motive/<pk>/edit', views.MotiveEditView.as_view(), name='motive_edit'),
 
-    url(r'^sector$', views.SectorListView.as_view(), name='sector_list'),
-    url(r'^sector/add$', views.SectorCreateView.as_view(), name='sector_add'),
-    url(r'^sector/(?P<pk>[-\w]+)$',
-        views.SectorDetailView.as_view(),
-        name='sector_detail'),
-    url(r'^sector/(?P<pk>[-\w]+)/delete$',
-        views.SectorDeleteView.as_view(),
-        name='sector_delete'),
-    url(r'^sector/(?P<pk>[-\w]+)/edit$',
-        views.SectorEditView.as_view(),
-        name='sector_edit'),
+    path(r'sector', views.SectorListView.as_view(), name='sector_list'),
+    path(r'sector/add', views.SectorCreateView.as_view(), name='sector_add'),
+    path(r'sector/<pk>', views.SectorDetailView.as_view(), name='sector_detail'),
+    path(r'sector/<pk>/delete', views.SectorDeleteView.as_view(), name='sector_delete'),
+    path(r'sector/<pk>/edit', views.SectorEditView.as_view(), name='sector_edit'),
 
-    url(r'^intentsion$', views.IntentsionListView.as_view(), name='intentsion_list'),
-    url(r'^intentsion/add$', views.IntentsionCreateView.as_view(), name='intentsion_add'),
-    url(r'^intentsion/(?P<pk>[-\w]+)$',
-        views.IntentsionDetailView.as_view(),
-        name='intentsion_detail'),
-    url(r'^intentsion/(?P<pk>[-\w]+)/delete$',
-        views.IntentsionDeleteView.as_view(),
-        name='intentsion_delete'),
-    url(r'^intentsion/(?P<pk>[-\w]+)/edit$',
-        views.IntentsionEditView.as_view(),
-        name='intentsion_edit'),
+    path(r'intentsion', views.IntentsionListView.as_view(), name='intentsion_list'),
+    path(r'intentsion/add', views.IntentsionCreateView.as_view(), name='intentsion_add'),
+    path(r'intentsion/<pk>', views.IntentsionDetailView.as_view(), name='intentsion_detail'),
+    path(r'intentsion/<pk>/delete', views.IntentsionDeleteView.as_view(), name='intentsion_delete'),
+    path(r'intentsion/<pk>/edit', views.IntentsionEditView.as_view(), name='intentsion_edit'),
 
-    url(r'^killchain$', views.KillChainListView.as_view(), name='killchain_list'),
-    url(r'^killchain/add$', views.KillChainCreateView.as_view(), name='killchain_add'),
-    url(r'^killchain/(?P<pk>[-\w]+)$',
-        views.KillChainDetailView.as_view(),
-        name='killchain_detail'),
-    url(r'^killchain/(?P<pk>[-\w]+)/delete$',
-        views.KillChainDeleteView.as_view(),
-        name='killchain_delete'),
-    url(r'^killchain/(?P<pk>[-\w]+)/edit$',
-        views.KillChainEditView.as_view(),
-        name='killchain_edit'),
+    path(r'killchain', views.KillChainListView.as_view(), name='killchain_list'),
+    path(r'killchain/add', views.KillChainCreateView.as_view(), name='killchain_add'),
+    path(r'killchain/<pk>', views.KillChainDetailView.as_view(), name='killchain_detail'),
+    path(r'killchain/<pk>/delete', views.KillChainDeleteView.as_view(), name='killchain_delete'),
+    path(r'killchain/<pk>/edit', views.KillChainEditView.as_view(), name='killchain_edit'),
 
 
-] 
+]
+

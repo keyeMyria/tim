@@ -2,7 +2,7 @@ from django.conf import settings
 from django import forms
 from django.forms import formset_factory
 from django.forms.models import inlineformset_factory, modelformset_factory
-import models
+from . import models
 from django.forms.formsets import BaseFormSet
 from django.forms import BaseInlineFormSet
 from django.utils.text import slugify
@@ -165,7 +165,6 @@ class IpInlineFormSet(BaseInlineFormSet):
         # custom validation across forms in the formset
         for form in self.forms:
             # your custom formset validation
-            print form
             pass
 
 

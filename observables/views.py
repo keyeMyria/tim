@@ -15,14 +15,14 @@ from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import DetailView, UpdateView, CreateView, DeleteView
 from django.http import HttpResponseRedirect
 
-import models
+from . import models
 from users.models import User
 from users.views import UserCanViewDataMixin
-from forms import ObservableEditForm, ObservableValueFormSet, IpValueFormSet, FileValueFormSet
+from .forms import ObservableEditForm, ObservableValueFormSet, IpValueFormSet, FileValueFormSet
 
 
 from django.contrib.auth.models import Group
-from django.core.urlresolvers import reverse, reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.http import HttpResponse
 from django.views.generic.edit import UpdateView, CreateView, DeleteView
 from django.shortcuts import redirect

@@ -1,31 +1,29 @@
 from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views import generic, View
-from django.core.mail import send_mail
 from django.db.models import Count
 from django.views.generic.edit import FormMixin
 from taggit.models import Tag
 
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponse
 from django.views.generic import FormView
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import ListView, DetailView, UpdateView, CreateView, DeleteView
 from django.http import HttpResponseRedirect
 
-import models
+from . import models
 from users.models import User
 from users.views import UserCanViewDataMixin
 
 
 from django.contrib.auth.models import Group
-from django.core.urlresolvers import reverse, reverse_lazy
-from django.http import HttpResponse
+from django.urls import reverse, reverse_lazy
 from django.shortcuts import redirect
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 
 from common.views import FormsetMixin
-from forms import TTPFormSet
+from .forms import TTPFormSet
 
 class ActorTypeListView(UserCanViewDataMixin, ListView):
     context_object_name = 'objects'

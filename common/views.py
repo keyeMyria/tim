@@ -1,4 +1,12 @@
-# Create your views here.
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth import authenticate, login
+from django.views import generic
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic import ListView
@@ -14,18 +22,23 @@ from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import DetailView, UpdateView, CreateView
 from django.http import HttpResponseRedirect
 
-import models
+from . import models
 from users.models import User
 from users.views import UserCanViewDataMixin
 
 
 from django.contrib.auth.models import Group
-from django.core.urlresolvers import reverse, reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.http import HttpResponse
 from django.views.generic.edit import UpdateView, CreateView, DeleteView
 from django.shortcuts import redirect
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
+
+class IndexView(LoginRequiredMixin, generic.View):
+    template_name = 'common/index.html'
+    def get(self, request):
+        return render(request, 'common/index.html')
 
 class FormsetMixin(object):
     object = None
@@ -96,7 +109,6 @@ class MotiveListView(UserCanViewDataMixin, ListView):
 
 
 class MotiveCreateView(UserCanViewDataMixin, CreateView):
-    #form_class = ObservableEditForm
     template_name_suffix = '_create'
     model = models.Motive
     fields = '__all__'
@@ -153,9 +165,6 @@ class MotiveDeleteView(UserCanViewDataMixin, DeleteView):
     model = models.Motive
     template_name_suffix = '_delete'
     success_url = reverse_lazy('common:motive_list')
-
-
-# --- Sector ---
 
 class SectorListView(UserCanViewDataMixin, ListView):
     context_object_name = 'objects'

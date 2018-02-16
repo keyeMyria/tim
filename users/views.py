@@ -1,5 +1,5 @@
 from django.contrib.auth.models import Group
-from django.core.urlresolvers import reverse, reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.http import HttpResponse
 from django.views import generic
 from django.views.generic.edit import UpdateView, CreateView, DeleteView
@@ -17,7 +17,7 @@ class UserCanViewDataMixin(UserPassesTestMixin):
     def test_func(self):
         user = self.request.user
         if user.is_active:
-            return user.is_authenticated()
+            return user.is_authenticated
         else:
             return False
 

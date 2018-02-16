@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<p><a href="{{ event.get_absolute_url }}edit">edit</a></p>
+<p>Id: {{ event.id }}</p>
+<p>User: {{ event.author }}</p>
+<p>Description: {{ event.description }}</p>
+<p>Created At: {{ event.created|date:"DATETIME_FORMAT" }}</p>
+<p>Updated At: {{ event.updated|date:"DATETIME_FORMAT" }}</p>
+<p>Event Date: {{ event.event_date|date:"DATETIME_FORMAT" }}</p>
+<p>Description: {{ event.description }}</p>
+<p>Status: {{ event.status }}</p>
+<p>UUID: {{ event.uuid }}</p>
+<p>Attachments: {{ event.document }}</p>
+<p>Confidence: {{ event.confidence }}</p>
+<p>Risk: {{ event.risk }}</p>
+<p>Type: {{ event.event_type }}</p>
+<p>TLP: {{ event.tlp }}</p>
+<p>Rateing: {{ event.rateing }}</p>
+<p>Reference: {{ event.reference }}</p>
+
+    <h1>{{ event.title }}</h1>
+    <p class="date">Published {{ event.publish }} by {{ event.author }}</p>
+    {{ event.body|linebreaks }}
+
+    <h2>Similar events</h2>
+    {% for event in similar_events %}
+        <p><a href="{{ event.get_absolute_url }}">{{ event.title }}</a></p>
+    {% empty %}
+        There are no similar posts yet.
+    {% endfor %}
+    
+    {% with comments.count as total_comments %}
+        <h2>{{ total_comments }} comment{{ total_comments|pluralize }}</h2>
+    {% endwith %}
+    
+    {% for comment in comments %}
+        <div class="comment">
+            <p class="info">Comment by {{ comment.author }} {{ comment.created }}</p>
+            {{ comment.body|linebreaks }}
+        </div>
+    {% empty %}
+        <p>There are no comments yet.</p>
+    {% endfor %}
+    
+    {% if new_comment %}
+        <h2>Your comment has been added.</h2>
+    {% else %}
+        <h2>Add a new comment</h2>
+        <form action="." method="post">
+            {{ form.as_p }}
+            {% csrf_token %}
+            <p><input type="submit" value="Add comment"></p>
+        </form>
+    {%  endif %}
+
+
+{% endblock %}
