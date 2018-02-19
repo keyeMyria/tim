@@ -1,0 +1,7 @@
+django-bootstrap4
+django-countries
+django-rest-framework
+django-simple-gravatar
+django-taggit
+mysqlclient
+pytz
