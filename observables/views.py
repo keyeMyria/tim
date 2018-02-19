@@ -140,14 +140,6 @@ class ObservableDisplay(DetailView):
 
         
         values = list()
-        #ip_data = self.object.ip_value.all()
-        #email_data = self.object.email_value.all()
-        #data = list(ip_data.values()) + list(email_data.values())
-        #data = list(email_data.values())
-        #for value in data:
-        #    lists = dict()
-        #    lists['value'] = value['value']
-        #    values.append(lists)            
 
         context = {'observable': observable,
                    'values': values
@@ -176,40 +168,3 @@ class ObservableEditView(UserCanViewDataMixin, FormsetMixin, UpdateView):
     def get_success_url(self):
        return reverse('observables:observable_edit', kwargs={'pk': self.kwargs['pk'], 'uuid': self.kwargs['uuid']})
 
-
-#class ObservableEditView(UserCanViewDataMixin, UpdateView):
-#    model = models.Observable
-#    form_class = ObservableEditForm
-#    template_name_suffix = '_edit'
-#    is_update_view = True
-#
-#
-#    def form_valid(self, form):
-#        self.object = form.save(commit=False)
-#        context = self.get_context_data()
-#        observables = context['observables']
-#        if observables.is_valid():
-#            print "form is valid"
-#            self.object = form.save()
-#            form.instance = self.object
-#            observables.save()
-#            return HttpResponseRedirect(self.get_success_url())
-#        else:
-#            return self.render_to_response(self.get_context_data(form=form))
-#
-#
-#    def get_object(self, queryset=None):
-#        obj = super(ObservableEditView, self).get_object(queryset=queryset)
-#        return obj
-#
-#    def get_success_url(self):
-#       return reverse('observables:observable_edit', kwargs={'pk': self.kwargs['pk'], 'uuid': self.kwargs['uuid']})
-#
-#    def get_context_data(self, **kwargs):
-#        context = super(ObservableEditView, self).get_context_data(**kwargs)
-#        if self.request.POST:
-#            context['observables'] = IpValueFormSet(self.request.POST, instance=self.object, form_kwargs={'instance': self.object})
-#        else:
-#            context['observables'] = IpValueFormSet(instance=self.object, form_kwargs={'instance': self.object})
-#        return context
-#

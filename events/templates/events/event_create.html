@@ -7,7 +7,7 @@
         <script src="{% static "js/moment.js" %}"></script>
         <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
         <script src="{% static "js/custom.js" %}"></script>
-
+        {{ form.media }}
     {% endblock scripts %}
 
 {% block content %}
@@ -44,7 +44,10 @@
 {% csrf_token %}
 
     <div class="tab-pane active form-group" id="tab1">
+
+       {{ form.media }}
        {% for field in form %}
+
        {% if not field.name == "description" %}
        <div class="row">
            <div class="col-sm-1">

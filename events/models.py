@@ -79,7 +79,7 @@ class Event(models.Model):
         return self.title
 
     def get_absolute_url(self):
-        return reverse('cyber_events:event_detail', args=[self.created.year,
+        return reverse('events:event_detail', args=[self.created.year,
                                                    self.slug])
 
 class EventDocument(models.Model):

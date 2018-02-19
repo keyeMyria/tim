@@ -6,7 +6,7 @@
 {% block scripts %}
   <link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
   <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
-  <script src="{% static "cyber_events/js/event_list.js" %}"></script>
+  <script src="{% static "events/js/event_list.js" %}"></script>
 
 
 {% endblock %}
@@ -32,7 +32,7 @@
                 <td><a href="{{ event.get_absolute_url }}">{{ event.title }}</a></td>
                 <td>
                 {% for tag in event.tag.all %}
-                    <a href="{% url "cyber_events:event_list_by_tag" tag.slug %}">{{ tag.name }}</a>
+                    <a href="{% url "events:event_list_by_tag" tag.slug %}">{{ tag.name }}</a>
                     {% if not forloop.last %}, {% endif %}
                 {% endfor %}
                 </td>

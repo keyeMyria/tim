@@ -5,6 +5,14 @@ from users.models import Account
 from django_countries.fields import CountryField
 from django.urls import reverse
 
+LEVELS = (
+    ('critical', 'critical'),
+    ('high', 'high'),
+    ('medium', 'medium'),
+    ('low', 'low'),
+    ('unknown', 'unknown'),
+)
+
 class Comment(models.Model):
     author = models.ForeignKey(Account, null=True, related_name='comment_author', on_delete=models.CASCADE)
     body = models.TextField()
@@ -39,9 +47,26 @@ class Motive(models.Model):
     def get_absolute_url(self):
         return reverse('common:motive_detail', args=[self.pk])
 
-class Sector(models.Model):
+class SectorClass(models.Model):
     name = models.CharField(max_length=250)
     description = models.TextField(null=True, blank=True)
+    author = models.ForeignKey(Account, null=True, related_name='sector_class', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('common:sector_detail', args=[self.pk])
+
+
+class Sector(models.Model):
+    sector_class = models.ManyToManyField(SectorClass, related_name='sector')
+    name = models.CharField(max_length=250)
+    author = models.ForeignKey(Account, null=True, related_name='sector', on_delete=models.CASCADE)
+    description = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=10, choices=LEVELS, default='draft')
+    nis = models.BooleanField(default=False)
+    constituent = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name

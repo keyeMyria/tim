@@ -25,6 +25,8 @@ from users.views import UserCanViewDataMixin
 from django.conf import settings
 from django.http import HttpResponse
 import os
+from dal import autocomplete
+from common.models import Sector
 
 def download(request, path):
     if os.path.exists(path):
@@ -33,6 +35,19 @@ def download(request, path):
             response['Content-Disposition'] = 'inline; filename=' + os.path.basename(path)
             return response
     raise Http404
+
+class SectorAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated:
+            return Sector.objects.none()
+
+        qs = Sector.objects.all()
+
+        if self.q:
+            qs = qs.filter(name__istartswith=self.q)
+
+        return qs
 
 
 class EventListView(UserCanViewDataMixin, ListView):
@@ -120,25 +135,6 @@ class EventDetailView(View):
     def post(self, request, *args, **kwargs):
         view = EventComment.as_view()
         return view(request, *args, **kwargs)
-
-#class NewEventView(UserCanViewDataMixin, CreateView):
-#    form_class = EventForm
-#    template_name = 'events/event_create.html'
-#
-#    def get_object(self, queryset=None):
-#        obj = super(NewEventView, self).get_object(queryset=queryset)
-#        return obj
-#
-#    def get_success_url(self):
-#        return reverse('events:event_list')
-#
-#    def get_context_data(self, **kwargs):
-#        context = super(NewEventView, self).get_context_data(**kwargs)
-#        if self.request.POST:
-#            context['doc_formset'] = DocumentFormSet(self.request.POST, self.request.FILES, instance=self.object)
-#        else:
-#            context['doc_formset'] = DocumentFormSet(instance=self.object)
-#        return context
 
 
 class NewEventView(UserCanViewDataMixin, CreateView):

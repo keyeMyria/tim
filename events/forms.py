@@ -3,6 +3,8 @@ from .models import EventComment, Event
 from django.forms.models import inlineformset_factory, modelformset_factory
 from . import models
 from observables.models import Observable
+from dal import autocomplete
+from common.models import Sector
 
 class EmailPostForm(forms.Form):
     name = forms.CharField(max_length=25)
@@ -12,6 +14,7 @@ class EmailPostForm(forms.Form):
 
 
 class EventForm(forms.ModelForm):
+    print("EventForms")
     event_date = forms.DateField(
                 required=False,
                 widget=forms.DateInput(
@@ -19,12 +22,12 @@ class EventForm(forms.ModelForm):
                     attrs={'id': 'event_date_picker', 'class': 'form_datepicker'}),
                     input_formats=('%d.%m.%Y',)
                 )
-
-
     class Meta:
         model = Event 
         exclude = ()
-        widgets = {}
+        widgets = {
+           'sector': autocomplete.ModelSelect2Multiple(url='events:sector-autocomplete')
+        }
 
 
 
