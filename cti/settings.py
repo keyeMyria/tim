@@ -31,8 +31,10 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'django_filters',
     'dal',
     'dal_select2',
+    'django_tables2',
     'haystack',
     'ttps',
     'events',
@@ -102,6 +104,13 @@ DATABASES = {
         'PORT': '3306',
     }
 }
+
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'djongo',
+#        'NAME': 'cti',
+#    }
+#}
 
 HAYSTACK_CONNECTIONS = {
     'default': {

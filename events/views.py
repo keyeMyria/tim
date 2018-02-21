@@ -49,27 +49,88 @@ class SectorAutocomplete(autocomplete.Select2QuerySetView):
 
         return qs
 
+import django_tables2 as tables
+import itertools
+from django_tables2.utils import A
+from django.utils.html import format_html
 
-class EventListView(UserCanViewDataMixin, ListView):
-    queryset = Event.published.all()
+class TagData(tables.Table):
+    class Meta:
+        model = Tag
+
+
+class EventTable(tables.Table):
+
+    title = tables.LinkColumn(viewname=None)
+    tag = tables.Column(empty_values=(), orderable=False)
+#    actions = tables.Column(empty_values=(), orderable=False)
+
+    def __init__(self, *args, **kwargs):
+        super(EventTable, self).__init__(*args, **kwargs)
+        self.events = self.data.data
+        self.tags_list = list()
+        self.counter = itertools.count()
+        self.index = 0
+        self.events_list = list()
+        for event in self.events:
+            self.events_list.append(event)
+
+    def render_tag(self):
+        self.index = next(self.counter)
+        tag_names = list()
+        # this may bite me in the nether regions at some point, uhh ugly
+        index = self.index
+        for tag in self.events_list[index].tag.all():
+            url = (reverse('events:event_list') + "?tag=%s" % tag.id)
+            html = format_html(' <a href="%s">%s</a> '% (url, tag.name))
+            tag_names.append(html)
+        return format_html(' '.join(tag_names))
+
+#    def render_actions(self):
+#        index = self.index
+#        for tag in self.events_list[index].tag.all():
+#            url = (reverse('events:event_list') + "?tag=%s" % tag.id)
+#            html = format_html(' <a href="%s">%s</a> '% (url, tag.name))
+#            tag_names.append(html)
+#        return format_html(' '.join(tag_names))
+
+    class Meta:
+        orderable = False
+        fields = ('title', 'author', 'created', 'risk', 'type')
+        model = Event
+        template_name = 'django_tables2/bootstrap.html'
+        attrs = {'id': 'BSdataTable', 
+                 'class': 'table table-striped',
+                 'cellspacing':'0',
+                 'width':'100%'
+            }
+            
+from django_filters.views import FilterView
+from django_filters import FilterSet, ModelChoiceFilter
+from django_tables2.views import SingleTableMixin
+
+class EventFilter(FilterSet):
+    tag = ModelChoiceFilter(queryset=Tag.objects.all())
+    class Meta:
+        model = Event
+        fields = {
+            'title': ['exact'],
+            'tag': ['exact'],
+        }
+
+
+class EventListView(UserCanViewDataMixin, SingleTableMixin, FilterView):
     context_object_name = 'events'
     paginate_by = 3
     template_name = 'events/event_list.html'
+    model = Event
+    table_class = EventTable
+    filterset_class = EventFilter
 
     def get_context_data(self, **kwargs):
         tag = None
         context = super(EventListView, self).get_context_data(**kwargs)
-#        if self.kwargs.has_key('tag_slug'):
-        if 'tag_slug' in self.kwargs.keys():
-            tag_slug = self.kwargs['tag_slug']
-            tag = get_object_or_404(Tag, slug=tag_slug)
-            events = self.queryset.filter(tag__in=[tag])
-        else:
-            events = self.queryset 
-
-        context = {'events': events,
-                   'tag': tag
-                  }
+        self.queryset = Event.published.all()
 
         return context
 
