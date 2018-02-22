@@ -13,24 +13,39 @@
 {% endblock %}
 
 {% block content %}
+<div class="card border-white">
+      <h5 class="card-title text-white bg-secondary text-left font-weight-bold"> EVENTS </h5>
+      <div class="card-body">
+            {% if filter %}
+            <form action="" method="get" class="form inline">
+            <div class="row">
+            {% for field in filter.form %}
+              <div class="col-sm-3">
+                <div class="card border-white ">
+                    <div class="card-block">
+                    <h5 class="card-title bg-secondary medium text-center text-white border-white">Filter by {{ field.label }}</h5>
+                            {% bootstrap_field field show_label=False %}
+                    </div>
+                </div>
+              </div>
+            {% endfor %}
+            </div>
 
-{% if filter %}
+            {% bootstrap_button 'filter' button_class='btn btn-primary' %}
+            {% bootstrap_button "Add" button_type="link" button_class="btn-primary" href="add" %}
+            </form>
+            {% endif %}
 
 
-<div class="card bg-dark mb-3 text-white" style="width: 20rem;">
-    <form action="" method="get" class="form">
-        {% bootstrap_form filter.form layout='inline' %}
-
-        {% bootstrap_button 'filter' button_class='btn btn-primary' %}
-        {% bootstrap_button "Add" button_type="link" button_class="btn-primary" href="add" %}
-    </form>
+      </div>
 </div>
 
-{% endif %}
 
-<div class="card" style="width: 60rem;">
-    {% render_table table %}
-</div>
-   
+
+    <div class="card">
+        {% render_table table %}
+    </div>
+
+
 {% endblock %}
 

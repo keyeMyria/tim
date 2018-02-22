@@ -26,7 +26,8 @@ class EventForm(forms.ModelForm):
         model = Event 
         exclude = ()
         widgets = {
-           'sector': autocomplete.ModelSelect2Multiple(url='events:sector-autocomplete')
+           'sector': autocomplete.ModelSelect2Multiple(url='events:sector-autocomplete'),
+           'motive': autocomplete.ModelSelect2Multiple(url='events:motive-autocomplete')
         }
 
 

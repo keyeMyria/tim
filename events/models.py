@@ -21,6 +21,14 @@ LEVELS = (
     ('unknown', 'unknown'),
 )
 
+CONFIDENCE = (
+    ('high', 'high'),
+    ('medium', 'medium'),
+    ('low', 'low'),
+    ('unknown', 'unknown'),
+)
+
+
 TLP = (
     ('red', 'red'),
     ('amber', 'amber'),
@@ -54,7 +62,7 @@ class Event(models.Model):
     objects = models.Manager() # The default manager.
     published = PublishedManager() # The Dahl-specific manager.
 
-    confidence = models.CharField(max_length=10, choices=LEVELS, default='unknown')
+    confidence = models.CharField(max_length=10, choices=CONFIDENCE, default='unknown')
     risk = models.CharField(max_length=10, choices=LEVELS, default='unknown')
     event_type = models.ForeignKey(EventType, on_delete=models.CASCADE, related_name='ev_type', null=True)
     tlp = models.CharField(max_length=10, choices=TLP, default='red')
@@ -63,7 +71,6 @@ class Event(models.Model):
                                                validators=[MaxValueValidator(100),
                                                            MinValueValidator(0)])
 
-    #country = CountryField(multiple=True, blank=True)
     targeted_organization = models.ManyToManyField(Organization, blank=True)
     reference = models.CharField(max_length=250, null=True, blank=True)
     motive = models.ManyToManyField(Motive, related_name='event', blank=True)
@@ -79,7 +86,7 @@ class Event(models.Model):
         return self.title
 
     def get_absolute_url(self):
-        return reverse('events:event_detail', args=[self.created.year,
+        return reverse('events:event_detail', args=[self.uuid,
                                                    self.slug])
 
 class EventDocument(models.Model):
@@ -110,3 +117,5 @@ class EventObservable(models.Model):
     observable = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name='event', null=True, blank=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='observable', null=True, blank=True)
 
+    def __str__(self):
+        return self.observable

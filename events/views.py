@@ -7,12 +7,12 @@ from django.db.models import Count
 from django.views.generic.edit import FormMixin
 from taggit.models import Tag
 
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.http import HttpResponseForbidden
 from django.views.generic import FormView
 from django import forms
 from django.views.generic.detail import SingleObjectMixin
-from django.views.generic import DetailView, UpdateView, CreateView
+from django.views.generic import DetailView, UpdateView, CreateView, DeleteView
 from django.http import HttpResponseRedirect
 
 from .models import Event, EventComment
@@ -26,7 +26,7 @@ from django.conf import settings
 from django.http import HttpResponse
 import os
 from dal import autocomplete
-from common.models import Sector
+from common.models import Sector, Motive
 
 def download(request, path):
     if os.path.exists(path):
@@ -49,6 +49,20 @@ class SectorAutocomplete(autocomplete.Select2QuerySetView):
 
         return qs
 
+class MotiveAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated:
+            return Motive.objects.none()
+
+        qs = Motive.objects.all()
+
+        if self.q:
+            qs = qs.filter(name__istartswith=self.q)
+
+        return qs
+
+
 import django_tables2 as tables
 import itertools
 from django_tables2.utils import A
@@ -63,7 +77,7 @@ class EventTable(tables.Table):
 
     title = tables.LinkColumn(viewname=None)
     tag = tables.Column(empty_values=(), orderable=False)
-#    actions = tables.Column(empty_values=(), orderable=False)
+    actions = tables.Column(empty_values=(), orderable=False)
 
     def __init__(self, *args, **kwargs):
         super(EventTable, self).__init__(*args, **kwargs)
@@ -86,17 +100,16 @@ class EventTable(tables.Table):
             tag_names.append(html)
         return format_html(' '.join(tag_names))
 
-#    def render_actions(self):
-#        index = self.index
-#        for tag in self.events_list[index].tag.all():
-#            url = (reverse('events:event_list') + "?tag=%s" % tag.id)
-#            html = format_html(' <a href="%s">%s</a> '% (url, tag.name))
-#            tag_names.append(html)
-#        return format_html(' '.join(tag_names))
+    def render_actions(self):
+        index = self.index
+        row = self.data.data[index]
+        edit = format_html(' <a href="%s">%s</a> ' % (row.get_absolute_url() + "edit", "edit"))
+        delete = format_html(' <a href="%s">%s</a> ' % (row.get_absolute_url() + "delete", "delete"))
+        return format_html(' '.join([edit, delete]))
 
     class Meta:
         orderable = False
-        fields = ('title', 'author', 'created', 'risk', 'type')
+        fields = ('title', 'author', 'created', 'risk', 'event_type', 'tag', 'actions')
         model = Event
         template_name = 'django_tables2/bootstrap.html'
         attrs = {'id': 'BSdataTable', 
@@ -114,8 +127,9 @@ class EventFilter(FilterSet):
     class Meta:
         model = Event
         fields = {
-            'title': ['exact'],
+            'title': ['contains'],
             'tag': ['exact'],
+            'event_type': ['exact'],
         }
 
 
@@ -155,15 +169,38 @@ class EventDisplay(DetailView):
         similar_events = Event.published.filter(tag__in=event_tag_ids).exclude(id=event.id)
         similar_events = similar_events.annotate(same_tags=Count('tag')).order_by('-same_tags',
                                                                              '-created')[:4]
+        observables = event.observable.all()
+        documents = event.event_document.all()
 
+        threat_actors = event.threat_actor.all()
         context = {'event': event, 
                    'comments': comments,
+                   'observables': observables,
+                   'documents': documents,
+                   'threat_actors': threat_actors,
                    'similar_events': similar_events
                   }
 
         initial = {'author': self.request.user}
         context['form'] = self.form_class(initial=initial)
         return context
+
+
+class DeleteEventView(UserCanViewDataMixin, DeleteView):
+    model = models.Event
+    template_name_suffix = '_delete'
+    success_url = reverse_lazy('event:event_list')
+
+    def get_object(self, queryset=None):
+        object = super(DeleteEventView, self).get_object()
+        user = self.request.user
+        if user.is_superuser:
+            return object
+        else:
+            org = user.account.organization
+            if org == object.account.organization and user.is_staff:
+                return object
+            raise PermissionDenied('Not allowed')
 
 
 class EventComment(SingleObjectMixin, FormView):
@@ -185,7 +222,7 @@ class EventComment(SingleObjectMixin, FormView):
         return super(EventComment, self).post(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse('events:event_detail', kwargs={'year': self.kwargs['year'], 'slug': self.kwargs['slug']})
+        return reverse('events:event_detail', kwargs={'uuid': self.kwargs['uuid'], 'slug': self.kwargs['slug']})
 
 class EventDetailView(View):
 
@@ -274,7 +311,7 @@ class EventEditView(UserCanViewDataMixin, UpdateView):
         return obj
 
     def get_success_url(self):
-        return reverse('events:event_list')
+        return self.object.get_absolute_url()
 
 
 
