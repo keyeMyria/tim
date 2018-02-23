@@ -42,23 +42,28 @@ class ObservableEditForm(forms.ModelForm):
                     input_formats=('%d.%m.%Y',)
                 )
 
+
     class Meta:
         model = models.Observable 
-        exclude = ('slug',)
+        exclude = ()
         widgets = {}
 
     def __init__(self, *args, **kwargs):
         #self.user = kwargs.pop('user', None)
         super(ObservableEditForm, self).__init__(*args, **kwargs)
  
+        self.fields['slug'].widget = forms.HiddenInput()
+
+
     def clean_slug(self):
-        data = self.cleaned_data['slug']
-        if data:
-            raise forms.ValidationError("You have forgotten about Slug!")
+        name = self.cleaned_data['name']
+        slug = slugify(name)
+        if not name:
+            raise forms.ValidationError("Please fill in name field!")
 
         # Always return a value to use as the new cleaned data, even if
         # this method didn't change it.
-        return data
+        return slug
 
 class NewObservableForm(forms.ModelForm):
     class Meta:

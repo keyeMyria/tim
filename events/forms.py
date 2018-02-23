@@ -14,7 +14,7 @@ class EmailPostForm(forms.Form):
 
 
 class EventForm(forms.ModelForm):
-    print("EventForms")
+
     event_date = forms.DateField(
                 required=False,
                 widget=forms.DateInput(
@@ -22,6 +22,8 @@ class EventForm(forms.ModelForm):
                     attrs={'id': 'event_date_picker', 'class': 'form_datepicker'}),
                     input_formats=('%d.%m.%Y',)
                 )
+
+
     class Meta:
         model = Event 
         exclude = ()

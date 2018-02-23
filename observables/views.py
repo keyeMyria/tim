@@ -107,6 +107,11 @@ class CreateObservableView(UserCanViewDataMixin, FormsetMixin, CreateView):
     formset_classes = [ IpValueFormSet, FileValueFormSet ]
     model = models.Observable
 
+    def get_context_data(self, **kwargs):
+        context = super(CreateObservableView, self).get_context_data(**kwargs)
+
+        context['author'] = self.request.user
+        return context
 
     def get_success_url(self):
        return reverse('observables:observable_list')
@@ -164,6 +169,24 @@ class ObservableEditView(UserCanViewDataMixin, FormsetMixin, UpdateView):
     template_name_suffix = '_edit'
     is_update_view = True
     formset_classes = [ IpValueFormSet, FileValueFormSet ]
+
+
+#    def get_form_kwargs(self):
+#        kwargs = super(ObservableEditView, self).get_form_kwargs()
+#        
+#        for arg in kwargs:
+#            print(kwargs[arg])
+##        print(kwargs)
+##        kwargs.update({'author': self.request.user})
+#        return kwargs
+#
+#
+#    def form_valid(self, form, formsets):
+#        # This method is called when valid form data has been POSTed.
+#        # It should return an HttpResponse.
+#        form.cleaned_data['author'] = self.request.user
+#        return super().form_valid(form, formsets)
+#
 
     def get_success_url(self):
        return reverse('observables:observable_edit', kwargs={'pk': self.kwargs['pk'], 'uuid': self.kwargs['uuid']})
