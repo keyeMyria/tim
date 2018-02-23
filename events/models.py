@@ -12,6 +12,11 @@ from django_countries.fields import CountryField
 from common.managers import UserAccountManager, PublishedManager, ClientsManager
 from observables.models import Observable
 from actors.models import ThreatActor, Organization
+from ttps.models import TTP
+from django_countries.fields import CountryField
+
+
+
 
 LEVELS = (
     ('critical', 'critical'),
@@ -50,7 +55,7 @@ class Event(models.Model):
         ('published', 'Published'),
     )
     title = models.CharField(max_length=250)
-    slug = models.SlugField(max_length=250, unique_for_date='created')
+    slug = models.SlugField(max_length=250, unique_for_date='created',null=True, blank=True)
     author = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='event_author', null=True)
     description = models.TextField(null=True, blank=True)
     event_date = models.DateTimeField(null=True, blank=True)
@@ -77,7 +82,7 @@ class Event(models.Model):
     sector = models.ManyToManyField(Sector, related_name='event', blank=True)
     reporter = models.ManyToManyField(Reporter, related_name='event', blank=True)
     tag = TaggableManager() 
-   
+    country = CountryField(multiple=True, blank=True)
 
     class Meta:
         ordering = ('-created',)
@@ -108,9 +113,9 @@ class EventThreatActor(models.Model):
     threat_actor = models.ForeignKey(ThreatActor, on_delete=models.CASCADE, related_name='event', null=True, blank=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='threat_actor', null=True, blank=True)
 
-#class EventTTP(models.Model):
-#    ttp = models.ForeignKey(TTP, related_name='ev_ttp', null=True, blank=True)
-#    event = models.ForeignKey(Event, related_name='ttp_ev', null=True, blank=True)
+class EventTTP(models.Model):
+    ttp = models.ForeignKey(TTP, related_name='ev_ttp', on_delete=models.CASCADE, null=True, blank=True)
+    event = models.ForeignKey(Event, related_name='ttp_ev', on_delete=models.CASCADE, null=True, blank=True)
 
 
 class EventObservable(models.Model):

@@ -27,6 +27,7 @@ from django.http import HttpResponse
 import os
 from dal import autocomplete
 from common.models import Sector, Motive
+from django_countries import countries
 
 def download(request, path):
     if os.path.exists(path):
@@ -62,6 +63,14 @@ class MotiveAutocomplete(autocomplete.Select2QuerySetView):
 
         return qs
 
+class CountryAutocompleteFromList(autocomplete.Select2ListView):
+    def get_list(self):
+        contries_dict = countries.countries
+        countries_list = list()
+        for key, value in contries_dict.items():
+            countries_list.append(str(value))
+
+        return contries_dict
 
 import django_tables2 as tables
 import itertools
@@ -239,7 +248,6 @@ class NewEventView(UserCanViewDataMixin, CreateView):
     model = models.Event
     form_class = EventForm
     template_name = 'events/event_create.html'
-    is_update_view = True
 
 
     def form_valid(self, form):
@@ -266,6 +274,10 @@ class NewEventView(UserCanViewDataMixin, CreateView):
     def get_success_url(self):
         return reverse('events:event_list')
 
+    def get_form_kwargs(self):
+        kwargs = super(NewEventView, self).get_form_kwargs()
+        kwargs['user_id'] = self.request.user.pk
+        return kwargs
 
 
     def get_context_data(self, **kwargs):
@@ -295,6 +307,7 @@ class EventEditView(UserCanViewDataMixin, UpdateView):
         doc_formset = context['doc_formset']
         observables = context['observables']
         threat_actor = context['threat_actors']
+
         if doc_formset.is_valid() and observables.is_valid() and threat_actor.is_valid():
             self.object = form.save()
             form.instance = self.object
@@ -313,6 +326,12 @@ class EventEditView(UserCanViewDataMixin, UpdateView):
     def get_success_url(self):
         return self.object.get_absolute_url()
 
+    def get_form_kwargs(self):
+        kwargs = super(EventEditView, self).get_form_kwargs()
+        kwargs['event_id'] = self.object.id
+        kwargs['is_update'] = self.is_update_view
+        kwargs['user_id'] = self.request.user.pk
+        return kwargs
 
 
     def get_context_data(self, **kwargs):
