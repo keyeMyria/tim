@@ -41,12 +41,16 @@ TLP = (
     ('white', 'white'),
 )
 
-class EventType(models.Model):
+class Type(models.Model):
     name = models.CharField(max_length=25)
     description = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse('events:event_type')
+
 
 
 class Event(models.Model):
@@ -63,13 +67,13 @@ class Event(models.Model):
     updated = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
     uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
+    type = models.ForeignKey(Type, on_delete=models.CASCADE, related_name='event', null=True)
 
     objects = models.Manager() # The default manager.
     published = PublishedManager() # The Dahl-specific manager.
 
     confidence = models.CharField(max_length=10, choices=CONFIDENCE, default='unknown')
     risk = models.CharField(max_length=10, choices=LEVELS, default='unknown')
-    event_type = models.ForeignKey(EventType, on_delete=models.CASCADE, related_name='ev_type', null=True)
     tlp = models.CharField(max_length=10, choices=TLP, default='red')
 
     rateing = models.PositiveSmallIntegerField(default=0,
@@ -82,7 +86,7 @@ class Event(models.Model):
     sector = models.ManyToManyField(Sector, related_name='event', blank=True)
     reporter = models.ManyToManyField(Reporter, related_name='event', blank=True)
     tag = TaggableManager() 
-    country = CountryField(multiple=True, blank=True)
+#    country = CountryField(multiple=True, blank=True)
 
     class Meta:
         ordering = ('-created',)
@@ -93,6 +97,9 @@ class Event(models.Model):
     def get_absolute_url(self):
         return reverse('events:event_detail', args=[self.uuid,
                                                    self.slug])
+
+
+
 
 class EventDocument(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='event_document', null=True, blank=True)

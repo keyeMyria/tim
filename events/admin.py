@@ -32,7 +32,7 @@ class EventCommentsInline(admin.TabularInline):
 #    list_display = ('name', 'notes', 'uuid')
 #    inlines = [ObservableValueInline]
 
-@admin.register(models.EventType)
+@admin.register(models.Type)
 class EventTypeAdmin(admin.ModelAdmin):
     list_display = ('name', 'description')
 

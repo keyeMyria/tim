@@ -29,6 +29,11 @@ from dal import autocomplete
 from common.models import Sector, Motive
 from django_countries import countries
 
+from rest_framework import viewsets
+
+from . import serializers
+
+
 def download(request, path):
     if os.path.exists(path):
         with open(path, 'rb') as fh:
@@ -112,8 +117,8 @@ class EventTable(tables.Table):
     def render_actions(self):
         index = self.index
         row = self.data.data[index]
-        edit = format_html(' <a href="%s">%s</a> ' % (row.get_absolute_url() + "edit", "edit"))
-        delete = format_html(' <a href="%s">%s</a> ' % (row.get_absolute_url() + "delete", "delete"))
+        edit = format_html(' <a href="%s">%s</a> ' % (row.get_absolute_url() + "/edit", "edit"))
+        delete = format_html(' <a href="%s">%s</a> ' % (row.get_absolute_url() + "/delete", "delete"))
         return format_html(' '.join([edit, delete]))
 
     class Meta:
@@ -138,7 +143,7 @@ class EventFilter(FilterSet):
         fields = {
             'title': ['contains'],
             'tag': ['exact'],
-            'event_type': ['exact'],
+            'type': ['exact'],
         }
 
 
@@ -369,3 +374,17 @@ def event_share(request, post_id):
     return render(request, 'events/share.html', {'event': event,
                                                     'form': form,
                                                     'sent': sent})
+
+
+# API views
+
+class EventViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows events to be added, viewed or edited.
+    """
+    queryset = Event.objects.all()
+    serializer_class = serializers.EventSerializer
+
+class TypeViewSet(viewsets.ModelViewSet):
+    queryset = models.Type.objects.all()
+    serializer_class = serializers.TypeSerializer
