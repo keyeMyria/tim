@@ -29,6 +29,9 @@ from django.shortcuts import redirect
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 
+from rest_framework import viewsets
+
+from . import serializers
 
 class FormsetMixin(object):
     object = None
@@ -171,23 +174,13 @@ class ObservableEditView(UserCanViewDataMixin, FormsetMixin, UpdateView):
     formset_classes = [ IpValueFormSet, FileValueFormSet ]
 
 
-#    def get_form_kwargs(self):
-#        kwargs = super(ObservableEditView, self).get_form_kwargs()
-#        
-#        for arg in kwargs:
-#            print(kwargs[arg])
-##        print(kwargs)
-##        kwargs.update({'author': self.request.user})
-#        return kwargs
-#
-#
-#    def form_valid(self, form, formsets):
-#        # This method is called when valid form data has been POSTed.
-#        # It should return an HttpResponse.
-#        form.cleaned_data['author'] = self.request.user
-#        return super().form_valid(form, formsets)
-#
 
     def get_success_url(self):
        return reverse('observables:observable_edit', kwargs={'pk': self.kwargs['pk'], 'uuid': self.kwargs['uuid']})
 
+class ObservableViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows observables to be added, viewed or edited.
+    """
+    queryset = models.Observable.objects.all()
+    serializer_class = serializers.ObservableSerializer

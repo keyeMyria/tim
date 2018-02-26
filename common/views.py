@@ -35,6 +35,9 @@ from django.shortcuts import redirect
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 
+from rest_framework import viewsets
+from . import serializers
+
 class IndexView(LoginRequiredMixin, generic.View):
     template_name = 'common/index.html'
     def get(self, request):
@@ -370,3 +373,11 @@ class KillChainDeleteView(UserCanViewDataMixin, DeleteView):
     template_name_suffix = '_delete'
     success_url = reverse_lazy('common:killchain_list')
 
+
+class MotiveViewSet(viewsets.ModelViewSet):
+    queryset = models.Motive.objects.all()
+    serializer_class = serializers.MotiveSerializer
+
+class SectorViewSet(viewsets.ModelViewSet):
+    queryset = models.Sector.objects.all()
+    serializer_class = serializers.SectorSerializer

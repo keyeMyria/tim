@@ -127,87 +127,6 @@ class Select2ViewMixin(object):
         )
 
 
-#class CountryAutocompleteFromList(ViewMixin, View):
-#    """Autocomplete from a list of items rather than a QuerySet."""
-#
-##    def get_list(self):
-##        """Return the list strings from which to autocomplete."""
-###        return []
-##
-##        return [
-##            {
-##                'id': self.get_result_value(result),
-##                'text': self.get_result_label(result),
-##                'selected_text': self.get_selected_result_label(result),
-##            } for result in context['object_list']
-##        ]
-#
-#    def get_list(self):
-#        contries_dict = countries.countries
-#        country_dict = dict()
-#        for index, key in enumerate(contries_dict.keys()):
-#            country_dict['id'] = index
-#            country_dict['text'] = str(contries_dict[key])
-#            country_dict['selected_text'] = str(key)
-#            #print(country_dict)
-#
-##        return ['Estionia', 'Finland']
-#        return country_dict
-#
-#    def get(self, request, *args, **kwargs):
-#        """Return option list json response."""
-#        results = self.get_list()
-#        create_option = []
-#        if self.q:
-#            print(self.q)
-#            results = self.results(results)
-#            print(results)
-#            if hasattr(self, 'create'):
-#                create_option = [{
-#                    'id': self.q,
-#                    'text': 'Create "%s"' % self.q,
-#                    'create_id': True
-#                }]
-#
-#        print(self.results(results))
-#        return http.HttpResponse(json.dumps({
-#            'results': self.results(results),
-#            'pagination': {'more': False} 
-#        }), content_type='application/json')
-#
-#    def autocomplete_results(self, results):
-#        """Return list of strings that match the autocomplete query."""
-#        return [x for x in results if self.q.lower() in x.lower()]
-#
-#    def results(self, results):
-#        """Return the result dictionary."""
-#        #return [dict(id=x, text=x) for x in results]
-#        print(results)
-#        return results
-#
-#    def post(self, request):
-#        """Add an option to the autocomplete list.
-#        If 'text' is not defined in POST or self.create(text) fails, raises
-#        bad request. Raises ImproperlyConfigured if self.create if not defined.
-#        """
-#        if not hasattr(self, 'create'):
-#            raise ImproperlyConfigured('Missing "create()"')
-#
-#        text = request.POST.get('text', None)
-#
-#        if text is None:
-#            return http.HttpResponseBadRequest()
-#
-#        text = self.create(text)
-#
-#        if text is None:
-#            return http.HttpResponseBadRequest()
-#
-#        return http.HttpResponse(json.dumps({
-#            'id': text,
-#            'text': text,
-#        }))
-
 from dal.autocomplete import Select2ListView
 
 class CountryAutocompleteFromList(Select2ListView):
@@ -223,15 +142,8 @@ class CountryAutocompleteFromList(Select2ListView):
 
     def autocomplete_results(self, results):
         """Return list of strings that match the autocomplete query."""
-        if self.q in results.values():
-            print(self.q)
-
-        #return dict()
 
         return [dict(id=str(key), text=str(value)) for key, value in results.items() if self.q.lower() in value.lower()]
-#        print(results[self.q])
-#        return (results[self.q])
-#        return [x for x in results.values() if self.q.lower() in x.lower()]
 
 
     def results(self, results):
@@ -569,3 +481,12 @@ class EventViewSet(viewsets.ModelViewSet):
 class TypeViewSet(viewsets.ModelViewSet):
     queryset = models.Type.objects.all()
     serializer_class = serializers.TypeSerializer
+
+class EventDocumentViewSet(viewsets.ModelViewSet):
+    queryset = models.EventDocument.objects.all()
+    serializer_class = serializers.EventDocumentSerializer
+
+class EventObservablesViewSet(viewsets.ModelViewSet):
+    queryset = models.EventObservable.objects.all()
+    serializer_class = serializers.EventObservablesSerializer
+

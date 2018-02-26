@@ -1,6 +1,13 @@
-from django.urls import path
+from django.urls import path, include
 from .views import IndexView
 from . import views
+
+from rest_framework import routers
+router = routers.DefaultRouter()
+router.register(r'motive', views.MotiveViewSet)
+router.register(r'sector', views.MotiveViewSet)
+
+
 
 root = "common/"
 app_name = 'common'
@@ -30,6 +37,7 @@ urlpatterns = [
     path(r'killchain/<pk>/delete', views.KillChainDeleteView.as_view(), name='killchain_delete'),
     path(r'killchain/<pk>/edit', views.KillChainEditView.as_view(), name='killchain_edit'),
 
+    path(r'api/', include(router.urls )),
 
 ]
 

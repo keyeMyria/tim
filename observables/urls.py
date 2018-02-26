@@ -1,6 +1,12 @@
 from django.urls import path, include
 from . import views
 
+from rest_framework import routers
+
+router = routers.DefaultRouter()
+router.register(r'observables', views.ObservableViewSet)
+
+
 app_name="observables"
 urlpatterns = [
     path(r'', views.ObservableListView.as_view(), name='observable_list'),
@@ -9,4 +15,7 @@ urlpatterns = [
     path(r'<pk>/<uuid>/edit', views.ObservableEditView.as_view(), name='observable_edit'),
     path(r'<pk>/<uuid>/delete', views.DeleteObservableView.as_view(), name='delete_observable'),
     path(r'search', include('haystack.urls')),
+
+
+    path(r'api/', include(router.urls )),
 ] 

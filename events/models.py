@@ -63,8 +63,8 @@ class Event(models.Model):
     author = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='event_author', null=True)
     description = models.TextField(null=True, blank=True)
     event_date = models.DateTimeField(null=True, blank=True)
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True, blank=True)
+    updated = models.DateTimeField(auto_now=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
     uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
     type = models.ForeignKey(Type, on_delete=models.CASCADE, related_name='event', null=True)
@@ -130,4 +130,4 @@ class EventObservable(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='observable', null=True, blank=True)
 
     def __str__(self):
-        return self.observable
+        return "%s" % self.observable

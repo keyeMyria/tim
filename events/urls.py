@@ -6,7 +6,10 @@ from rest_framework import routers
 router = routers.DefaultRouter()
 router.register(r'event', views.EventViewSet)
 router.register(r'type', views.TypeViewSet)
+router.register(r'event-document', views.EventDocumentViewSet, base_name='event-document')
+router.register(r'event-observable', views.EventObservablesViewSet, base_name='event-observable')
 
+root = "events/"
 app_name="events"
 urlpatterns = [
     # post views
