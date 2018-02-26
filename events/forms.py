@@ -15,6 +15,9 @@ class EmailPostForm(forms.Form):
     comments = forms.CharField(required=False, widget=forms.Textarea)
 
 
+#def get_choice_list():
+#    return ['France', 'Fiji', 'Finland', 'Switzerland']
+
 class EventForm(forms.ModelForm):
 
     event_date = forms.DateField(
@@ -54,7 +57,7 @@ class EventForm(forms.ModelForm):
 
     def clean_country(self):
         countries = self.cleaned_data['country']
-        print(countries)
+        print("cleaning country %s" % countries)
 
         return countries
 

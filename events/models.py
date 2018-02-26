@@ -86,7 +86,7 @@ class Event(models.Model):
     sector = models.ManyToManyField(Sector, related_name='event', blank=True)
     reporter = models.ManyToManyField(Reporter, related_name='event', blank=True)
     tag = TaggableManager() 
-#    country = CountryField(multiple=True, blank=True)
+    country = CountryField(multiple=True, blank=True)
 
     class Meta:
         ordering = ('-created',)

@@ -33,6 +33,8 @@ from rest_framework import viewsets
 
 from . import serializers
 
+import json
+from django import http
 
 def download(request, path):
     if os.path.exists(path):
@@ -68,7 +70,149 @@ class MotiveAutocomplete(autocomplete.Select2QuerySetView):
 
         return qs
 
-class CountryAutocompleteFromList(autocomplete.Select2ListView):
+
+from dal.views import ViewMixin
+
+class Select2ViewMixin(object):
+    """View mixin to render a JSON response for Select2."""
+
+    def get_results(self, context):
+        """Return data for the 'results' key of the response."""
+        return [
+            {
+                'id': self.get_result_value(result),
+                'text': self.get_result_label(result),
+                'selected_text': self.get_selected_result_label(result),
+            } for result in context['object_list']
+        ]
+
+    def get_create_option(self, context, q):
+        """Form the correct create_option to append to results."""
+        create_option = []
+        display_create_option = False
+        if self.create_field and q:
+            page_obj = context.get('page_obj', None)
+            if page_obj is None or page_obj.number == 1:
+                display_create_option = True
+
+            # Don't offer to create a new option if a
+            # case-insensitive) identical one already exists
+            existing_options = (self.get_result_label(result).lower()
+                                for result in context['object_list'])
+            if q.lower() in existing_options:
+                display_create_option = False
+
+        if display_create_option and self.has_add_permission(self.request):
+            create_option = [{
+                'id': q,
+                'text': _('Create "%(new_value)s"') % {'new_value': q},
+                'create_id': True,
+            }]
+        return create_option
+
+    def render_to_response(self, context):
+        """Return a JSON response in Select2 format."""
+        q = self.request.GET.get('q', None)
+
+        create_option = self.get_create_option(context, q)
+
+        return http.HttpResponse(
+            json.dumps({
+                'results': self.get_results(context) + create_option,
+                'pagination': {
+                    'more': self.has_more(context)
+                }
+            }),
+            content_type='application/json',
+        )
+
+
+#class CountryAutocompleteFromList(ViewMixin, View):
+#    """Autocomplete from a list of items rather than a QuerySet."""
+#
+##    def get_list(self):
+##        """Return the list strings from which to autocomplete."""
+###        return []
+##
+##        return [
+##            {
+##                'id': self.get_result_value(result),
+##                'text': self.get_result_label(result),
+##                'selected_text': self.get_selected_result_label(result),
+##            } for result in context['object_list']
+##        ]
+#
+#    def get_list(self):
+#        contries_dict = countries.countries
+#        country_dict = dict()
+#        for index, key in enumerate(contries_dict.keys()):
+#            country_dict['id'] = index
+#            country_dict['text'] = str(contries_dict[key])
+#            country_dict['selected_text'] = str(key)
+#            #print(country_dict)
+#
+##        return ['Estionia', 'Finland']
+#        return country_dict
+#
+#    def get(self, request, *args, **kwargs):
+#        """Return option list json response."""
+#        results = self.get_list()
+#        create_option = []
+#        if self.q:
+#            print(self.q)
+#            results = self.results(results)
+#            print(results)
+#            if hasattr(self, 'create'):
+#                create_option = [{
+#                    'id': self.q,
+#                    'text': 'Create "%s"' % self.q,
+#                    'create_id': True
+#                }]
+#
+#        print(self.results(results))
+#        return http.HttpResponse(json.dumps({
+#            'results': self.results(results),
+#            'pagination': {'more': False} 
+#        }), content_type='application/json')
+#
+#    def autocomplete_results(self, results):
+#        """Return list of strings that match the autocomplete query."""
+#        return [x for x in results if self.q.lower() in x.lower()]
+#
+#    def results(self, results):
+#        """Return the result dictionary."""
+#        #return [dict(id=x, text=x) for x in results]
+#        print(results)
+#        return results
+#
+#    def post(self, request):
+#        """Add an option to the autocomplete list.
+#        If 'text' is not defined in POST or self.create(text) fails, raises
+#        bad request. Raises ImproperlyConfigured if self.create if not defined.
+#        """
+#        if not hasattr(self, 'create'):
+#            raise ImproperlyConfigured('Missing "create()"')
+#
+#        text = request.POST.get('text', None)
+#
+#        if text is None:
+#            return http.HttpResponseBadRequest()
+#
+#        text = self.create(text)
+#
+#        if text is None:
+#            return http.HttpResponseBadRequest()
+#
+#        return http.HttpResponse(json.dumps({
+#            'id': text,
+#            'text': text,
+#        }))
+
+from dal.autocomplete import Select2ListView
+
+class CountryAutocompleteFromList(Select2ListView):
+
+
     def get_list(self):
         contries_dict = countries.countries
         countries_list = list()
@@ -76,6 +220,43 @@ class CountryAutocompleteFromList(autocomplete.Select2ListView):
             countries_list.append(str(value))
 
         return contries_dict
+
+    def autocomplete_results(self, results):
+        """Return list of strings that match the autocomplete query."""
+        if self.q in results.values():
+            print(self.q)
+
+        #return dict()
+
+        return [dict(id=str(key), text=str(value)) for key, value in results.items() if self.q.lower() in value.lower()]
+#        print(results[self.q])
+#        return (results[self.q])
+#        return [x for x in results.values() if self.q.lower() in x.lower()]
+
+
+    def results(self, results):
+        """Return the result dictionary."""
+
+        if isinstance(results, dict):
+            return [dict(id=str(key), text=str(value)) for key, value in results.items()]
+
+        else:
+            return [x for x in results]
+
+
+    def get(self, request, *args, **kwargs):
+        """Return option list json response."""
+        results = self.get_list()
+        create_option = []
+        if self.q:
+            results = self.autocomplete_results(results)
+
+        return http.HttpResponse(json.dumps({
+            'results': self.results(results),
+            'pagination': {'more': False} 
+        }), content_type='application/json')
+
+
 
 import django_tables2 as tables
 import itertools
