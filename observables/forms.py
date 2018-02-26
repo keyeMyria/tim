@@ -52,7 +52,7 @@ class ObservableEditForm(forms.ModelForm):
         #self.user = kwargs.pop('user', None)
         super(ObservableEditForm, self).__init__(*args, **kwargs)
  
-        self.fields['slug'].widget = forms.HiddenInput()
+#        self.fields['slug'].widget = forms.HiddenInput()
 
 
     def clean_slug(self):

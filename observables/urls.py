@@ -15,7 +15,7 @@ urlpatterns = [
     path(r'<pk>/<uuid>/edit', views.ObservableEditView.as_view(), name='observable_edit'),
     path(r'<pk>/<uuid>/delete', views.DeleteObservableView.as_view(), name='delete_observable'),
     path(r'search', include('haystack.urls')),
-
+    path(r'observables_data', views.ObservableListViewJson.as_view(), name="observables_list_json"),
 
     path(r'api/', include(router.urls )),
 ] 

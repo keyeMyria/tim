@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'django_datatables_view',
     'django_filters',
     'dal',
     'dal_select2',

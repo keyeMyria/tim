@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load i18n staticfiles %}
+{% load bootstrap4 %}
+
+{% block scripts %}
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+  <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+  <script src="{% static "events/js/event_list.js" %}"></script>
+  <script src="{% static "js/ddv_example.js" %}"></script>
+  <script type="text/javascript">
+      var USERS_LIST_JSON_URL = '{% url "observables:observables_list_json" %}';
+      // translations for datatables
+
+      var dt_language = {
+          "emptyTable":     "{% trans "No data available in table" %}",
+          "info":           "{% trans "Showing _START_ to _END_ of _TOTAL_ entries" %}",
+          "infoEmpty":      "{% trans "Showing 0 to 0 of 0 entries" %}",
+          "infoFiltered":   "{% trans "(filtered from _MAX_ total entries)" %}",
+          "infoPostFix":    "",
+          "thousands":      ",",
+          "lengthMenu":     "{% trans "Show _MENU_ entries" %}",
+          "loadingRecords": "{% trans "Loading..." %}",
+          "processing":     "{% trans "Processing..." %}",
+          "search":         "{% trans "Search:" %}",
+          "zeroRecords":    "{% trans "No matching records found" %}",
+          "paginate": {
+              "first":      "{% trans "First" %}",
+              "last":       "{% trans "Last" %}",
+              "next":       "{% trans "Next" %}",
+              "previous":   "{% trans "Previous" %}"
+          },
+          "aria": {
+              "sortAscending":  "{% trans ": activate to sort column ascending" %}",
+              "sortDescending": "{% trans ": activate to sort column descending" %}"
+          }
+      }
+  </script>
+{% endblock %}
+
+{% block content %}
+
+<div class="card border-white">
+      <h5 class="card-title text-white bg-secondary text-left font-weight-bold"> EVENTS </h5>
+      <div class="card-body">
+            {% bootstrap_button "Add" button_type="link" button_class="btn-primary" href="add" %}
+
+      </div>
+</div>
+
+
+
+    <table class="datatable">
+        <thead>
+            <th>{% trans "id" %}</th>
+            <th>{% trans "name" %}</th>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+{% endblock %}
+
+
+
+

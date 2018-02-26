@@ -13,6 +13,7 @@ from django.views.generic import FormView
 from django import forms
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import DetailView, UpdateView, CreateView, DeleteView
+from django.views.generic import TemplateView
 from django.http import HttpResponseRedirect
 
 from . import models
@@ -30,6 +31,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 
 from rest_framework import viewsets
+from django.db.models import Q
 
 from . import serializers
 
@@ -98,11 +100,34 @@ class FormsetMixin(object):
         return self.render_to_response(self.get_context_data(form=form, formsets=formsets))
 
 
-class ObservableListView(UserCanViewDataMixin, ListView):
-    context_object_name = 'observables'
-    paginate_by = 30
-    template_name = 'observables/observables_list.html'
+from django_filters.views import FilterView
+from django_filters import FilterSet, ModelChoiceFilter
+from django_tables2.views import SingleTableMixin
+
+class ObservableFilter(FilterSet):
+        class Meta:
+              model = models.Observable 
+              fields = {
+                 'name': ['contains'],
+                 }
+
+from django_datatables_view.base_datatable_view import BaseDatatableView
+class ObservableListViewJson(BaseDatatableView):
     model = models.Observable
+    columns = ['id', 'name']
+    order_columns = ['id', 'name']
+
+    def filter_queryset(self, qs):
+        print(self.request.GET)
+        sSearch = self.request.GET.get('search[value]', None)
+        if sSearch:
+            qs = qs.filter(Q(name__istartswith=sSearch) | Q(id__istartswith=sSearch))
+            print(qs)
+        return qs
+
+class ObservableListView(UserCanViewDataMixin, TemplateView):
+    template_name = 'observables/observable_list.html'
+
 
 class CreateObservableView(UserCanViewDataMixin, FormsetMixin, CreateView):
     form_class = ObservableEditForm
@@ -156,6 +181,7 @@ class ObservableDisplay(DetailView):
 
         initial = {'author': self.request.user}
         return context
+
 
 
 
