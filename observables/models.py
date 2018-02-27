@@ -103,20 +103,20 @@ class IpValue(models.Model):
     value = models.GenericIPAddressField(null=True, blank=True, unique=True)
 
     def __str__(self):
-        return self.value
+        return str(self.value)
 
 
 class EmailValue(models.Model):
     value = models.EmailField(null=True, blank=True, unique=True)
 
     def __str__(self):
-        return self.value
+        return str(self.value)
 
 class StringValue(models.Model):
     value = models.CharField(max_length=25, blank=True, unique=True)
 
     def __str__(self):
-        return self.value
+        return str(self.value)
 
 class ObservableValue(models.Model):
     observable = models.ForeignKey(Observable, null=True, blank=True, on_delete=models.SET_NULL, related_name='values')
