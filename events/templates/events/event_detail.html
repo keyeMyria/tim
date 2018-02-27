@@ -6,7 +6,7 @@
 {% block content %}
     <div class="card border-white">
       <h5 class="card-title text-white bg-secondary text-left font-weight-bold"> {{ event.title|upper }} </h5>
-      <p class="date text-muted text-justify small">Published {{ event.publish }} by {{ event.author }}</p>
+      <p class="date text-muted text-justify small">Published on {{ event.publish }} by {{ event.author }}</p>
       {% bootstrap_button "edit" button_class="btn-primary" href=event.get_absolute_url|add:"/edit" %}
       <div class="card-body">
         <div class="card-deck">

@@ -1,0 +1,51 @@
+
+{% extends "base.html" %}
+{% load static from staticfiles %}
+{% load bootstrap4 %}
+{% load render_table from django_tables2 %}
+
+{% block scripts %}
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+  <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+  <script src="{% static "events/js/event_list.js" %}"></script>
+
+
+{% endblock %}
+
+{% block content %}
+<div class="card border-white">
+      <h5 class="card-title text-white bg-secondary text-left font-weight-bold"> EVENTS </h5>
+      <div class="card-body">
+            {% if filter %}
+            <form action="" method="get" class="form inline">
+            <div class="row">
+            {% for field in filter.form %}
+              <div class="col-sm-3">
+                <div class="card border-white ">
+                    <div class="card-block">
+                    <h5 class="card-title bg-secondary medium text-center text-white border-white">Filter by {{ field.label }}</h5>
+                            {% bootstrap_field field show_label=False %}
+                    </div>
+                </div>
+              </div>
+            {% endfor %}
+            </div>
+
+            {% bootstrap_button 'filter' button_class='btn btn-primary' %}
+            {% bootstrap_button "Add" button_type="link" button_class="btn-primary" href="add" %}
+            </form>
+            {% endif %}
+
+
+      </div>
+</div>
+
+
+
+    <div class="card">
+        {% render_table table %}
+    </div>
+
+
+{% endblock %}
+

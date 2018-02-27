@@ -38,7 +38,7 @@
 
     <div class="tab-pane active form-group" id="tab1">
        {% for field in form %}
-        {{ field.errors }}
+           {{ field.errors }}
        {% if not field.name == "notes" %}
        <div class="row">
            <div class="col-sm-6">
@@ -51,9 +51,9 @@
     </div>
 
     <div class="tab-pane" id="tab2">
-	{% bootstrap_field form.notes show_label=False layout='inline' %}
-
+    	{% bootstrap_field form.notes show_label=False layout='inline' %}
     </div>
+
     <div class="tab-pane" id="tab3">
        <div class="row">
            <div class="col-sm-6">
@@ -69,9 +69,7 @@
     <div class="tab-pane" id="tab4">
        <div class="row">
            <div class="col-sm-6">
-
-
-
+                {% bootstrap_formset attachments show_label=True layout='inline' %}
            </div>
        </div> 
 

@@ -113,7 +113,7 @@ class IpForm(forms.ModelForm):
              self.fields['value'] = forms.CharField()
 
     class Meta:
-        model = models.ObservableValues
+        model = models.ObservableValue
         exclude = ()
 
     def save(self, commit=True):
@@ -174,7 +174,7 @@ class IpInlineFormSet(BaseInlineFormSet):
 
 
 
-IpValueFormSet = inlineformset_factory(models.Observable, models.ObservableValues,
+IpValueFormSet = inlineformset_factory(models.Observable, models.ObservableValue,
                     form=IpForm,
                     #can_order=True,
                     #formset=IpInlineFormSet,

@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'observables',
     'taggit',
     'rest_framework',
+    'rest_framework.authtoken',
     'django_countries',
     'bootstrap4',
     'common',
@@ -94,6 +95,17 @@ WSGI_APPLICATION = 'cti.wsgi.application'
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    )
+}
+
 
 DATABASES = {
     'default': {

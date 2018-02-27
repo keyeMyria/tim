@@ -12,7 +12,8 @@ from django.http import HttpResponseForbidden
 from django.views.generic import FormView
 from django import forms
 from django.views.generic.detail import SingleObjectMixin
-from django.views.generic import DetailView, UpdateView, CreateView, DeleteView
+from django.views.generic import DetailView, UpdateView, CreateView, DeleteView, TemplateView
+from django_datatables_view.base_datatable_view import BaseDatatableView
 from django.http import HttpResponseRedirect
 
 from .models import Event, EventComment
@@ -32,9 +33,13 @@ from django_countries import countries
 from rest_framework import viewsets
 
 from . import serializers
+from django.db.models import Q
+from django.utils.html import format_html
 
 import json
 from django import http
+from dal.autocomplete import Select2ListView
+from dal.views import ViewMixin
 
 def download(request, path):
     if os.path.exists(path):
@@ -71,7 +76,6 @@ class MotiveAutocomplete(autocomplete.Select2QuerySetView):
         return qs
 
 
-from dal.views import ViewMixin
 
 class Select2ViewMixin(object):
     """View mixin to render a JSON response for Select2."""
@@ -127,8 +131,6 @@ class Select2ViewMixin(object):
         )
 
 
-from dal.autocomplete import Select2ListView
-
 class CountryAutocompleteFromList(Select2ListView):
 
 
@@ -170,90 +172,51 @@ class CountryAutocompleteFromList(Select2ListView):
 
 
 
-import django_tables2 as tables
-import itertools
-from django_tables2.utils import A
-from django.utils.html import format_html
-
-class TagData(tables.Table):
-    class Meta:
-        model = Tag
-
-
-class EventTable(tables.Table):
-
-    title = tables.LinkColumn(viewname=None)
-    tag = tables.Column(empty_values=(), orderable=False)
-    actions = tables.Column(empty_values=(), orderable=False)
-
-    def __init__(self, *args, **kwargs):
-        super(EventTable, self).__init__(*args, **kwargs)
-        self.events = self.data.data
-        self.tags_list = list()
-        self.counter = itertools.count()
-        self.index = 0
-        self.events_list = list()
-        for event in self.events:
-            self.events_list.append(event)
-
-    def render_tag(self):
-        self.index = next(self.counter)
-        tag_names = list()
-        # this may bite me in the nether regions at some point, uhh ugly
-        index = self.index
-        for tag in self.events_list[index].tag.all():
-            url = (reverse('events:event_list') + "?tag=%s" % tag.id)
-            html = format_html(' <a href="%s">%s</a> '% (url, tag.name))
-            tag_names.append(html)
-        return format_html(' '.join(tag_names))
-
-    def render_actions(self):
-        index = self.index
-        row = self.data.data[index]
-        edit = format_html(' <a href="%s">%s</a> ' % (row.get_absolute_url() + "/edit", "edit"))
-        delete = format_html(' <a href="%s">%s</a> ' % (row.get_absolute_url() + "/delete", "delete"))
-        return format_html(' '.join([edit, delete]))
-
-    class Meta:
-        orderable = False
-        fields = ('title', 'author', 'created', 'risk', 'event_type', 'tag', 'actions')
-        model = Event
-        template_name = 'django_tables2/bootstrap.html'
-        attrs = {'id': 'BSdataTable', 
-                 'class': 'table table-striped',
-                 'cellspacing':'0',
-                 'width':'100%'
-            }
-            
-from django_filters.views import FilterView
-from django_filters import FilterSet, ModelChoiceFilter
-from django_tables2.views import SingleTableMixin
-
-class EventFilter(FilterSet):
-    tag = ModelChoiceFilter(queryset=Tag.objects.all())
-    class Meta:
-        model = Event
-        fields = {
-            'title': ['contains'],
-            'tag': ['exact'],
-            'type': ['exact'],
-        }
-
-
-class EventListView(UserCanViewDataMixin, SingleTableMixin, FilterView):
+class EventListView(UserCanViewDataMixin, TemplateView):
+    template_name = 'observables/observable_list.html'
     context_object_name = 'events'
-    paginate_by = 3
     template_name = 'events/event_list.html'
-    model = Event
-    table_class = EventTable
-    filterset_class = EventFilter
 
-    def get_context_data(self, **kwargs):
-        tag = None
-        context = super(EventListView, self).get_context_data(**kwargs)
-        self.queryset = Event.published.all()
 
-        return context
+class EventListViewJson(UserCanViewDataMixin, BaseDatatableView):
+    model = models.Observable
+    columns = ['id', 'title', 'author', ]
+    order_columns = ['id', 'title', 'author', 'created']
+
+    def filter_queryset(self, qs):
+        sSearch = self.request.GET.get('search[value]', None)
+        if sSearch:
+            qs = qs.filter(Q(title__istartswith=sSearch) |
+                           Q(id__istartswith=sSearch) |
+                           Q(author__user__username__istartswith=sSearch))
+        return qs
+
+    def get_initial_queryset(self):
+        # return queryset used as base for futher sorting/filtering
+        # these are simply objects displayed in datatable
+        # You should not filter data returned here by any filter values entered by user. This is because
+        # we need some base queryset to count total number of records.
+        return Event.published.all()
+
+    def prepare_results(self, qs):
+        # prepare list with output column data
+        # queryset is already paginated here
+        data = []
+        for item in qs:
+            orig = [self.render_column(item, column) for column in self.get_columns()]
+            additional = list()
+            additional.append(
+                item.created.strftime("%Y-%m-%d %H:%M:%S")
+            ),
+
+            url = item.get_absolute_url()
+            edit = format_html(' <a href="%s/edit">%s</a> '% (url, "Edit"))
+            delete = format_html(' <a href="%s/delete">%s</a> '% (url, "Delete"))
+            additional.append([edit, delete]),
+            send = orig + additional
+            data.append(send)
+
+        return data
 
 
 class EventCommentForm(forms.Form):
@@ -471,22 +434,22 @@ def event_share(request, post_id):
 
 # API views
 
-class EventViewSet(viewsets.ModelViewSet):
+class EventViewSet(UserCanViewDataMixin, viewsets.ModelViewSet):
     """
     API endpoint that allows events to be added, viewed or edited.
     """
     queryset = Event.objects.all()
     serializer_class = serializers.EventSerializer
 
-class TypeViewSet(viewsets.ModelViewSet):
+class TypeViewSet(UserCanViewDataMixin, viewsets.ModelViewSet):
     queryset = models.Type.objects.all()
     serializer_class = serializers.TypeSerializer
 
-class EventDocumentViewSet(viewsets.ModelViewSet):
+class EventDocumentViewSet(UserCanViewDataMixin, viewsets.ModelViewSet):
     queryset = models.EventDocument.objects.all()
     serializer_class = serializers.EventDocumentSerializer
 
-class EventObservablesViewSet(viewsets.ModelViewSet):
+class EventObservablesViewSet(UserCanViewDataMixin, viewsets.ModelViewSet):
     queryset = models.EventObservable.objects.all()
     serializer_class = serializers.EventObservablesSerializer
 

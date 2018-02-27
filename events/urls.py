@@ -13,6 +13,7 @@ root = "events/"
 app_name="events"
 urlpatterns = [
     # post views
+    path(r'events_data', views.EventListViewJson.as_view(), name="events_list_json"),
     path(r'sector-autocomplete', views.SectorAutocomplete.as_view(), name='sector-autocomplete'),
     path(r'motive-autocomplete', views.MotiveAutocomplete.as_view(), name='motive-autocomplete'),
     path(r'countries-autocomplete', views.CountryAutocompleteFromList.as_view(), name='countries-autocomplete'),

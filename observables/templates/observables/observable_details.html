@@ -4,10 +4,22 @@
 
 
 {% block content %}
+
+
     <div class="card border-white">
-      <h5 class="card-title text-white bg-secondary text-left font-weight-bold"> {{ observable.title|upper }} </h5>
-      <p class="date text-muted text-justify small">Published {{ observable.publish }} by {{ observable.author }}</p>
-      {% bootstrap_button "edit" button_class="btn-primary" href=observable.get_absolute_url|add:"/edit" %}
+      <!-- Breadcrumbs-->
+      <ol class="breadcrumb text-white text-left font-weight-bold">
+        <li class="breadcrumb-item">
+          <a href="/observables">Observables</a>
+        </li>
+        <li class="breadcrumb-item active ">{{ observable.name}}</li>
+      </ol>
+      <!-- content block with cards-->
+
+      <h5 class="card-title text-white bg-secondary text-left font-weight-bold"> {{ observable.name|upper }} </h5>
+      <p class="date text-muted text-justify small">Created on {{ observable.created }} by {{ observable.author }}</p>
+
+        {% bootstrap_button "edit" button_class="btn-primary" href=observable.get_absolute_url|add:"/edit" %}
       <div class="card-body">
         <div class="card-deck">
 

@@ -154,6 +154,27 @@ class CreateObservableView(UserCanViewDataMixin, FormsetMixin, CreateView):
     def get_success_url(self):
        return reverse('observables:observable_list')
 
+
+class ObservableEditView(UserCanViewDataMixin, FormsetMixin, UpdateView):
+    model = models.Observable
+    form_class = ObservableEditForm
+    template_name_suffix = '_edit'
+    is_update_view = True
+    formset_classes = [ IpValueFormSet, FileValueFormSet ]
+
+    def get_context_data(self, **kwargs):
+        context = super(ObservableEditView, self).get_context_data(**kwargs)
+        print(context["formsets"])
+        for index, item in enumerate(context["formsets"]):
+            if item.is_multipart():
+                files = context["formsets"].pop(index)
+                context["attachments"] = files
+        return context
+
+    def get_success_url(self):
+       return reverse('observables:observable_edit', kwargs={'pk': self.kwargs['pk'], 'uuid': self.kwargs['uuid']})
+
+
 class DeleteObservableView(UserCanViewDataMixin, DeleteView):
     model = models.Observable
     template_name_suffix = '_delete'
@@ -193,8 +214,6 @@ class ObservableDisplay(UserCanViewDataMixin, DetailView):
         return context
 
 
-
-
 class ObservableDetailView(UserCanViewDataMixin, View):
 
     def get(self, request, *args, **kwargs):
@@ -202,21 +221,17 @@ class ObservableDetailView(UserCanViewDataMixin, View):
         return view(request, *args, **kwargs)
 
 
-class ObservableEditView(UserCanViewDataMixin, FormsetMixin, UpdateView):
-    model = models.Observable
-    form_class = ObservableEditForm
-    template_name_suffix = '_edit'
-    is_update_view = True
-    formset_classes = [ IpValueFormSet, FileValueFormSet ]
 
-
-
-    def get_success_url(self):
-       return reverse('observables:observable_edit', kwargs={'pk': self.kwargs['pk'], 'uuid': self.kwargs['uuid']})
-
-class ObservableViewSet(UserCanViewDataMixin, viewsets.ModelViewSet):
+class ObservableViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows observables to be added, viewed or edited.
     """
     queryset = models.Observable.objects.all()
     serializer_class = serializers.ObservableSerializer
+
+class ObservableValueViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows observables to be added, viewed or edited.
+    """
+    queryset = models.ObservableValue.objects.all()
+    serializer_class = serializers.ObservableValueSerializer

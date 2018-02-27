@@ -374,10 +374,10 @@ class KillChainDeleteView(UserCanViewDataMixin, DeleteView):
     success_url = reverse_lazy('common:killchain_list')
 
 
-class MotiveViewSet(viewsets.ModelViewSet):
+class MotiveViewSet(UserCanViewDataMixin, viewsets.ModelViewSet):
     queryset = models.Motive.objects.all()
     serializer_class = serializers.MotiveSerializer
 
-class SectorViewSet(viewsets.ModelViewSet):
+class SectorViewSet(UserCanViewDataMixin, viewsets.ModelViewSet):
     queryset = models.Sector.objects.all()
     serializer_class = serializers.SectorSerializer
