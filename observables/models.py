@@ -11,6 +11,7 @@ from common.models import Comment, GeoLocation, Motive, Sector, Reporter, KillCh
 from common.managers import UserAccountManager, PublishedManager, ClientsManager
 from django.core.exceptions import ObjectDoesNotExist
 
+
 LEVELS = (
     ('critical', 'critical'),
     ('high', 'high'),
@@ -18,6 +19,14 @@ LEVELS = (
     ('low', 'low'),
     ('unknown', 'unknown'),
 )
+
+CONFIDENCE = (
+    ('high', 'high'),
+    ('medium', 'medium'),
+    ('low', 'low'),
+    ('unknown', 'unknown'),
+)
+
 
 TLP = (
     ('red', 'red'),
@@ -73,6 +82,11 @@ class Observable(models.Model):
                                                     MaxValueValidator(100),
                                                     MinValueValidator(0)
                                                ])
+
+    confidence = models.CharField(max_length=10, choices=CONFIDENCE, default='unknown')
+    risk = models.CharField(max_length=10, choices=LEVELS, default='unknown')
+    tlp = models.CharField(max_length=10, choices=TLP, default='red')
+
 
     def __str__(self):
         return self.name

@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+{% load bootstrap4 %}
+
+
+{% block content %}
+    <div class="card border-white">
+      <h5 class="card-title text-white bg-secondary text-left font-weight-bold"> {{ observable.title|upper }} </h5>
+      <p class="date text-muted text-justify small">Published {{ observable.publish }} by {{ observable.author }}</p>
+      {% bootstrap_button "edit" button_class="btn-primary" href=observable.get_absolute_url|add:"/edit" %}
+      <div class="card-body">
+        <div class="card-deck">
+
+            {% if observable.risk == "critical" %}
+                <div class="card border-danger">
+                    <h5 class="card-title text-danger bg-white text-center font-weight-bold"> RISK </h5>
+                    <div class="card-body text-center bg-danger text-white font-weight-bold "> CRITICAL
+                    </div>
+                </div>
+
+            {% elif observable.risk == "high" %}
+                <div class="card border-warning">
+                    <h5 class="card-title text-warning bg-white text-center font-weight-bold"> RISK </h5>
+                    <div class="card-body text-center bg-warning text-white font-weight-bold "> HIGH
+                    </div>
+                </div>
+
+            {% elif observable.risk == "medium" %}
+                <div class="card border-info">
+                    <h5 class="card-title text-info bg-white text-center font-weight-bold"> RISK </h5>
+                    <div class="card-body text-center bg-info text-white font-weight-bold "> MEDIUM
+                    </div>
+                </div>
+
+            {% elif observable.risk == "low" %}
+                <div class="card border-success">
+                    <h5 class="card-title text-success bg-white text-center font-weight-bold"> RISK </h5>
+                    <div class="card-body text-center bg-success text-white font-weight-bold "> LOW
+                    </div>
+                </div>
+
+            {% else %}
+                <div class="card">
+                    <h5 class="card-title text-dark bg-white text-center font-weight-bold"> RISK </h5>
+                    <div class="card-body text-center bg-secondary text-white font-weight-bold "> UNKNOWN
+                    </div>
+                </div>
+            {% endif %} 
+
+
+            {% if observable.tlp == "amber" %}
+                <div class="card border-warning">
+                    <h5 class="card-title text-warning bg-white text-center font-weight-bold"> TLP </h5>
+                    <div class="card-body text-center bg-warning text-white font-weight-bold "> AMBER
+                    </div>
+                </div>
+
+            {% elif observable.tlp == "red" %}
+                <div class="card border-danger">
+                    <h5 class="card-title text-danger bg-white text-center font-weight-bold"> TLP </h5>
+                    <div class="card-body text-center bg-danger text-white font-weight-bold "> RED
+                    </div>
+                </div>
+
+            {% elif observable.tlp == "green" %}
+                <div class="card border-success">
+                    <h5 class="card-title text-success bg-white text-center font-weight-bold"> TLP </h5>
+                    <div class="card-body text-center bg-success text-white font-weight-bold "> GREEN
+                    </div>
+                </div>
+
+            {% else %}
+                <div class="card">
+                    <h5 class="card-title text-dark bg-white text-center font-weight-bold"> TLP </h5>
+                    <div class="card-body text-center bg-secondary text-white font-weight-bold "> WHITE
+                    </div>
+                </div>
+            {% endif %} 
+
+
+            {% if observable.confidence == "high" %}
+                <div class="card border-success">
+                    <h5 class="card-title text-success bg-white text-center font-weight-bold"> CONFIDENCE </h5>
+                    <div class="card-body text-center bg-success text-white font-weight-bold "> HIGH
+                    </div>
+                </div>
+
+            {% elif observable.confidence == "medium" %}
+                <div class="card border-info">
+                    <h5 class="card-title text-info bg-white text-center font-weight-bold"> CONFIDENCE </h5>
+                    <div class="card-body text-center bg-info text-white font-weight-bold "> MEDIUM
+                    </div>
+                </div>
+
+            {% elif observable.confidence == "low" %}
+                <div class="card border-danger">
+                    <h5 class="card-title text-danger bg-white text-center font-weight-bold"> CONFIDENCE </h5>
+                    <div class="card-body text-center bg-danger text-white font-weight-bold "> LOW
+                    </div>
+                </div>
+
+            {% else %}
+                <div class="card">
+                    <h5 class="card-title text-dark bg-white text-center font-weight-bold"> CONFIDENCE </h5>
+                    <div class="card-body text-center bg-secondary text-white font-weight-bold "> UNKNOWN
+                    </div>
+                </div>
+            {% endif %} 
+
+
+        </div>
+      </div>
+    </div>
+
+    <div class="card-columns">
+        <div class="card">
+            <div class="card-block">
+                <h5 class="card-title text-white bg-info text-center"> Details </h5>
+            </div>
+            <div class="card-body">
+            <ul class="list-group ">
+                <li class="list-group-item"> Created at: {{ observable.created|date:"DATETIME_FORMAT" }}
+                </li>
+                <li class="list-group-item"> Updated At: {{ observable.updated|date:"DATETIME_FORMAT" }}
+                </li>
+                 <li class="list-group-item">Event Date: {{ observable.event_date|date:"DATETIME_FORMAT" }}
+                </li>
+                <li class="list-group-item"> UUID: {{ observable.uuid }}
+                </li>
+
+                <li class="list-group-item"> Type: {{ observable.event_type }}
+                </li>
+                <li class="list-group-item"> Rateing: {{ observable.rateing }}
+                </li>
+                <li class="list-group-item"> Reference: {{ observable.reference }}
+                </li>
+                </li>
+                <li class="list-group-item"> Motive:
+                {% for motive in observable.motive.all %}
+                    {{ motive }}, 
+                {% endfor%}
+                </li>
+                <li class="list-group-item"> Sector:
+                {% for sector in observable.sector.all %}
+                    {{ sector }}, 
+                {% endfor%}
+                 <li class="list-group-item"> Reporters:
+                {% for reporter in observable.reporter.all %}
+                    {{ reporter }}, 
+                {% endfor%}
+                </li>
+                 <li class="list-group-item"> Target Org:
+                {% for org in observable.targeted_organization.all %}
+                    {{ org }}, 
+                {% endfor%}
+                </li>
+
+
+            </ul>
+
+        </div>
+        </div>
+ 
+        <div class="card">
+            <div class="card-block">
+                <h5 class="card-title text-white bg-info text-center"> Notes </h5>
+                <div class="card-body">
+                    {{ observable.notes }}
+                </div>
+            </div>
+        </div>
+
+       
+         <div class="card ">
+            <div class="card-block">
+            <h5 class="card-title text-white bg-info text-center"> Attachments </h5>
+                <div class="card-body">
+                    {% for value in observable.file_value.values %}
+                        <li class="list-group-item row">
+                        <a href="{{ value.value }}" >{{ value.value }}</a> 
+                        </li>
+                    {% empty %}
+                        This event has currently no documents
+                    {% endfor %}
+
+                </div>
+            </div>
+        </div>
+
+         <div class="card ">
+            <div class="card-block">
+            <h5 class="card-title text-white bg-info text-center"> Threat Actors </h5>
+                <div class="card-body">
+                    {% for actor in threat_actors %}
+                        <li class="list-group-item row">
+                        <a href="{{ actor.threat_actor.get_absolute_url }}" >{{ actor.threat_actor }}</a> 
+                        </li>
+                    {% empty %}
+                        This event has currently no threat actors listed.
+                    {% endfor %}
+
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+
+
+{% endblock %}

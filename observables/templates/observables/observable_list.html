@@ -3,10 +3,19 @@
 {% load bootstrap4 %}
 
 {% block scripts %}
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/bootstrap.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.5.1/css/buttons.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.5.1/css/buttons.bootstrap4.min.css">
   <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
-  <script src="{% static "events/js/event_list.js" %}"></script>
-  <script src="{% static "js/ddv_example.js" %}"></script>
+  <script src="https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap4.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.bootstrap4.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.html5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/vfs_fonts.js"></script>
+  <script src="{% static "observables/js/ddv_observables.js" %}"></script>
   <script type="text/javascript">
       var USERS_LIST_JSON_URL = '{% url "observables:observables_list_json" %}';
       // translations for datatables
@@ -40,23 +49,22 @@
 {% block content %}
 
 <div class="card border-white">
-      <h5 class="card-title text-white bg-secondary text-left font-weight-bold"> EVENTS </h5>
+      <h5 class="card-title text-white bg-secondary text-left font-weight-bold"> Observables </h5>
       <div class="card-body">
-            {% bootstrap_button "Add" button_type="link" button_class="btn-primary" href="add" %}
-
+        <table class="datatable table table-striped">
+            <thead class="thead-dark">
+                <th>{% trans "id" %}</th>
+                <th>{% trans "name" %}</th>
+                <th>{% trans "author" %}</th>
+                <th>{% trans "created" %}</th>
+                <th>{% trans "actions" %}</th>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
       </div>
 </div>
 
-
-
-    <table class="datatable">
-        <thead>
-            <th>{% trans "id" %}</th>
-            <th>{% trans "name" %}</th>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
 {% endblock %}
 
 

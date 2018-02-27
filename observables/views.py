@@ -20,6 +20,7 @@ from . import models
 from users.models import User
 from users.views import UserCanViewDataMixin
 from .forms import ObservableEditForm, ObservableValueFormSet, IpValueFormSet, FileValueFormSet
+from django_datatables_view.base_datatable_view import BaseDatatableView
 
 
 from django.contrib.auth.models import Group
@@ -32,6 +33,7 @@ from django.core.exceptions import PermissionDenied
 
 from rest_framework import viewsets
 from django.db.models import Q
+from django.utils.html import format_html
 
 from . import serializers
 
@@ -100,30 +102,38 @@ class FormsetMixin(object):
         return self.render_to_response(self.get_context_data(form=form, formsets=formsets))
 
 
-from django_filters.views import FilterView
-from django_filters import FilterSet, ModelChoiceFilter
-from django_tables2.views import SingleTableMixin
-
-class ObservableFilter(FilterSet):
-        class Meta:
-              model = models.Observable 
-              fields = {
-                 'name': ['contains'],
-                 }
-
-from django_datatables_view.base_datatable_view import BaseDatatableView
-class ObservableListViewJson(BaseDatatableView):
+class ObservableListViewJson(UserCanViewDataMixin, BaseDatatableView):
     model = models.Observable
-    columns = ['id', 'name']
-    order_columns = ['id', 'name']
+    columns = ['id', 'name', 'author', ]
+    order_columns = ['id', 'name', 'author', 'created']
 
     def filter_queryset(self, qs):
-        print(self.request.GET)
         sSearch = self.request.GET.get('search[value]', None)
         if sSearch:
-            qs = qs.filter(Q(name__istartswith=sSearch) | Q(id__istartswith=sSearch))
-            print(qs)
+            qs = qs.filter(Q(name__istartswith=sSearch) | 
+                           Q(id__istartswith=sSearch) | 
+                           Q(author__user__username__istartswith=sSearch))
         return qs
+
+    def prepare_results(self, qs):
+        # prepare list with output column data
+        # queryset is already paginated here
+        data = []
+        for item in qs:
+            orig = [self.render_column(item, column) for column in self.get_columns()]
+            additional = list()
+            additional.append(
+                item.created.strftime("%Y-%m-%d %H:%M:%S")                
+            ),
+
+            url = item.get_absolute_url()
+            edit = format_html(' <a href="%s/edit">%s</a> '% (url, "Edit"))
+            delete = format_html(' <a href="%s/delete">%s</a> '% (url, "Delete"))
+            additional.append([edit, delete]),
+            send = orig + additional
+            data.append(send)
+
+        return data
 
 class ObservableListView(UserCanViewDataMixin, TemplateView):
     template_name = 'observables/observable_list.html'
@@ -161,8 +171,8 @@ class DeleteObservableView(UserCanViewDataMixin, DeleteView):
             raise PermissionDenied('Not allowed')
 
 
-class ObservableDisplay(DetailView):
-    template_name = 'observables/observables_detail.html'
+class ObservableDisplay(UserCanViewDataMixin, DetailView):
+    template_name_suffix = '_details'
     model = models.Observable
 
     def get_context_data(self, **kwargs):
@@ -185,7 +195,7 @@ class ObservableDisplay(DetailView):
 
 
 
-class ObservableDetailView(View):
+class ObservableDetailView(UserCanViewDataMixin, View):
 
     def get(self, request, *args, **kwargs):
         view = ObservableDisplay.as_view()
@@ -204,7 +214,7 @@ class ObservableEditView(UserCanViewDataMixin, FormsetMixin, UpdateView):
     def get_success_url(self):
        return reverse('observables:observable_edit', kwargs={'pk': self.kwargs['pk'], 'uuid': self.kwargs['uuid']})
 
-class ObservableViewSet(viewsets.ModelViewSet):
+class ObservableViewSet(UserCanViewDataMixin, viewsets.ModelViewSet):
     """
     API endpoint that allows observables to be added, viewed or edited.
     """
