@@ -130,4 +130,4 @@ class EventObservable(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='observable', null=True, blank=True)
 
     def __str__(self):
-        return "%s" % self.observable
+        return str(event)

@@ -125,7 +125,8 @@ class ObservableValue(models.Model):
     string = models.ForeignKey(StringValue, null=True, blank=True, on_delete=models.SET_NULL, related_name='obs_values')
     type = models.ForeignKey(ObservableType, on_delete=models.CASCADE, related_name='observable_value', null=True)
 
-
+    def __str__(self):
+        return "%s" % self.id
 
 class FileValue(models.Model):
     str_type = models.ForeignKey(ObservableType, on_delete=models.CASCADE, related_name='file_value', null=True)
