@@ -7,66 +7,7 @@ from django.db import transaction
 import traceback
 from rest_framework.utils import model_meta
 from django.core.validators import validate_email, validate_ipv46_address
-
-class IpValuesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.IpValue
-        fields = ('__all__')
-
-
-class EmailValuesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.EmailValue
-        fields = ('__all__')
-
-
-class FileValuesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.FileValue
-        fields = ('__all__')
-
-
-class StringValuesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.StringValue
-        fields = ('__all__')
-
-
-class ObservableTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.ObservableType
-        fields = ('__all__')
-
-
-class EmailCustomField(serializers.EmailField):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def validate_empty_values(self, data):
-        return (True, data)
-
-
-class IpCustomField(serializers.IPAddressField):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def validate_empty_values(self, data):
-        return (True, data)
-
-
-class StringCustomField(serializers.CharField):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-#    def to_representation(self, data):
-#        print(data)
-
-    def validate_empty_values(self, data):
-        return (True, data)
-
+from django.urls import reverse_lazy
 
 def get_validator():
     validators = {
@@ -75,33 +16,248 @@ def get_validator():
     }
     return validators
 
+def get_object():
+    objects = {
+        "email": models.EmailValue,
+        "ip": models.IpValue,
+        "string": models.StringValue
+    }
+    return objects
+
+
+class IpValuesSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+                    view_name="observables:ip-value-detail",
+                    )
+
+    id = serializers.ReadOnlyField()
+    type = "ip"
+
+    value = serializers.IPAddressField(protocol='both')
+    class Meta:
+        model = models.IpValue
+        fields = ('url','id', 'value', 'rateing', 'to_ids')
+
+#    def validate_empty_values(self, data):
+#        if data is None:
+#           raise serializers.ValidationError('Value cannot be empty')
+#
+#        # if you return True all other validations will be skipped
+#        return (False, data)
+
+    def validate(self, attrs):
+        value = attrs["value"]
+        try:
+            get_validator()[self.type](value)
+        except Exception as e:
+           raise serializers.ValidationError(e)
+        return attrs
+
+
+    def to_representation(self, instance):
+        ret = super(IpValuesSerializer, self).to_representation(instance)
+        ret.pop("id")
+        return ret
+
+    def to_internal_value(self, instance):
+        ret = super(IpValuesSerializer, self).to_internal_value(instance)
+        
+        return ret
+
+    def update(self, instance, validated_data):
+        values = self.Meta().model.objects.filter(value = validated_data["value"])
+        obj = self.Meta().model.objects.filter(id=instance.id)
+        if len(values) == 1:
+            validated_data.pop("value")
+        obj.update(**validated_data)
+
+        instance.refresh_from_db()
+        return instance
+
+
+class EmailValuesSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+                    view_name="observables:email-value-detail",
+                    )
+
+    value = serializers.EmailField()
+    id = serializers.ReadOnlyField()
+    type = "email"
+
+    class Meta:
+        model = models.EmailValue
+        fields = ('url','id', 'value', 'rateing', 'to_ids')
+
+#    def validate_empty_values(self, data):
+#        if data is None:
+#           raise serializers.ValidationError('Value cannot be empty')
+#        return (False, data)
+
+    def validate(self, attrs):
+        value = attrs["value"]
+        try:
+            get_validator()[self.type](value)
+        except Exception as e:
+           raise serializers.ValidationError(e)
+        return attrs
+
+    def to_representation(self, instance):
+        ret = super(EmailValuesSerializer, self).to_representation(instance)
+        ret.pop("id")
+        return ret
+
+    def to_internal_value(self, instance):
+        ret = super(EmailValuesSerializer, self).to_internal_value(instance)
+        return ret
+
+    @transaction.atomic
+    def create(self, validated_data):
+        values, create = self.Meta().model.objects.get_or_create(value=validated_data["value"])
+        if create:
+            do_also = self.Meta().model.objects.filter(id=values.id)
+            do_also.update(**validated_data)
+            
+        values.refresh_from_db()
+        return values
+
+    def update(self, instance, validated_data):
+        values = self.Meta().model.objects.filter(value = validated_data["value"])
+        obj = self.Meta().model.objects.filter(id=instance.id)
+        if len(values) == 1:
+            validated_data.pop("value")
+        obj.update(**validated_data)
+
+        instance.refresh_from_db()
+        return instance
+
+
+class StringValuesSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+                    view_name="observables:string-value-detail",
+                    )
+
+    id = serializers.ReadOnlyField()
+    type = "string"
+    value = serializers.CharField()
+
+    class Meta:
+        model = models.StringValue
+        fields = ('url','id', 'value', 'rateing', 'to_ids')
+
+#    def validate_empty_values(self, data):
+#        if data is None:
+#           raise serializers.ValidationError('Value cannot be empty')
+#        return (False, data)
+
+    def validate(self, attrs):
+        print(attrs)
+        return attrs
+
+    def to_representation(self, instance):
+        ret = super(StringValuesSerializer, self).to_representation(instance)
+        ret.pop("id")
+        return ret
+
+    def to_internal_value(self, instance):
+        ret = super(StringValuesSerializer, self).to_internal_value(instance)
+        
+        return ret
+
+    @transaction.atomic
+    def create(self, validated_data):
+        values, create = self.Meta().model.objects.get_or_create(value=validated_data["value"])
+        if create:
+            print("New")
+        else:
+            print("Old")
+        return values
+
+    def update(self, instance, validated_data):
+        values = self.Meta().model.objects.filter(value = validated_data["value"])
+        obj = self.Meta().model.objects.filter(id=instance.id)
+        if len(values) == 1:
+            validated_data.pop("value")
+        obj.update(**validated_data)
+
+        instance.refresh_from_db()
+        return instance
+
+
+class FileValuesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.FileValue
+        fields = ('__all__')
+
+
+class ObservableTypeSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField()
+    url = serializers.HyperlinkedIdentityField(
+                    view_name="observables:observable-type-detail",
+                    )
+
+    class Meta:
+        model = models.ObservableType
+        fields = ('__all__')
+
+    def validate(self, attrs):
+        return attrs
+
+    def to_representation(self, instance):
+        ret = super(ObservableTypeSerializer, self).to_representation(instance)
+        return ret
+
+    def to_internal_value(self, instance):
+        ret = super(ObservableTypeSerializer, self).to_internal_value(instance)
+        return ret
+
+    @transaction.atomic
+    def create(self, validated_data):
+        values, create = self.Meta().model.objects.get_or_create(value=validated_data["value"])
+        return values
+
+    def update(self, instance, validated_data):
+        values = self.Meta().model.objects.filter(value = validated_data["value"])
+        obj = self.Meta().model.objects.filter(id=instance.id)
+        if len(values) == 1:
+            validated_data.pop("value")
+        obj.update(**validated_data)
+
+        instance.refresh_from_db()
+        return instance
+
+
 class ObservableValueSerializer(serializers.Serializer):
     url = serializers.HyperlinkedIdentityField(
                     view_name="observables:observable-value-detail",
                     )
 
     observable = serializers.PrimaryKeyRelatedField(many=False, queryset=models.Observable.objects.all())
-    ip = IpCustomField(protocol='both', required=False, allow_blank=True)
-    email = EmailCustomField(required=False, allow_blank=True)
-    string = StringCustomField(required=False, allow_blank=True)
-    type = serializers.CharField(max_length=None, min_length=None, allow_blank=True, trim_whitespace=False )
+    ip = IpValuesSerializer(required=False, allow_null=True)
+    email = EmailValuesSerializer(required=False, allow_null=True)
+    string = StringValuesSerializer(required=False, allow_null=True)
+    type = ObservableTypeSerializer(required=True)
     id = serializers.ReadOnlyField()
     own_id = None
+    skip_fields = list()
+
+    def validate_empty_values(self, data):
+        ret = data.copy()
+        for item, value in data.items():
+            if value is None:
+                self.skip_fields.append(item)
+                ret.pop(item)
+        return (False, data)
 
     def validate(self, attrs):
-        if "type" and "observable" in attrs: 
-            type = models.ObservableValue.objects.get(id=self.own_id).type
-            type_class = type.type_class
+        print(attrs) 
+        if ("type" and "observable" in attrs):
             valid = dict()
-            valid["observable"] = attrs["observable"]
-            attrs.pop("observable", None)
-            valid["id"] = self.own_id
 
-            if not str(type) in attrs["type"]:
-               raise serializers.ValidationError('type change is not allowed')
-
-            valid["type"] = str(type)
-            attrs.pop("type", None)
+            # validate observable
+            if "observable" in attrs:
+                valid["observable"] = attrs["observable"]
+                attrs.pop("observable", None)
+            
 
             for key, value in attrs.items():
                 valid[key] = None
@@ -110,17 +266,11 @@ class ObservableValueSerializer(serializers.Serializer):
                     if str(value) == "NULL":
                         valid[key] = "NULL"
 
-                if key in type_class:
-                    valid[key] = value
-                    try:
-                         get_validator()[key](value)
-                    except Exception as e:
-                        raise serializers.ValidationError('%s' % (e))
-
+                valid[key] = value
 
                 if str(value) == "NULL":
                     continue
-                if not key in type_class and value:
+                if not key in attrs["type"]["type_class"] and value:
                     raise serializers.ValidationError('%s field must be empty with type: %s' % (key, type_class))
 
             return valid
@@ -131,63 +281,78 @@ class ObservableValueSerializer(serializers.Serializer):
         model = models.ObservableValue
         fields = ('__all__')
 
-    def to_internal_value(self, data):
-        try:
-            self.own_id = data["id"]
-        except:
-            self.own_id = None
-        return super(ObservableValueSerializer,self).to_internal_value(data)
+#    def to_internal_value(self, data):
+#        try:
+#            self.own_id = data["id"]
+#        except:
+#            self.own_id = None
+#        return super(ObservableValueSerializer,self).to_internal_value(data)
+#
+
+    def select_serializer(self):
+        serializer = {
+            "ip": IpValuesSerializer,
+            "email": EmailValuesSerializer,
+            "string": StringValuesSerializer
+        }
+        return serializer
+
+    def select_model(self):
+        models = {
+            "ip": models.IpValue,
+            "email": models.EmailValue,
+            "string": models.StringValue
+        }
+
+    def get_orig_value(self, instance):
+        value = {
+            "ip": instance.ip,
+            "email": instance.email,
+            "string": instance.string
+        }
+        return value
 
     @transaction.atomic
     def update(self, instance, validated_data):
         pk = instance.id
         object = models.ObservableValue.objects.filter(id=pk)
+        serializer = self.select_serializer()
         for key, value in validated_data.items():
-
-            if key is "ip" and value:
-                if value == "NULL":
-                    instance.ip.delete()
+            if key in serializer and value:
+                svalue = serializer[key](data=value)
+                if not svalue.is_valid():
+                    print(serializer.errors)
                 else:
-                    ipv = models.IpValue.objects.get_or_create(value=value)
-                    object.update(ip=ipv[0].id)
-
-            if key is "email" and value:
-                if value == "NULL":
-                    instance.email.delete()
-                else:
-                    emailv = models.EmailValue.objects.get_or_create(value=value)
-                    object.update(email=emailv[0].id)
-
-            if key is "string" and value:
-                print(key)
-                stringv = models.StringValue.objects.get_or_create(value=value)
-                if value == "NULL":
-                    instance.string.delete()
-                else:
-                    stringv = models.StringValue.objects.get_or_create(value=value)
-                    object.update(string=stringv[0].id)
-
+                    new = svalue.save()
+                    svalue.update(new, svalue.validated_data)
+                    new.obs_values.add(instance)
+                    continue
+            elif value:
+                if "observable" in key:
+                    value.values.add(instance)
 
         instance.refresh_from_db()
         return instance
 
     @transaction.atomic
     def create(self, validated_data):
-        print(validated_data)
-#        value = .objects.create(**validated_data)
-#        if "members" in self.initial_data:
-#            members = self.initial_data.get("members")
-#            for member in members:
-#                id = member.get("id")
-#                role = member.get("role")
-#                member_instance = Member.objects.get(pk=id)
-#                GroupMember(group=group, member=member_instance, role=role).save()
-#        group.save()
-#        return project
+        observable = validated_data["observable"]
+        validated_data.pop("observable")
+        obj = None
+        for key, value in validated_data.items():
+            if key is "type":
+                type = models.ObservableType.objects.filter(name=value)
+                if type:
+                    validated_data["type"] = type.get()
+                continue
+            if value:
+                obj, created = get_object()[key].objects.get_or_create(value=value)
+                validated_data[key] = obj
+        
+        values = models.ObservableValue.objects.create(**validated_data)
+        observable.values.add(values)
+        return values
 
-def get_values(class_object):
-    for item in class_object:
-        print(item)
 
 class ObservableSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(

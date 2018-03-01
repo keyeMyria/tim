@@ -6,6 +6,10 @@ from rest_framework import routers
 router = routers.DefaultRouter()
 router.register(r'observables', views.ObservableViewSet)
 router.register(r'observable-value', views.ObservableValueViewSet, base_name='observable-value')
+router.register(r'email-value', views.EmailValueViewSet, base_name='email-value')
+router.register(r'ip-value', views.IpValueViewSet, base_name='ip-value')
+router.register(r'string-value', views.StringValueViewSet, base_name='string-value')
+router.register(r'observable-type', views.ObservableTypeViewSet, base_name='observable-type')
 
 
 app_name="observables"

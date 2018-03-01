@@ -49,14 +49,15 @@ class ObservableType(models.Model):
     type_class = models.CharField(max_length=25, choices=TYPES, default=None)
 
     def __str__(self):
-        typ_class = self.type_class
-        for typ in self.TYPES:
-            if self.type_class in typ:
-                typ_class = typ[1]
-        if self.name == typ_class:
-            return self.name
-        else:
-            return "%s | %s" % (typ_class, self.name)
+        return self.name
+#        typ_class = self.type_class
+#        for typ in self.TYPES:
+#            if self.type_class in typ:
+#                typ_class = typ[1]
+#        if self.name == typ_class:
+#            return self.name
+#        else:
+#            return "%s | %s" % (typ_class, self.name)
 
 
 
@@ -101,6 +102,15 @@ class ObservableValueManager(models.Manager):
 
 class IpValue(models.Model):
     value = models.GenericIPAddressField(null=True, blank=True, unique=True)
+    rateing = models.PositiveSmallIntegerField(default=0,
+                                               validators=[
+                                                    MaxValueValidator(100),
+                                                    MinValueValidator(0)
+                                               ],
+                                               blank=True
+                                               )
+    to_ids = models.NullBooleanField(default=None, blank=True)
+
 
     def __str__(self):
         return str(self.value)
@@ -108,12 +118,27 @@ class IpValue(models.Model):
 
 class EmailValue(models.Model):
     value = models.EmailField(null=True, blank=True, unique=True)
-
+    rateing = models.PositiveSmallIntegerField(default=0,
+                                               validators=[
+                                                    MaxValueValidator(100),
+                                                    MinValueValidator(0)
+                                               ],
+                                               blank=True
+                                               )
+    to_ids = models.NullBooleanField(default=None, blank=True)
     def __str__(self):
         return str(self.value)
 
 class StringValue(models.Model):
-    value = models.CharField(max_length=25, blank=True, unique=True)
+    value = models.CharField(max_length=255, blank=True, unique=True)
+    rateing = models.PositiveSmallIntegerField(default=0,
+                                               validators=[
+                                                    MaxValueValidator(100),
+                                                    MinValueValidator(0)
+                                               ],
+                                               blank=True
+                                               )
+    to_ids = models.NullBooleanField(default=None, blank=True)
 
     def __str__(self):
         return str(self.value)

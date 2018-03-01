@@ -231,7 +231,37 @@ class ObservableViewSet(viewsets.ModelViewSet):
 
 class ObservableValueViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows observables to be added, viewed or edited.
+    API endpoint for Observable Value link
     """
     queryset = models.ObservableValue.objects.all()
     serializer_class = serializers.ObservableValueSerializer
+
+class EmailValueViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for Email values
+    """
+    queryset = models.EmailValue.objects.all()
+    serializer_class = serializers.EmailValuesSerializer
+
+class IpValueViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for IP4 and IPv6 Values
+    """
+    queryset = models.IpValue.objects.all()
+    serializer_class = serializers.IpValuesSerializer
+
+class StringValueViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for String Values
+    """
+    queryset = models.StringValue.objects.all()
+    serializer_class = serializers.StringValuesSerializer
+
+class ObservableTypeViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for String Values
+    """
+    queryset = models.ObservableType.objects.all()
+    serializer_class = serializers.ObservableTypeSerializer
+
+
