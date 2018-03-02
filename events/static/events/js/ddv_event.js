@@ -6,7 +6,7 @@ $(document).ready(function() {
                 {
                 text: 'Add',
                 action: function ( e, dt, node, config ) {
-                    window.location = '/observables/add';
+                    window.location = '/events/add';
                 }
             }
         ],

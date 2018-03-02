@@ -58,6 +58,7 @@
        <div class="row">
            <div class="col-sm-6">
             {% for formset in formsets %}
+                {% bootstrap_formset_errors formset layout='inline' %}
                 {% bootstrap_formset formset show_label=True layout='inline' %}
             {% endfor %}
 
@@ -66,6 +67,7 @@
 
 
     </div>
+
     <div class="tab-pane" id="tab4">
        <div class="row">
            <div class="col-sm-6">

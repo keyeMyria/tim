@@ -129,5 +129,8 @@ class EventObservable(models.Model):
     observable = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name='event', null=True, blank=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='observable', null=True, blank=True)
 
+    class Meta:
+        unique_together = (("observable", "event"),)
+
     def __str__(self):
-        return str(event)
+        return str(self.observable)

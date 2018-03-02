@@ -144,12 +144,24 @@ class StringValue(models.Model):
         return str(self.value)
 
 class ObservableValue(models.Model):
-    observable = models.ForeignKey(Observable, null=True, blank=True, on_delete=models.SET_NULL, related_name='values')
+    observable = models.ForeignKey(Observable, null=True, blank=True, on_delete=models.SET_NULL, related_name='values' )
     ip = models.ForeignKey(IpValue, null=True, blank=True, on_delete=models.SET_NULL, related_name='obs_values')
     email = models.ForeignKey(EmailValue, null=True, blank=True, on_delete=models.SET_NULL, related_name='obs_values')
     string = models.ForeignKey(StringValue, null=True, blank=True, on_delete=models.SET_NULL, related_name='obs_values')
     type = models.ForeignKey(ObservableType, on_delete=models.CASCADE, related_name='observable_value', null=True)
 
+    class Meta:
+        unique_together = (
+                ("observable", "ip"),
+                ("observable", "email"),
+                ("observable", "string"),
+                ("ip", "email"),
+                ("ip", "string"),
+                ("email", "string"),
+                ("email", "ip"),
+        )
+
+        
     def __str__(self):
         return "%s" % self.id
 

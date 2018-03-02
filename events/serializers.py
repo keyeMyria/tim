@@ -38,37 +38,38 @@ class EventDocumentSerializer(serializers.HyperlinkedModelSerializer):
         model = models.EventDocument
         fields = ('__all__')
 
-class EventObservablesSerializer(serializers.HyperlinkedModelSerializer):
+class EventObservablesSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
                     view_name="events:event-observable-detail",
                     )
 
-    event = serializers.HyperlinkedRelatedField(
-                    many=False,
-                    read_only=True,
-                    view_name='events:event-detail',
-                    )
 
-    observable = ObservableSerializer()
+    observable = serializers.PrimaryKeyRelatedField(read_only=False, queryset=Observable.objects.all())
+    event = serializers.PrimaryKeyRelatedField(read_only=False, queryset=models.Event.objects.all())
 
     class Meta:
         model = models.EventObservable
         fields = ('__all__')
 
 
-class EventSerializer(CountryFieldMixin, serializers.HyperlinkedModelSerializer):
+class EventSerializer(CountryFieldMixin, serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
                     view_name="events:event-detail",
                     )
 
-    type = serializers.HyperlinkedRelatedField(
-                    read_only=True,
-                    view_name='events:type-detail',
-                    )
-
+#    type = serializers.HyperlinkedRelatedField(
+#                    read_only=True,
+#                    view_name='events:type-detail',
+#                    )
+#
+#    observables = EventObservablesSerializer()
 #    motive = MotiveSerializer(many=True) 
-#    sector = MotiveSerializer(many=True) 
+#    motive = serializers.StringRelatedField(many=True)
+    #sector = MotiveSerializer(many=True) 
+#    sector = serializers.StringRelatedField(many=True)
+#    observable = EventObservablesSerializer(many=True)
     observable = serializers.PrimaryKeyRelatedField(many=True, queryset=models.EventObservable.objects.all())
+#    observable = serializers.StringRelatedField(many=True)
     created = serializers.DateTimeField()
     updated = serializers.DateTimeField()
 

@@ -19,7 +19,7 @@ from django.http import HttpResponseRedirect
 from . import models
 from users.models import User
 from users.views import UserCanViewDataMixin
-from .forms import ObservableEditForm, ObservableValueFormSet, IpValueFormSet, FileValueFormSet
+from .forms import ObservableEditForm, ObservableValueFormSet, ValueFormSet, FileValueFormSet
 from django_datatables_view.base_datatable_view import BaseDatatableView
 
 
@@ -142,7 +142,7 @@ class ObservableListView(UserCanViewDataMixin, TemplateView):
 class CreateObservableView(UserCanViewDataMixin, FormsetMixin, CreateView):
     form_class = ObservableEditForm
     template_name_suffix = '_create'
-    formset_classes = [ IpValueFormSet, FileValueFormSet ]
+    formset_classes = [ ValueFormSet, FileValueFormSet ]
     model = models.Observable
 
     def get_context_data(self, **kwargs):
@@ -154,17 +154,25 @@ class CreateObservableView(UserCanViewDataMixin, FormsetMixin, CreateView):
     def get_success_url(self):
        return reverse('observables:observable_list')
 
+    def get_context_data(self, **kwargs):
+        context = super(CreateObservableView, self).get_context_data(**kwargs)
+        context['author'] = self.request.user
+        for index, item in enumerate(context["formsets"]):
+            if item.is_multipart():
+                files = context["formsets"].pop(index)
+                context["attachments"] = files
+        return context
+
 
 class ObservableEditView(UserCanViewDataMixin, FormsetMixin, UpdateView):
     model = models.Observable
     form_class = ObservableEditForm
     template_name_suffix = '_edit'
     is_update_view = True
-    formset_classes = [ IpValueFormSet, FileValueFormSet ]
+    formset_classes = [ ValueFormSet, FileValueFormSet ]
 
     def get_context_data(self, **kwargs):
         context = super(ObservableEditView, self).get_context_data(**kwargs)
-        print(context["formsets"])
         for index, item in enumerate(context["formsets"]):
             if item.is_multipart():
                 files = context["formsets"].pop(index)
