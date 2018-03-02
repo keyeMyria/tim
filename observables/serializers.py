@@ -38,12 +38,6 @@ class IpValuesSerializer(serializers.ModelSerializer):
         model = models.IpValue
         fields = ('url','id', 'value', 'rateing', 'to_ids')
 
-#    def validate_empty_values(self, data):
-#        if data is None:
-#           raise serializers.ValidationError('Value cannot be empty')
-#
-#        # if you return True all other validations will be skipped
-#        return (False, data)
 
     def validate(self, attrs):
         value = attrs["value"]
@@ -74,6 +68,16 @@ class IpValuesSerializer(serializers.ModelSerializer):
         instance.refresh_from_db()
         return instance
 
+    @transaction.atomic
+    def create(self, validated_data):
+        values, create = self.Meta().model.objects.get_or_create(value=validated_data["value"])
+        if create:
+            do_also = self.Meta().model.objects.filter(id=values.id)
+            do_also.update(**validated_data)
+            
+        values.refresh_from_db()
+        return values
+
 
 class EmailValuesSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
@@ -88,10 +92,6 @@ class EmailValuesSerializer(serializers.ModelSerializer):
         model = models.EmailValue
         fields = ('url','id', 'value', 'rateing', 'to_ids')
 
-#    def validate_empty_values(self, data):
-#        if data is None:
-#           raise serializers.ValidationError('Value cannot be empty')
-#        return (False, data)
 
     def validate(self, attrs):
         value = attrs["value"]
@@ -144,13 +144,9 @@ class StringValuesSerializer(serializers.ModelSerializer):
         model = models.StringValue
         fields = ('url','id', 'value', 'rateing', 'to_ids')
 
-#    def validate_empty_values(self, data):
-#        if data is None:
-#           raise serializers.ValidationError('Value cannot be empty')
-#        return (False, data)
 
     def validate(self, attrs):
-        print(attrs)
+        #print(attrs)
         return attrs
 
     def to_representation(self, instance):
@@ -160,17 +156,7 @@ class StringValuesSerializer(serializers.ModelSerializer):
 
     def to_internal_value(self, instance):
         ret = super(StringValuesSerializer, self).to_internal_value(instance)
-        
         return ret
-
-    @transaction.atomic
-    def create(self, validated_data):
-        values, create = self.Meta().model.objects.get_or_create(value=validated_data["value"])
-        if create:
-            print("New")
-        else:
-            print("Old")
-        return values
 
     def update(self, instance, validated_data):
         values = self.Meta().model.objects.filter(value = validated_data["value"])
@@ -181,6 +167,16 @@ class StringValuesSerializer(serializers.ModelSerializer):
 
         instance.refresh_from_db()
         return instance
+
+    @transaction.atomic
+    def create(self, validated_data):
+        values, create = self.Meta().model.objects.get_or_create(value=validated_data["value"])
+        if create:
+            do_also = self.Meta().model.objects.filter(id=values.id)
+            do_also.update(**validated_data)
+            
+        values.refresh_from_db()
+        return values
 
 
 class FileValuesSerializer(serializers.ModelSerializer):
@@ -237,7 +233,6 @@ class ObservableValueSerializer(serializers.Serializer):
     string = StringValuesSerializer(required=False, allow_null=True)
     type = ObservableTypeSerializer(required=True)
     id = serializers.ReadOnlyField()
-    own_id = None
     skip_fields = list()
 
     def validate_empty_values(self, data):
@@ -249,7 +244,6 @@ class ObservableValueSerializer(serializers.Serializer):
         return (False, data)
 
     def validate(self, attrs):
-        print(attrs) 
         if ("type" and "observable" in attrs):
             valid = dict()
 
@@ -257,7 +251,6 @@ class ObservableValueSerializer(serializers.Serializer):
             if "observable" in attrs:
                 valid["observable"] = attrs["observable"]
                 attrs.pop("observable", None)
-            
 
             for key, value in attrs.items():
                 valid[key] = None
@@ -281,13 +274,6 @@ class ObservableValueSerializer(serializers.Serializer):
         model = models.ObservableValue
         fields = ('__all__')
 
-#    def to_internal_value(self, data):
-#        try:
-#            self.own_id = data["id"]
-#        except:
-#            self.own_id = None
-#        return super(ObservableValueSerializer,self).to_internal_value(data)
-#
 
     def select_serializer(self):
         serializer = {
@@ -317,6 +303,8 @@ class ObservableValueSerializer(serializers.Serializer):
         pk = instance.id
         object = models.ObservableValue.objects.filter(id=pk)
         serializer = self.select_serializer()
+
+
         for key, value in validated_data.items():
             if key in serializer and value:
                 svalue = serializer[key](data=value)
@@ -328,7 +316,7 @@ class ObservableValueSerializer(serializers.Serializer):
                     new.obs_values.add(instance)
                     continue
             elif value:
-                if "observable" in key:
+                if "observable" in key and not isinstance(value, int):
                     value.values.add(instance)
 
         instance.refresh_from_db()
@@ -370,6 +358,13 @@ class ObservableSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
     def validate(self, attrs):
+        
+        if len(attrs["values"]) >= 3:
+            raise serializers.ValidationError('The maximum allowed observables values has been reached')
+
+        if len(attrs["values"]) == 2:
+            if attrs["values"][0]["type"] == attrs["values"][-1]["type"]:
+                raise serializers.ValidationError('Observables values with same type is not allowed')
         return attrs
 
     def to_internal_value(self, data):
@@ -400,7 +395,6 @@ class ObservableSerializer(serializers.ModelSerializer):
                             if not serializer.is_valid():
                                 print(serializer.errors)
                             else:
-                                print(serializer.validated_data)
                                 serializer.update(instance=value_instance, validated_data=send)
 
         excisting = instance.values.all()
