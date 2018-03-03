@@ -27,7 +27,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -88,7 +87,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'cti.wsgi.application'
-
+USE_TZ = True
+TIME_ZONE = 'UTC'
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases

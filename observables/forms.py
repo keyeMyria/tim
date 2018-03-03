@@ -9,7 +9,8 @@ from django.utils.text import slugify
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.forms.fields import Field, FileField
 from django.core.validators import validate_email, validate_ipv46_address
-
+from django.db.models import When, F, Q
+import pytz
 
 class ObservableForm(forms.Form):
     class Meta:
@@ -22,7 +23,7 @@ class ObservableEditForm(forms.ModelForm):
     first_seen = forms.DateField(
                 required=False,
                 widget=forms.DateInput(
-                    format='%d.%m.%Y', 
+                    format='%d.%m.%Y',
                     attrs={'id': 'first_seen_picker', 'class': 'form_datepicker'}),
                     input_formats=('%d.%m.%Y',)
                 )
@@ -64,6 +65,7 @@ class ObservableEditForm(forms.ModelForm):
         # Always return a value to use as the new cleaned data, even if
         # this method didn't change it.
         return slug
+
 
 class NewObservableForm(forms.ModelForm):
     class Meta:
@@ -130,16 +132,19 @@ class ValuesForm(forms.ModelForm):
         type_class = self.cleaned_data['type'].type_class
 
         if "ip_type" in type_class:
-            value, created = models.IpValue.objects.get_or_create(value=self.cleaned_data['value'])
+            value, created = models.IpValue.objects.get_or_create(
+                    value=self.cleaned_data['value'])
             instance.ip = value
 
         if "email_type" in type_class:
-            value, created = models.EmailValue.objects.get_or_create(value=self.cleaned_data['value'])
+            value, created = models.EmailValue.objects.get_or_create(
+                    value=self.cleaned_data['value'])
             instance.email = value
             print("fail")
 
         if "string_type" in type_class:
-            value, created = models.StringValue.objects.get_or_create(value=self.cleaned_data['value'])
+            value, created = models.StringValue.objects.get_or_create(
+                    value=self.cleaned_data['value'])
             instance.string = value
 
 
@@ -193,68 +198,69 @@ class ValuesForm(forms.ModelForm):
             except Exception as e:
                 raise forms.ValidationError(e)
 
-        own_id = None
-        ex_values = dict()
-        if not self.initial:
-            for item in cleaned_data["observable"].values.values():
-                for key in item:
-                    if not item[key] is None:
-                        if key in self.select_model():
-                            instance = cleaned_data["observable"].values.get()
-                            own_id = instance.id
-                            ex_values[key] = (self.select_model(instance)[key].id)
-                        
-                if type_.id is item["type_id"]:
-                    raise forms.ValidationError("Two values of the same type is not allowed")
 
-#            instance = self.filter_from({type_class:value})
-#            new_values = dict()
-#            if instance:
-#                key = (type_class.strip("type") + "id")
-#                new_values[key] = instance.get().id
-#
-#            test = self._meta.model.objects.filter(**ex_values)
-#            observables = list()
-#            for item in test:
-#                observables.append(item.observable_id)
-#
-#            print("trying find")
-#            failed_list = list()
-#            for observable in observables:
-#                new_values["observable"] = observable
-#                has = self._meta.model.objects.filter(**new_values)
-#                if has:
-#                    failed_list.append(has)
-#            if failed_list:
-#                raise forms.ValidationError("This observable would be a duplicate of %s, perhaps you should update the excisting observable." % failed_list)
-
-#            print(ex_values)
-#        val = self.select_model(instance)[type_class].filter(ip=value)
-        #ex_values.append(value)
-        
-        #has = self._meta.model.objects.filter()            
-        
-        #if "string_type" in type_.type_class:
-        #    if not value:
-        #        raise forms.ValidationError("Don't leave this field empty")
-
-
-class IpInlineFormSet(BaseInlineFormSet):
+class ValuesInlineFormSet(BaseInlineFormSet):
     def clean(self):
-        cleaned_data = super(IpInlineFormSet, self).clean()
+        cleaned_data = super(ValuesInlineFormSet, self).clean()
         # custom validation across forms in the formset
-        for form in self.forms:
-            # your custom formset validation
-            pass
+        compare = None
+        for item in self.forms:
+            item.is_valid()
+            if not item.data is compare:
+                compare = item.data
+
+        values0 = dict()
+        values1 = dict()
+
+        for key, value in compare.items():
+            if "values" in key and value:
+                if "values-0" in key:
+                    values0[(key.split("values-0-")[-1])] = value
+                if "values-1" in key:
+                    values1[(key.split("values-1-")[-1])] = value
+
+        validate = False
+        rm = "DELETE"
+        observable = None
+        if "type" in values0 and "type" in values1:
+            observable = values0["observable"]
+            values0.pop("observable")
+            values1.pop("observable")
+            
+            if rm in values0 or rm in values1:
+                pass
+
+            elif values0["type"] is values1["type"]:
+                raise forms.ValidationError(('Two items with same type'), 
+                        code='invalid')
+            else:
+                similar = models.Observable.objects.filter(
+                        Q(values__ip__value=values0["value"])|
+                        Q(values__email__value=values0["value"])|
+                        Q(values__string__value=values0["value"])
+                        )
+                same = (
+                    similar.filter(
+                        Q(values__ip__value=values1["value"])|
+                        Q(values__email__value=values1["value"])|
+                        Q(values__string__value=values1["value"])
+                        )
+                    )
+
+                for item in same:
+                    if not str(item.id) == str(observable):
+                        raise forms.ValidationError((
+                            'Duplicate observable to: %s' % item), 
+                        code='invalid')
 
 
 
 ValueFormSet = inlineformset_factory(models.Observable, models.ObservableValue,
                     form=ValuesForm,
                     #can_order=True,
-                    #formset=IpInlineFormSet,
+                    formset=ValuesInlineFormSet,
                     exclude=(),
-                    extra=1, 
+                    extra=2, 
                     max_num=2,
                     validate_max=True, 
                     can_delete=True)
@@ -285,6 +291,6 @@ FileValueFormSet = inlineformset_factory(models.Observable, models.FileValue,
                     form=FileForm,
                     exclude=(), 
                     max_num=1, 
-                    extra=1, 
+                    extra=2, 
                     validate_max=True, 
                     can_delete=True)
