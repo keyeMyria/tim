@@ -65,14 +65,27 @@ class Observable(models.Model):
     name = models.CharField(max_length=250, unique=True)
     notes = models.TextField(null=True, blank=True)
     slug = models.SlugField(max_length=250, null=True, unique=True)
-    author = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, related_name='observable_author')
-    kill_chain = models.ForeignKey(KillChain, on_delete=models.SET_NULL, related_name='obs_kill_chain', blank=True, null=True)
-    created = models.DateTimeField(auto_now_add=True, blank=True)
-    updated = models.DateTimeField(auto_now=True, blank=True)
-    first_seen = models.DateField(null=True, blank=True)
-    last_seen = models.DateField(null=True, blank=True)
+    author = models.ForeignKey(Account,
+            on_delete=models.CASCADE,
+            null=True,
+            related_name='observable_author')
+    kill_chain = models.ForeignKey(KillChain,
+                on_delete=models.SET_NULL,
+                related_name='obs_kill_chain',
+                blank=True,
+                null=True
+            )
+    created = models.DateTimeField(auto_now_add=True, blank=True )
+    updated = models.DateTimeField(auto_now=True, blank=True )
+    first_seen = models.DateField(null=True, blank=True )
+    last_seen = models.DateField(null=True, blank=True )
     expiration_date = models.DateField(null=True, blank=True)
-    uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False, unique=True)
+    uuid = models.UUIDField(
+                primary_key=False,
+                default=uuid.uuid4,
+                editable=False,
+                unique=True
+            )
     blacklist = models.BooleanField(default=False)
     malware_eradication = models.BooleanField(default=False)
     vurnerability_management = models.BooleanField(default=False)
@@ -144,21 +157,47 @@ class StringValue(models.Model):
         return str(self.value)
 
 class ObservableValue(models.Model):
-    observable = models.ForeignKey(Observable, null=True, blank=True, on_delete=models.SET_NULL, related_name='values' )
-    ip = models.ForeignKey(IpValue, null=True, blank=True, on_delete=models.SET_NULL, related_name='obs_values')
-    email = models.ForeignKey(EmailValue, null=True, blank=True, on_delete=models.SET_NULL, related_name='obs_values')
-    string = models.ForeignKey(StringValue, null=True, blank=True, on_delete=models.SET_NULL, related_name='obs_values')
-    type = models.ForeignKey(ObservableType, on_delete=models.CASCADE, related_name='observable_value', null=True)
+    observable = models.ForeignKey(
+            Observable,
+            null=True,
+            blank=True,
+            on_delete=models.CASCADE,
+            related_name='values'
+            )
+    ip = models.ForeignKey(
+            IpValue,
+            null=True,
+            blank=True,
+            on_delete=models.CASCADE,
+            related_name='obs_values'
+            )
+    email = models.ForeignKey(EmailValue,
+            null=True,
+            blank=True,
+            on_delete=models.CASCADE,
+            related_name='obs_values'
+            )
+    string = models.ForeignKey(StringValue,
+            null=True,
+            blank=True,
+            on_delete=models.CASCADE,
+            related_name='obs_values'
+            )
+    type = models.ForeignKey(ObservableType,
+            on_delete=models.CASCADE,
+            related_name='observable_value',
+            null=True
+            )
 
     class Meta:
         unique_together = (
-                ("observable", "ip"),
-                ("observable", "email"),
-                ("observable", "string"),
-                ("ip", "email"),
-                ("ip", "string"),
-                ("email", "string"),
-                ("email", "ip"),
+#                ("observable", "ip"),
+#                ("observable", "email"),
+#                ("observable", "string"),
+#                ("ip", "email"),
+#                ("ip", "string"),
+#                ("email", "string"),
+#                ("email", "ip"),
         )
 
         
@@ -166,10 +205,21 @@ class ObservableValue(models.Model):
         return "%s" % self.id
 
 class FileValue(models.Model):
-    str_type = models.ForeignKey(ObservableType, on_delete=models.CASCADE, related_name='file_value', null=True)
-    file_value = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name="file_value", null=True)
+    str_type = models.ForeignKey(
+            ObservableType,
+            on_delete=models.CASCADE,
+            related_name='file_value',
+            null=True)
+    file_value = models.ForeignKey(Observable,
+            on_delete=models.CASCADE,
+            related_name="file_value",
+            null=True
+            )
 
-    value = models.FileField(upload_to='documents/observables/%Y/%m/%d/', blank=True)
+    value = models.FileField(
+            upload_to='documents/observables/%Y/%m/%d/',
+            blank=True
+            )
 
     def __str__(self):
         return self.value
