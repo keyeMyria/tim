@@ -44,13 +44,22 @@ class EventObservablesSerializer(serializers.ModelSerializer):
                     )
 
 
-    observable = serializers.PrimaryKeyRelatedField(read_only=False, queryset=Observable.objects.all())
-    event = serializers.PrimaryKeyRelatedField(read_only=False, queryset=models.Event.objects.all())
+    observable = serializers.PrimaryKeyRelatedField(read_only=False,
+            queryset=Observable.objects.all())
+
+    event = serializers.PrimaryKeyRelatedField(read_only=False,
+            queryset=models.Event.objects.all())
+
+    id = serializers.ReadOnlyField()
 
     class Meta:
         model = models.EventObservable
         fields = ('__all__')
 
+    def to_representation(self, instance):
+       ret = super(EventObservablesSerializer, self).to_representation(instance)
+       ret.pop("id")
+       return ret
 
 class EventSerializer(CountryFieldMixin, serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
@@ -68,7 +77,7 @@ class EventSerializer(CountryFieldMixin, serializers.ModelSerializer):
     #sector = MotiveSerializer(many=True) 
 #    sector = serializers.StringRelatedField(many=True)
 #    observable = EventObservablesSerializer(many=True)
-    observable = serializers.PrimaryKeyRelatedField(many=True, queryset=models.EventObservable.objects.all())
+    observable = EventObservablesSerializer(many=True)
 #    observable = serializers.StringRelatedField(many=True)
     created = serializers.DateTimeField()
     updated = serializers.DateTimeField()

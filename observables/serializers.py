@@ -403,7 +403,7 @@ class ObservableSerializer(serializers.ModelSerializer):
                     )
 
 
-    event = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    event = serializers.PrimaryKeyRelatedField(many=True, queryset=Event.objects.all())
     id = serializers.ReadOnlyField()
     values = ObservableValueSerializer(many=True, read_only=False)
 
