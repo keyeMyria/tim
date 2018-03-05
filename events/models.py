@@ -133,4 +133,4 @@ class EventObservable(models.Model):
         unique_together = (("observable", "event"),)
 
     def __str__(self):
-        return str(self.observable)
+        return "EO: %s " % str(self.observable)
