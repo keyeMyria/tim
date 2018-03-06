@@ -38,7 +38,8 @@ class GeoLocation(models.Model):
         abstract = True
 
 class Motive(models.Model):
-    name = models.CharField(max_length=250)
+    author = models.ForeignKey(Account, null=True, related_name='motive', on_delete=models.CASCADE)
+    name = models.CharField(max_length=250, unique=True)
     description = models.TextField(null=True, blank=True)
 
     def __str__(self):
@@ -48,7 +49,7 @@ class Motive(models.Model):
         return reverse('common:motive_detail', args=[self.pk])
 
 class SectorClass(models.Model):
-    name = models.CharField(max_length=250)
+    name = models.CharField(max_length=250, unique=True)
     description = models.TextField(null=True, blank=True)
     author = models.ForeignKey(Account, null=True, related_name='sector_class', on_delete=models.CASCADE)
 
@@ -61,27 +62,30 @@ class SectorClass(models.Model):
 
 class Sector(models.Model):
     sector_class = models.ManyToManyField(SectorClass, related_name='sector')
-    name = models.CharField(max_length=250)
-    author = models.ForeignKey(Account, null=True, related_name='sector', on_delete=models.CASCADE)
+    name = models.CharField(max_length=250, unique=True)
+    author = models.ForeignKey(
+            Account, null=True, related_name='sector', on_delete=models.CASCADE)
     description = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=10, choices=LEVELS, default='draft')
     nis = models.BooleanField(default=False)
     constituent = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     def get_absolute_url(self):
         return reverse('common:sector_detail', args=[self.pk])
 
 class Reporter(models.Model):
-    name = models.CharField(max_length=250)
+    author = models.ForeignKey(Account, null=True, related_name='reporter', on_delete=models.CASCADE)
+    name = models.CharField(max_length=250, unique=True)
     description = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.name
 
 class SubjectType(models.Model):
+    author = models.ForeignKey(Account, null=True, related_name='subject_type', on_delete=models.CASCADE)
     name = models.CharField(max_length=250, unique=True)
     description = models.TextField(null=True, blank=True)
 
@@ -90,6 +94,7 @@ class SubjectType(models.Model):
 
 # Subject in in this case is the general Organization or Person
 class Subject(models.Model):
+    author = models.ForeignKey(Account, null=True, related_name='subject', on_delete=models.CASCADE)
     name = models.CharField(max_length=250, unique=True)
     acronym = models.CharField(max_length=250, unique=True)
     description = models.TextField(null=True, blank=True)
@@ -99,7 +104,8 @@ class Subject(models.Model):
         return self.name
 
 class KillChain(models.Model):
-    name = models.CharField(max_length=25)
+    author = models.ForeignKey(Account, null=True, related_name='kill_chain', on_delete=models.CASCADE)
+    name = models.CharField(max_length=25, unique=True)
     description = models.TextField(null=True, blank=True)
 
     def __str__(self):
@@ -107,7 +113,8 @@ class KillChain(models.Model):
 
 # Intentsion, under TTP (" what is this TTPs intentsion, what is the effect. ")
 class Intentsion(models.Model):
-    name = models.CharField(max_length=25)
+    author = models.ForeignKey(Account, null=True, related_name='intentsion', on_delete=models.CASCADE)
+    name = models.CharField(max_length=25, unique=True)
     description = models.TextField(null=True, blank=True)
 
     def __str__(self):

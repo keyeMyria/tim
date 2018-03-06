@@ -42,7 +42,7 @@ TLP = (
 )
 
 class Type(models.Model):
-    name = models.CharField(max_length=25)
+    name = models.CharField(max_length=25, unique=True)
     description = models.TextField(null=True, blank=True)
 
     def __str__(self):
@@ -58,7 +58,7 @@ class Event(models.Model):
         ('draft', 'Draft'),
         ('published', 'Published'),
     )
-    title = models.CharField(max_length=250)
+    title = models.CharField(max_length=250, unique=True)
     slug = models.SlugField(max_length=250, unique_for_date='created',null=True, blank=True)
     author = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='event_author', null=True)
     description = models.TextField(null=True, blank=True)
@@ -66,7 +66,7 @@ class Event(models.Model):
     created = models.DateTimeField(auto_now_add=True, blank=True)
     updated = models.DateTimeField(auto_now=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
-    uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
+    uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False, unique=True)
     type = models.ForeignKey(Type, on_delete=models.CASCADE, related_name='event', null=True)
 
     objects = models.Manager() # The default manager.
@@ -103,7 +103,7 @@ class Event(models.Model):
 
 class EventDocument(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='event_document', null=True, blank=True)
-    title = models.CharField(max_length=25)
+    title = models.CharField(max_length=25, unique=True)
     doc_type = models.CharField(max_length=25)
     description = models.TextField(null=True, blank=True)
     document = models.FileField(upload_to='documents/events/', null=True, blank=True)

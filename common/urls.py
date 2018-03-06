@@ -5,7 +5,7 @@ from . import views
 from rest_framework import routers
 router = routers.DefaultRouter()
 router.register(r'motive', views.MotiveViewSet)
-router.register(r'sector', views.MotiveViewSet)
+router.register(r'sector', views.SectorViewSet)
 
 
 
