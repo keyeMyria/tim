@@ -157,9 +157,15 @@ class SectorSerializer(serializers.ModelSerializer):
                 for item in value:
                     serializer = SectorClassSerializer(instance, data=item)
                     if serializer.is_valid():
-                       serializer.save()
+                       remove.add(serializer.save())
             else:
                 setattr(instance, attr, value)
+        # remove Observable
+        initial_obs = instance.sector_class.all()
+        old_obs = set([item for item in initial_obs])
+        rm_old = old_obs.difference(remove)
+        for item in rm_old:
+            item.delete()
         instance.save()
 
         return instance
