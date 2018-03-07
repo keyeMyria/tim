@@ -23,7 +23,6 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 
 from common.views import FormsetMixin
-from .forms import TTPFormSet
 
 class ActorTypeListView(UserCanViewDataMixin, ListView):
     context_object_name = 'objects'
@@ -98,13 +97,13 @@ class ThreatActorListView(UserCanViewDataMixin, ListView):
     context_object_name = 'objects'
     paginate_by = 30
     template_name_suffix = '_list'
-    model = models.ThreatActor
+    model = models.Organization
 
 
 class ThreatActorCreateView(UserCanViewDataMixin, CreateView):
     #form_class = ObservableEditForm
     template_name_suffix = '_create'
-    model = models.ThreatActor
+    model = models.Organization
     fields = '__all__'
 
     def get_success_url(self):
@@ -112,7 +111,7 @@ class ThreatActorCreateView(UserCanViewDataMixin, CreateView):
 
 
 class ThreatActorDisplayView(DetailView):
-    model = models.ThreatActor
+    model = models.Organization
     template_name_suffix = '_detail'
 
     def get_context_data(self, **kwargs):
@@ -135,11 +134,10 @@ class ThreatActorDetailView(View):
 
 
 class ThreatActorEditView(UserCanViewDataMixin, FormsetMixin, UpdateView):
-    model = models.ThreatActor
+    model = models.Organization
 #    form_class = ObservableEditForm
     template_name_suffix = '_create'
     is_update_view = True
-    formset_classes = [ TTPFormSet ]
     fields = ("__all__")
 
     def get_success_url(self):
@@ -158,7 +156,7 @@ class ThreatActorEditView(UserCanViewDataMixin, FormsetMixin, UpdateView):
 
 
 class ThreatActorDeleteView(UserCanViewDataMixin, DeleteView):
-    model = models.ThreatActor
+    model = models.Organization
     template_name_suffix = '_delete'
     success_url = reverse_lazy('actor:threat_actor_list')
 
@@ -243,7 +241,7 @@ class OrganizationDomainCreateView(UserCanViewDataMixin, CreateView):
     fields = '__all__'
 
     def get_success_url(self):
-       return reverse('actor:organization_domain_list')
+       return reverse('actor:domain_list')
 
 
 class OrganizationDomainDisplayView(DetailView):

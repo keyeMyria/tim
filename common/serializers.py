@@ -37,6 +37,33 @@ class MotiveSerializer(serializers.ModelSerializer):
             return object
         
 
+class MinMotiveSerializer(MotiveSerializer):
+
+    def to_representation(self, instance):
+        ret = super(MotiveSerializer, self).to_representation(instance)
+        return ret["name"]
+
+    def to_internal_value(self, instance):
+        ret = super(MinMotiveSerializer, self).to_internal_value(instance)
+        return ret
+
+    def validate_empty_values(self, data):
+        if isinstance(data, str):
+            data = {"name": data}
+        return (False, data)
+
+    def update(self, instance, validated_data):
+        if not "name" in validated_data:
+            raise serializers.ValidationError("a sector needs a name")
+        else:
+            try:
+                object = self.Meta().model.objects.get(
+                name=validated_data["name"])
+                return object
+            except:
+                raise serializers.ValidationError("Motive: %s does not excist" % validated_data["name"])
+
+
 class SectorClassField(serializers.PrimaryKeyRelatedField):
 
     def to_representation(self, instance):
@@ -59,8 +86,86 @@ class SectorClassSerializer(serializers.ModelSerializer):
         model = models.SectorClass
         fields = ('__all__')
 
-    def create(self, validated_data):
 
+    def update(self, instance, validated_data):
+        if not "name" in validated_data:
+            raise serializers.ValidationError("a sector class needs a name")
+        else:
+            object, create = self.Meta().model.objects.update_or_create(
+                name=validated_data["name"],
+                defaults=validated_data )
+            if not isinstance(instance, self.Meta().model):
+                object.sector.add(instance)
+            return object
+
+    def create(self, validated_data):
+        if not "name" in validated_data:
+            raise serializers.ValidationError("a sector class needs a name")
+        else:
+            object, create = self.Meta().model.objects.get_or_create(
+                name=validated_data["name"],
+                defaults=validated_data)
+            return object
+
+
+class MinSectorClassSerializer(SectorClassSerializer):
+
+    def validate_empty_values(self, data):
+        if isinstance(data, str):
+            data = {"name": data}
+        return (False, data)
+
+    def to_representation(self, instance):
+        ret = super(MinSectorClassSerializer, self).to_representation(instance)
+        return ret["name"]
+    
+    def to_internal_value(self, instance):
+        ret = super(MinSectorClassSerializer, self).to_internal_value(instance)
+        return ret
+
+
+
+class SectorSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+                    view_name="common:sector-detail",
+                    )
+
+    author = serializers.PrimaryKeyRelatedField(read_only=True)
+    name = serializers.CharField()
+    sector_class = MinSectorClassSerializer(many=True, required=False)
+
+    class Meta:
+        model = models.Sector
+        fields = ('__all__')
+
+    def to_internal_value(self, instance):
+        ret = super(SectorSerializer, self).to_internal_value(instance)
+        return ret
+
+    def update(self, instance, validated_data):
+        info = model_meta.get_field_info(instance)
+        new = set()
+
+        for attr, value in validated_data.items():
+            if attr in info.relations and info.relations[attr].to_many:
+                for item in value:
+                    serializer = SectorClassSerializer(instance, data=item)
+                    if serializer.is_valid():
+                       new.add(serializer.save())
+            else:
+                setattr(instance, attr, value)
+
+        # remove sector class only if instance is self
+        if isinstance(instance, self.Meta.model):
+            old = set(instance.sector_class.filter(sector=instance.id))
+            rm = old.difference(new)
+            for item in rm:
+                instance.sector_class.remove(item)
+            instance.save()
+            return instance
+
+
+    def create(self, validated_data):
         ModelClass = self.Meta.model
 
         # Remove many-to-many relationships from validated_data.
@@ -73,7 +178,7 @@ class SectorClassSerializer(serializers.ModelSerializer):
                 many_to_many[field_name] = validated_data.pop(field_name)
 
         try:
-            instance = ModelClass.objects.get_or_create(**validated_data)
+            instance, create = ModelClass.objects.get_or_create(**validated_data)
         except TypeError:
             tb = traceback.format_exc()
             msg = (
@@ -90,93 +195,41 @@ class SectorClassSerializer(serializers.ModelSerializer):
         # Save many-to-many relationships after the instance is created.
         if many_to_many:
             for field_name, value in many_to_many.items():
-                field = getattr(instance, field_name)
-                field.set(value)
+                for item in value:
+                    serializer = MinSectorClassSerializer(instance, data=item)
+                    if serializer.is_valid():
+                        serializer.save()
+                    else:
+                        raise serializers.ValidationError("%s" % serializer.errors)
+ 
 
+        instance.save()
         return instance
 
-    def update(self, instance, validated_data):
-        if not "name" in validated_data:
-            raise serializers.ValidationError("a sector needs a name")
-        else:
-            object, create = self.Meta().model.objects.update_or_create(
-                name=validated_data["name"],
-                defaults=validated_data )
-            if not isinstance(instance, self.Meta().model):
-                object.sector.add(instance)
-            return object
 
-    def create(self, validated_data):
-        if not "name" in validated_data:
-            raise serializers.ValidationError("a sector needs a name")
-        else:
-            object = self.Meta().model.objects.get_or_create(
-                name=validated_data["name"],
-                defaults=validated_data)
-            return object
-
-
-class MinSectorClassSerializer(SectorClassSerializer):
-
-    def validate_empty_values(self, data):
-        data = {"name": data}
-        return (False, data)
+class MinSectorSerializer(SectorSerializer):
 
     def to_representation(self, instance):
-        ret = super(MinSectorClassSerializer, self).to_representation(instance)
+        ret = super(MinSectorSerializer, self).to_representation(instance)
         return ret["name"]
-    
-    def to_internal_value(self, instance):
-        ret = super(MinSectorClassSerializer, self).to_internal_value(instance)
-        return ret
-
-
-class SectorSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(
-                    view_name="common:sector-detail",
-                    )
-
-    author = serializers.PrimaryKeyRelatedField(read_only=True)
-    name = serializers.CharField()
-    sector_class = MinSectorClassSerializer(many=True)
-
-    class Meta:
-        model = models.Sector
-        fields = ('__all__')
 
     def to_internal_value(self, instance):
-        ret = super(SectorSerializer, self).to_internal_value(instance)
+        ret = super(MinSectorSerializer, self).to_internal_value(instance)
         return ret
+
+    def validate_empty_values(self, data):
+        if isinstance(data, str):
+            data = {"name": data}
+        return (False, data)
 
     def update(self, instance, validated_data):
-        info = model_meta.get_field_info(instance)
-
-        remove = set()
-        for attr, value in validated_data.items():
-            if attr in info.relations and info.relations[attr].to_many:
-                for item in value:
-                    serializer = SectorClassSerializer(instance, data=item)
-                    if serializer.is_valid():
-                       remove.add(serializer.save())
-            else:
-                setattr(instance, attr, value)
-        # remove Observable
-        initial_obs = instance.sector_class.all()
-        old_obs = set([item for item in initial_obs])
-        rm_old = old_obs.difference(remove)
-        for item in rm_old:
-            item.delete()
-        instance.save()
-
-        return instance
-
-
-
-class SubjectSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(
-                    view_name="common:subject-detail",
-                    )
-
-    class Meta:
-        model = models.Subject
-        fields = ('__all__')
+        if not "name" in validated_data:
+            raise serializers.ValidationError("a sector needs a name")
+        else:
+            try:
+                object = self.Meta().model.objects.get(
+                name=validated_data["name"])
+                return object
+            except:
+                raise serializers.ValidationError("Sector: %s does not excist" % validated_data["name"])
+                

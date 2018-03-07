@@ -8,7 +8,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from taggit.managers import TaggableManager
 
 from common.models import Comment, GeoLocation, Motive, Sector, Reporter, KillChain
-from common.managers import UserAccountManager, PublishedManager, ClientsManager
+from common.managers import UserAccountManager, PublishedManager
 from django.core.exceptions import ObjectDoesNotExist
 
 

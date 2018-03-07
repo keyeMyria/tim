@@ -17,7 +17,7 @@ from django_datatables_view.base_datatable_view import BaseDatatableView
 from django.http import HttpResponseRedirect
 
 from .models import Event, EventComment
-from .forms import CommentForm, EventForm, DocumentFormSet, ObservablesFormSet, ThreatActorsFormSet
+from .forms import CommentForm, EventForm, DocumentFormSet, ObservablesFormSet, ActorsFormset
 from . import models
 from users.models import User
 from users.views import UserCanViewDataMixin
@@ -242,12 +242,10 @@ class EventDisplay(DetailView):
         observables = event.observable.all()
         documents = event.event_document.all()
 
-        threat_actors = event.threat_actor.all()
         context = {'event': event, 
                    'comments': comments,
                    'observables': observables,
                    'documents': documents,
-                   'threat_actors': threat_actors,
                    'similar_events': similar_events
                   }
 
@@ -316,13 +314,13 @@ class NewEventView(UserCanViewDataMixin, CreateView):
         context = self.get_context_data()
         doc_formset = context['doc_formset']
         observables = context['observables']
-        threat_actor = context['threat_actors']
+        actor = context['actors']
         if doc_formset.is_valid() and observables.is_valid() and threat_actor.is_valid():
             self.object = form.save()
             form.instance = self.object
             doc_formset.save()
             observables.save()
-            threat_actor.save()
+            actor.save()
             return HttpResponseRedirect(self.get_success_url())
         else:
             return self.render_to_response(self.get_context_data(form=form))
@@ -346,11 +344,11 @@ class NewEventView(UserCanViewDataMixin, CreateView):
         if self.request.POST:
             context['doc_formset'] = DocumentFormSet(self.request.POST, self.request.FILES, instance=self.object)
             context['observables'] = ObservablesFormSet(self.request.POST, instance=self.object)
-            context['threat_actors'] = ThreatActorsFormSet(self.request.POST, instance=self.object)
+            context['actors'] = ActorsFormset(self.request.POST, instance=self.object)
         else:
             context['doc_formset'] = DocumentFormSet(instance=self.object)
             context['observables'] = ObservablesFormSet(instance=self.object)
-            context['threat_actors'] = ThreatActorsFormSet(instance=self.object)
+            context['actors'] = ActorsFormset(instance=self.object)
         return context
 
 
@@ -367,14 +365,14 @@ class EventEditView(UserCanViewDataMixin, UpdateView):
         context = self.get_context_data()
         doc_formset = context['doc_formset']
         observables = context['observables']
-        threat_actor = context['threat_actors']
+        actor = context['actors']
 
-        if doc_formset.is_valid() and observables.is_valid() and threat_actor.is_valid():
+        if doc_formset.is_valid() and observables.is_valid() and actor.is_valid():
             self.object = form.save()
             form.instance = self.object
             doc_formset.save()
             observables.save()
-            threat_actor.save()
+            actor.save()
             return HttpResponseRedirect(self.get_success_url())
         else:
             return self.render_to_response(self.get_context_data(form=form))
@@ -400,11 +398,11 @@ class EventEditView(UserCanViewDataMixin, UpdateView):
         if self.request.POST:
             context['doc_formset'] = DocumentFormSet(self.request.POST, self.request.FILES, instance=self.object)
             context['observables'] = ObservablesFormSet(self.request.POST, instance=self.object)
-            context['threat_actors'] = ThreatActorsFormSet(self.request.POST, instance=self.object)
+            context['actors'] = ActorsFormset(self.request.POST, instance=self.object)
         else:
             context['doc_formset'] = DocumentFormSet(instance=self.object)
             context['observables'] = ObservablesFormSet(instance=self.object)
-            context['threat_actors'] = ThreatActorsFormSet(instance=self.object)
+            context['actors'] = ActorsFormset(instance=self.object)
         return context
 
 

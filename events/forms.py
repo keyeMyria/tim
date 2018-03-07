@@ -7,6 +7,7 @@ from dal import autocomplete
 from common.models import Sector
 from django.utils.text import slugify
 from users.models import Account
+from actors.models import Actor
 
 class EmailPostForm(forms.Form):
     name = forms.CharField(max_length=25)
@@ -109,7 +110,7 @@ ObservablesFormSet = inlineformset_factory(models.Event, models.EventObservable,
                                                   # how many inline-forms are sent to the template by default
                                                   extra=1)
 
-ThreatActorsFormSet = inlineformset_factory(models.Event, models.EventThreatActor, # inline-form
+ActorsFormset= inlineformset_factory(models.Event, Actor, # inline-form
                                                   exclude=('',), 
                                                   # how many inline-forms are sent to the template by default
                                                   extra=1)

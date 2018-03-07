@@ -34,8 +34,8 @@
            <li class="nav-item"><a href="#tab1" data-toggle="tab" class="nav-link" >Details</a></li>
            <li class="nav-item"><a href="#tab2" data-toggle="tab" class="nav-link" >Description</a></li>
            <li class="nav-item"><a href="#tab3" data-toggle="tab" class="nav-link" >Observables</a></li>
-           <li class="nav-item"><a href="#tab4" data-toggle="tab" class="nav-link" >Threat Actors</a></li>
-           <li class="nav-item"><a href="#tab5" data-toggle="tab" class="nav-link" >Documents</a></li>
+           <li class="nav-item"><a href="#tab4" data-toggle="tab" class="nav-link" >Documents</a></li>
+           <li class="nav-item"><a href="#tab5" data-toggle="tab" class="nav-link" >Actors</a></li>
         </ul>
     </div>
 </nav>
@@ -77,14 +77,13 @@
 
     <div class="tab-pane" id="tab4">
        <div class="col-sm-4">
-       {% bootstrap_formset threat_actors show_label=False layout='inline' %}
+       {% bootstrap_formset doc_formset show_label=False layout='inline' %}
        </div> 
     </div>
 
-
     <div class="tab-pane" id="tab5">
        <div class="col-sm-4">
-       {% bootstrap_formset doc_formset show_label=False layout='inline' %}
+       {% bootstrap_formset actors show_label=False layout='inline' %}
        </div> 
     </div>
 

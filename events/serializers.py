@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from . import models
-from common.serializers import MotiveSerializer, SectorSerializer
+from common.serializers import MinMotiveSerializer, MinSectorSerializer
 from observables.serializers import ObservableSerializer
 from django.db.models import Manager
 from django.db.models.query import QuerySet
@@ -52,11 +52,7 @@ class ObservableField(serializers.Field):
         return obj.uuid
 
     def to_internal_value(self, data):
-        qs = Observable.objects.filter(uuid=data)
-        if qs:
-            return qs.get()
-        else:
-            serializers.ValidationError('This observable does not excist')
+        return data.strip(' ')
 
 
 class EventObservablesSerializer(serializers.ModelSerializer):
@@ -67,6 +63,8 @@ class EventObservablesSerializer(serializers.ModelSerializer):
     obs = None
 
     def validate_empty_values(self, data):
+        if isinstance(data, str):
+            data = {"observable" : data}
         return (False, data)
 
     def validate(self, attrs):
@@ -78,43 +76,29 @@ class EventObservablesSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super(EventObservablesSerializer, self).to_representation(instance)
-        ret.pop("id")
-        ret.pop("event")
-        return ret
+        return ret["observable"]
 
     def to_internal_value(self, instance):
         ret = super(EventObservablesSerializer, self).to_internal_value(instance)
+        #print("event observ: %s" % ret)
+        #ret["observable"] = ret["observable"].uuid
         return ret
 
 
     def update(self, instance, validated_data):
 
-        # add if not already excists
-        object, created = self.Meta().model.objects.get_or_create(
-            observable=validated_data["observable"],
-            event=instance
-        )
+        try:
+            observable = Observable.objects.get(uuid=validated_data["observable"])
+            object, create = self.Meta.model.objects.get_or_create(observable=observable, event=instance)
+            return object
+        except Exception as error:
+            raise serializers.ValidationError("%s" % error)
 
-        return object
 
     @transaction.atomic
     def create(self, validated_data):
         return None
 
-class MinSectorSerializer(SectorSerializer):
-
-    def to_representation(self, instance):
-        ret = super(MinSectorSerializer, self).to_representation(instance)
-        return ret["name"]
-
-    def to_internal_value(self, instance):
-        ret = super(MinSectorSerializer, self).to_internal_value(instance)
-        print(ret)        
-        return ret
-
-    def validate_empty_values(self, data):
-        print(data)
-        return (False, data)
 
 
 class EventSerializer(CountryFieldMixin, serializers.ModelSerializer):
@@ -122,138 +106,120 @@ class EventSerializer(CountryFieldMixin, serializers.ModelSerializer):
                     view_name="events:event-detail",
                     )
 
+    actor = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     observable = EventObservablesSerializer(many=True)
     created = serializers.DateTimeField()
     updated = serializers.DateTimeField()
-    motive = MotiveSerializer(many=True)
+    motive = MinMotiveSerializer(many=True)
     sector = MinSectorSerializer(many=True)
 
     class Meta:
         country_dict=True
         model = models.Event
-#        fields = ('__all__')
-        exclude = ("targeted_organization", "reporter")
-        validators = []
-
-    def validate_empty_values(self, data):
-        print(data)
-        return (False, data)
+        fields = ('__all__')
+#        exclude = ("actor",)
 
 
     def to_internal_value(self, instance):
         ret = super(EventSerializer, self).to_internal_value(instance)
-        print(ret)
         return ret
 
     def get_serializer(self):
         serializers = {
-            "sector": SectorSerializer
+            "sector": MinSectorSerializer,
+            "motive": MinMotiveSerializer,
+            "observable": EventObservablesSerializer
         }
         return serializers
 
+    def get_field(self, instance):
+        # don't add through tables
+        fields = {
+            "sector": instance.sector,
+            "motive": instance.motive,
+        }
+
+        return fields
+
     def update(self, instance, validated_data):
-        # Observable data
-        obs_data = validated_data["observable"]
-        motives = validated_data["motive"]
-        sectors = validated_data["sector"]
-        validated_data.pop("observable")
-        validated_data.pop("motive")
-        obs_qs = models.Observable.objects.all()
-        obs_ev_qs = models.EventObservable.objects.all()
-
-
-
-        new_mots = set()
-        for motive in motives:
-            motive = MotiveSerializer(instance, data=motive)
-            if motive.is_valid():
-                new_mots.add(motive.save())
-            else:
-                print(motive.errors)
-
-        print(validated_data)
-        new_obs = set()
-        for obs in obs_data:
-            #TODO: create a decent validator for when obs is missing
-            if obs["observable"]:
-                send = {"observable": obs["observable"].uuid} 
-                obs_serial = EventObservablesSerializer(instance, data=send)
-                if obs_serial.is_valid():
-                    ob = obs_serial.save()
-                    new_obs.add(ob)
-                else:
-                    print(obs_serial.errors)
-
-        #raise_errors_on_nested_writes('update', self, validated_data)
         info = model_meta.get_field_info(instance)
 
-        new_secs = set()
-#        print(sectors)
-#        print(info.relations)
-#        for item in info.relations:
-#            print(item)
-
+        # update all values
         for attr, value in validated_data.items():
+            # Deal with related fields
             if attr in info.relations and info.relations[attr].to_many:
-                #field = getattr(instance, attr)
+                RelatedModel = info.relations[attr].related_model
+                old = set(RelatedModel.objects.filter(event=instance.id))
+                new = set()
                 for item in value:
                     serializer = self.get_serializer()[attr](instance, data=item)
                     if serializer.is_valid():
-                        serializer.save()
+                        new.add(serializer.save())
                     else:
                         print(serializer.errors)
-                #field.set(value)
+
+                if isinstance(instance, self.Meta.model):
+                    rm = old.difference(new)
+                    get_field = self.get_field(instance)
+                    for item in rm:
+                        # special case since observable is a through table
+                        if not attr in get_field:
+                            item.delete()
+                        else:
+                            get_field[attr].remove(item)
+
+                    add = new.difference(old)
+                    for item in add:
+                        # special case since observable is a through table
+                        if attr in get_field:
+                            item.event.add(instance)
                 
             else:
-                #print(value)
+                # set values to self
                 setattr(instance, attr, value)
 
-#        for sector in sectors:
-#            
-#            #sector = SectorSerializer(instance, data=sector)
-#            if sector.is_valid():
-#                new_secs.add(sector.save())
-#            else:
-#                print(sector.errors)
-
-
-#        # remove Observable
-#        initial_obs = instance.observable.all()
-#        old_obs = set([item for item in initial_obs])
-#        rm_old = old_obs.difference(new_obs)
-#        for item in rm_old:
-#            item.delete()
-#
-#        # remove motive
-#        initial_motives = instance.motive.all()
-#        old_mots = set([item for item in initial_motives])
-#        rm_old = old_mots.difference(new_mots)
-#        for item in rm_old:
-#            instance.motive.remove(item)
-#
-#        # handle everything remaining
-#        object = self.Meta().model.objects.filter(id=instance.id).update(**validated_data)
-#        instance.refresh_from_db()
         instance.save()
         return instance
 
     @transaction.atomic
     def create(self, validated_data):
-        print(validated_data)
-        obs_data = validated_data["observable"]
-        validated_data.pop("observable")
+
+
+        ModelClass = self.Meta.model
+
+        # Remove many-to-many relationships from validated_data.
+        # They are not valid arguments to the default `.create()` method,
+        # as they require that the instance has already been saved.
+        info = model_meta.get_field_info(ModelClass)
+        many_to_many = {}
+        for field_name, relation_info in info.relations.items():
+            if relation_info.to_many and (field_name in validated_data):
+                many_to_many[field_name] = validated_data.pop(field_name)
+
         instance = self.Meta().model.objects.create(**validated_data)
 
-        new_obs = set()
-        for obs in obs_data:
-            #TODO: create a decent validator for when obs is missing
-            if obs["observable"]:
-                send = {"observable": obs["observable"].uuid}
-                obs_serial = EventObservablesSerializer(instance, data=send)
-                if obs_serial.is_valid():
-                    ob = obs_serial.save()
-                    new_obs.add(ob)
-                else:
-                    print(obs_serial.error)
+        # maybe try remove many check ? we know they are many relations.
+        for attr, value in many_to_many.items():
+            # Deal with related fields
+            if attr in info.relations and info.relations[attr].to_many:
+                RelatedModel = info.relations[attr].related_model
+                old = set(RelatedModel.objects.filter(event=instance.id))
+                new = set()
+                for item in value:
+                    serializer = self.get_serializer()[attr](instance, data=item)
+                    if serializer.is_valid():
+                        new.add(serializer.save())
+                    else:
+                        print(serializer.errors)
+
+                if isinstance(instance, self.Meta.model):
+                    get_field = self.get_field(instance)
+                    add = new.difference(old)
+                    for item in add:
+                        # special case since observable is a through table
+                        if attr in get_field:
+                            item.event.add(instance)
+
+
         return instance
 

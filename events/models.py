@@ -9,12 +9,10 @@ from taggit.managers import TaggableManager
 
 from common.models import Comment, Motive, Sector, Reporter
 from django_countries.fields import CountryField
-from common.managers import UserAccountManager, PublishedManager, ClientsManager
+from common.managers import UserAccountManager, PublishedManager
 from observables.models import Observable
-from actors.models import ThreatActor, Organization
 from ttps.models import TTP
 from django_countries.fields import CountryField
-
 
 
 
@@ -51,7 +49,9 @@ class Type(models.Model):
     def get_absolute_url(self):
         return reverse('events:event_type')
 
-
+class ReportersManager(models.Manager):
+    def get_queryset(self):
+        return super(Organization, self).get_queryset().filter(type='reporter')
 
 class Event(models.Model):
     STATUS_CHOICES = (
@@ -60,7 +60,7 @@ class Event(models.Model):
     )
     title = models.CharField(max_length=250, unique=True)
     slug = models.SlugField(max_length=250, unique_for_date='created',null=True, blank=True)
-    author = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='event_author', null=True)
+    author = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='event', null=True)
     description = models.TextField(null=True, blank=True)
     event_date = models.DateTimeField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True, blank=True)
@@ -80,13 +80,12 @@ class Event(models.Model):
                                                validators=[MaxValueValidator(100),
                                                            MinValueValidator(0)])
 
-    targeted_organization = models.ManyToManyField(Organization, blank=True)
     reference = models.CharField(max_length=250, null=True, blank=True)
     motive = models.ManyToManyField(Motive, related_name='event', blank=True)
     sector = models.ManyToManyField(Sector, related_name='event', blank=True)
-    reporter = models.ManyToManyField(Reporter, related_name='event', blank=True)
     tag = TaggableManager() 
     country = CountryField(multiple=True, blank=True)
+    
 
     class Meta:
         ordering = ('-created',)
@@ -116,21 +115,18 @@ class EventComment(Comment):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='event_comments', null=True, blank=True)
 
 
-class EventThreatActor(models.Model):
-    threat_actor = models.ForeignKey(ThreatActor, on_delete=models.CASCADE, related_name='event', null=True, blank=True)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='threat_actor', null=True, blank=True)
-
 class EventTTP(models.Model):
     ttp = models.ForeignKey(TTP, related_name='ev_ttp', on_delete=models.CASCADE, null=True, blank=True)
     event = models.ForeignKey(Event, related_name='ttp_ev', on_delete=models.CASCADE, null=True, blank=True)
 
 
 class EventObservable(models.Model):
-    observable = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name='event', null=True, blank=True)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='observable', null=True, blank=True)
+    observable = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name='event', blank=True)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='observable', blank=True)
 
     class Meta:
         unique_together = (("observable", "event"),)
 
     def __str__(self):
-        return "EO: %s " % str(self.observable)
+        return "EO: %s | %s " % (str(self.observable), str(self.event))
+
