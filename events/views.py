@@ -41,6 +41,8 @@ from django import http
 from dal.autocomplete import Select2ListView
 from dal.views import ViewMixin
 
+from actors.models import Actor
+
 def download(request, path):
     if os.path.exists(path):
         with open(path, 'rb') as fh:
@@ -450,4 +452,9 @@ class EventDocumentViewSet(UserCanViewDataMixin, viewsets.ModelViewSet):
 class EventObservablesViewSet(UserCanViewDataMixin, viewsets.ModelViewSet):
     queryset = models.EventObservable.objects.all()
     serializer_class = serializers.EventObservablesSerializer
+
+class ActorViewSet(UserCanViewDataMixin, viewsets.ModelViewSet):
+     queryset = Actor.objects.all()
+     serializer_class = serializers.ActorSerializer
+
 

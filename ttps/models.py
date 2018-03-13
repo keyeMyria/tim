@@ -44,14 +44,19 @@ class TTPType(models.Model):
 class TTP(models.Model):
     name = models.CharField(max_length=250)
     description = models.TextField(null=True, blank=True)
-    author = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='ttp_author', null=True)
-    category = models.ForeignKey(TTPCategory, on_delete=models.CASCADE, related_name='ttp_category', null=True)  
-    ttp_type = models.ForeignKey(TTPType, on_delete=models.CASCADE, related_name='ttp_type', null=True)  
+    author = models.ForeignKey(Account, 
+        on_delete=models.CASCADE, related_name='ttp_author', null=True)
+    category = models.ForeignKey(TTPCategory, 
+        on_delete=models.CASCADE, related_name='ttp_category', null=True)  
+    ttp_type = models.ForeignKey(TTPType,
+        on_delete=models.CASCADE, related_name='ttp_type', null=True)  
     reference = models.CharField(max_length=250, null=True, blank=True)
     hunting = models.BooleanField(default=False)
     complete = models.BooleanField(default=False)
-    kill_chain = models.ForeignKey(KillChain, on_delete=models.CASCADE, related_name='ttp_kill_chain', blank=True)
-    intention = models.ForeignKey(Intentsion, on_delete=models.CASCADE, related_name='ttp_intention', blank=True)
+    kill_chain = models.ForeignKey(KillChain,
+        on_delete=models.CASCADE, related_name='ttp_kill_chain', blank=True)
+    intention = models.ForeignKey(Intentsion,
+        on_delete=models.CASCADE, related_name='ttp_intention', blank=True)
     first_seen = models.DateTimeField(null=True, blank=True)
     last_seen = models.DateTimeField(null=True, blank=True)
 

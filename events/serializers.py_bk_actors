@@ -133,6 +133,9 @@ class MinOrganizationSerializer(OrganizationSerializer):
 
 
 class ActorSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+                    view_name="events:actor-detail",
+                    )
 
     event = serializers.PrimaryKeyRelatedField(read_only=True)
     actor = MinOrganizationSerializer(many=True)
@@ -147,13 +150,12 @@ class ActorSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super(ActorSerializer, self).to_representation(instance)
-        ret.pop("id")
-        ret.pop("event")
         return ret
 
     def get_serializer(self):
         serializers = {
             "actor": MinOrganizationSerializer,
+#            "event": MinEventSerializer,
         }
         return serializers
 
@@ -164,44 +166,79 @@ class ActorSerializer(serializers.ModelSerializer):
         }
         return fields
 
+
     # only allow selecting excisting
     def update(self, instance, validated_data):
+        print(validated_data)
+        # oh god, this is ugly
+        if not isinstance(instance, self.Meta.model):
+            instance = instance.actor.all()
+        info = model_meta.get_field_info(instance)
 
-        default = {"role": validated_data["role"]}
-        object, create = self.Meta.model.objects.get_or_create(
-            event=instance, role=validated_data["role"], defaults=default)
+        # update all values
+        for attr, value in validated_data.items():
+            if attr in info.relations and info.relations[attr].to_many:
+                RelatedModel = info.relations[attr].related_model
+                old = set(RelatedModel.objects.filter(actor=instance.id))
+                new = set()
+                for item in value:
+                    serial = self.get_serializer()[attr](instance, item)
+                    if serial.is_valid():
+                        valid = serial.save()
+                        new.add(valid)
+                    else:
+                        raise serializers.ValidationError("some error")
 
-        qs = object.actor.all()
-        old = set([item.name for item in qs])
-        new = set([item["name"] for item in validated_data["actor"]])
+                if isinstance(instance, self.Meta.model):
+                    rm = old.difference(new)
+                    get_field = self.get_field(instance)
+                    for item in rm:
+                        # special case since observable is a through table
+                        if not attr in get_field:
+                            item.delete()
+                        else:
+                            # use remove or other end is deleted too w/ MtM
+                            get_field[attr].remove(item)
 
-        actors = validated_data.pop("actor")
-        actor_models = []
-        info = model_meta.get_field_info(self.Meta.model)
-        RelatedModel = info.relations["actor"].related_model
+                    add = new.difference(old)
+                    for item in add:
+                        get_field[attr].add(item)
 
-        # TODO: this needs to be done better
-        actors_l = []
-        for actor in actors:
-            actor = RelatedModel.objects.get(name=actor["name"])
-            actors_l.append(actor.id)
 
-        rm = old.difference(new)
-        for item in rm:
-            delete = RelatedModel.objects.get(name=item)
-            object.actor.remove(delete)
+            elif attr in self.get_serializer() and not info.relations[attr].to_many:
+                serial = self.get_serializer()[attr](instance, value)
+                if serial.is_valid():
+                    valid = serial.save()
+                    setattr(instance, attr, valid)
+                else:
+                    raise serializers.ValidationError("some error")
 
-        for item in actors_l:
-            object.actor.add(item)
+            else:
+                setattr(instance, attr, value)
+
         instance.save()
-        return object
+        return instance
+
+class MinActorSerializer(ActorSerializer):
+
+    def to_internal_value(self, instance):
+        ret = super(MinActorSerializer, self).to_internal_value(instance)
+        return ret
+
+    def to_representation(self, instance):
+        ret = super(MinActorSerializer, self).to_representation(instance)
+        ret.pop("id")
+        ret.pop("url")
+        ret.pop("event")
+        return ret
+
 
 class EventSerializer(CountryFieldMixin, serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
                     view_name="events:event-detail",
                     )
 
-    actor = ActorSerializer(many=True)
+    actor = MinActorSerializer(many=True)
     observable = EventObservablesSerializer(many=True)
     created = serializers.DateTimeField()
     updated = serializers.DateTimeField()
@@ -224,7 +261,7 @@ class EventSerializer(CountryFieldMixin, serializers.ModelSerializer):
             "sector": MinSectorSerializer,
             "motive": MinMotiveSerializer,
             "observable": EventObservablesSerializer,
-            "actor": ActorSerializer
+            "actor": MinActorSerializer
         }
         return serializers
 
@@ -258,11 +295,13 @@ class EventSerializer(CountryFieldMixin, serializers.ModelSerializer):
                     rm = old.difference(new)
                     get_field = self.get_field(instance)
                     for item in rm:
+                        print(old)
+                        print(new)
                         # special case since observable is a through table
-                        if not attr in get_field:
-                            item.delete()
-                        else:
-                            get_field[attr].remove(item)
+                       # if not attr in get_field:
+                       #     item.delete()
+                       # else:
+                       #     get_field[attr].remove(item)
 
                     add = new.difference(old)
                     for item in add:

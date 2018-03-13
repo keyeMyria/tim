@@ -101,7 +101,9 @@ class Event(models.Model):
 
 
 class EventDocument(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='event_document', null=True, blank=True)
+    event = models.ForeignKey(Event,
+        on_delete=models.CASCADE,
+        related_name='event_document', null=True, blank=True)
     title = models.CharField(max_length=25, unique=True)
     doc_type = models.CharField(max_length=25)
     description = models.TextField(null=True, blank=True)
@@ -112,17 +114,23 @@ class EventDocument(models.Model):
 
 
 class EventComment(Comment):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='event_comments', null=True, blank=True)
+    event = models.ForeignKey(Event,
+        on_delete=models.CASCADE,
+        related_name='event_comments', null=True, blank=True)
 
 
 class EventTTP(models.Model):
-    ttp = models.ForeignKey(TTP, related_name='ev_ttp', on_delete=models.CASCADE, null=True, blank=True)
-    event = models.ForeignKey(Event, related_name='ttp_ev', on_delete=models.CASCADE, null=True, blank=True)
+    ttp = models.ForeignKey(TTP,
+        related_name='ev_ttp', on_delete=models.CASCADE, null=True, blank=True)
+    event = models.ForeignKey(Event,
+        related_name='ttp_ev', on_delete=models.CASCADE, null=True, blank=True)
 
 
 class EventObservable(models.Model):
-    observable = models.ForeignKey(Observable, on_delete=models.CASCADE, related_name='event', blank=True)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='observable', blank=True)
+    observable = models.ForeignKey(Observable,
+        on_delete=models.CASCADE, related_name='event', blank=True)
+    event = models.ForeignKey(Event,
+        on_delete=models.CASCADE, related_name='observable', blank=True)
 
     class Meta:
         unique_together = (("observable", "event"),)

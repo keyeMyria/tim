@@ -23,6 +23,9 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 
 from common.views import FormsetMixin
+from rest_framework import viewsets
+from . import serializers
+
 
 class ActorTypeListView(UserCanViewDataMixin, ListView):
     context_object_name = 'objects'
@@ -293,4 +296,18 @@ class OrganizationDomainDeleteView(UserCanViewDataMixin, DeleteView):
     template_name_suffix = '_delete'
     success_url = reverse_lazy('actor:organization_domain_list')
 
+class ActorTypeViewSet(UserCanViewDataMixin, viewsets.ModelViewSet):
+     queryset = models.ActorType.objects.all()
+     serializer_class = serializers.ActorTypeSerializer
 
+class OrganizationViewSet(UserCanViewDataMixin, viewsets.ModelViewSet):
+     queryset = models.Organization.objects.all()
+     serializer_class = serializers.OrganizationSerializer
+
+class OrganizationDomainViewSet(UserCanViewDataMixin, viewsets.ModelViewSet):
+     queryset = models.OrganizationDomain.objects.all()
+     serializer_class = serializers.OrganizationDomainSerializer
+
+class ActorViewSet(UserCanViewDataMixin, viewsets.ModelViewSet):
+     queryset = models.Actor.objects.all()
+     serializer_class = serializers.ActorSerializer

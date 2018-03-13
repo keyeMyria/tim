@@ -5,6 +5,7 @@ from rest_framework import routers
 
 router = routers.DefaultRouter()
 router.register(r'event', views.EventViewSet)
+router.register(r'actor', views.ActorViewSet)
 router.register(r'type', views.TypeViewSet)
 router.register(r'event-document', views.EventDocumentViewSet, base_name='event-document')
 router.register(r'event-observable', views.EventObservablesViewSet, base_name='event-observable')

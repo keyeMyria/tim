@@ -84,24 +84,6 @@ class Reporter(models.Model):
     def __str__(self):
         return self.name
 
-#class SubjectType(models.Model):
-#    author = models.ForeignKey(Account, null=True, related_name='subject_type', on_delete=models.CASCADE)
-#    name = models.CharField(max_length=250, unique=True)
-#    description = models.TextField(null=True, blank=True)
-#
-#    def __str__(self):
-#        return self.name
-#
-## Subject in in this case is the general Organization or Person
-#class Subject(models.Model):
-#    author = models.ForeignKey(Account, null=True, related_name='subject', on_delete=models.CASCADE)
-#    name = models.CharField(max_length=250, unique=True)
-#    acronym = models.CharField(max_length=250, unique=True)
-#    description = models.TextField(null=True, blank=True)
-#    subject_type = models.ForeignKey(SubjectType, related_name='subject_type', on_delete=models.CASCADE, null=True)
-#
-#    def __str__(self):
-#        return self.name
 
 class KillChain(models.Model):
     author = models.ForeignKey(Account, null=True, related_name='kill_chain', on_delete=models.CASCADE)

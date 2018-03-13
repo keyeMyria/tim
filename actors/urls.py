@@ -1,5 +1,14 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
+
+from rest_framework import routers
+router = routers.DefaultRouter()
+router.register(r'actor', views.ActorViewSet, base_name='actor')
+router.register(r'actor-type', views.ActorTypeViewSet, base_name='actor-type')
+router.register(r'organization', views.OrganizationViewSet)
+router.register(r'organization-domain', views.OrganizationDomainViewSet, base_name='organization-domain')
+
+
 
 app_name="actors"
 urlpatterns = [
@@ -31,5 +40,6 @@ urlpatterns = [
     path(r'domain/<pk>/delete', views.OrganizationDomainDeleteView.as_view(), name='domain_delete'),
     path(r'domain/<pk>/edit', views.OrganizationDomainEditView.as_view(), name='domain_edit'),
 
+    path(r'api/', include(router.urls )),
 
 ] 
