@@ -56,7 +56,7 @@ class IpValuesSerializer(serializers.ModelSerializer):
 
     def to_internal_value(self, instance):
         ret = super(IpValuesSerializer, self).to_internal_value(instance)
-
+        
         return ret
 
     def update(self, instance, validated_data):
@@ -69,10 +69,7 @@ class IpValuesSerializer(serializers.ModelSerializer):
         obj.update(**validated_data)
 
         instance.refresh_from_db()
-        if isinstance(instance, self.Meta.model):
-            return instance
-        else:
-            return obj
+        return instance
 
     @transaction.atomic
     def create(self, validated_data):
@@ -81,9 +78,10 @@ class IpValuesSerializer(serializers.ModelSerializer):
         if create:
             do_also = self.Meta().model.objects.filter(id=values.id)
             do_also.update(**validated_data)
-
+            
         values.refresh_from_db()
         return values
+
 
 class EmailValuesSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
@@ -123,7 +121,7 @@ class EmailValuesSerializer(serializers.ModelSerializer):
         if create:
             do_also = self.Meta().model.objects.filter(id=values.id)
             do_also.update(**validated_data)
-
+            
         values.refresh_from_db()
         return values
 
@@ -135,10 +133,7 @@ class EmailValuesSerializer(serializers.ModelSerializer):
         obj.update(**validated_data)
 
         instance.refresh_from_db()
-        if isinstance(instance, self.Meta.model):
-            return instance
-        else:
-            return obj
+        return instance
 
 
 class StringValuesSerializer(serializers.ModelSerializer):
@@ -176,11 +171,7 @@ class StringValuesSerializer(serializers.ModelSerializer):
         obj.update(**validated_data)
 
         instance.refresh_from_db()
-        if isinstance(instance, self.Meta.model):
-            return instance
-        else:
-            return obj
-
+        return instance
 
     @transaction.atomic
     def create(self, validated_data):
@@ -190,7 +181,7 @@ class StringValuesSerializer(serializers.ModelSerializer):
         if create:
             do_also = self.Meta().model.objects.filter(id=values.id)
             do_also.update(**validated_data)
-
+            
         values.refresh_from_db()
         return values
 
@@ -229,10 +220,15 @@ class ObservableTypeSerializer(serializers.ModelSerializer):
         return values
 
     def update(self, instance, validated_data):
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+        values = self.Meta().model.objects.filter(
+                value = validated_data["value"]
+                )
+        obj = self.Meta().model.objects.filter(id=instance.id)
+        if len(values) == 1:
+            validated_data.pop("value")
+        obj.update(**validated_data)
 
-        instance.save()
+        instance.refresh_from_db()
         return instance
 
 
@@ -241,31 +237,95 @@ class ObservableValueSerializer(serializers.Serializer):
                     view_name="observables:observable-value-detail",
                     )
 
-
-    observable = serializers.SlugRelatedField(
-            read_only=False,
+    observable = serializers.PrimaryKeyRelatedField(
             many=False,
-            queryset=models.Observable.objects.all(),
-            slug_field='name'
+            queryset=models.Observable.objects.all()
             )
-
 
     ip = IpValuesSerializer(required=False, allow_null=True)
     email = EmailValuesSerializer(required=False, allow_null=True)
     string = StringValuesSerializer(required=False, allow_null=True)
     type = ObservableTypeSerializer(required=True)
     skip_fields = list()
+    id = serializers.IntegerField(required=False, allow_null=True)
 
     class Meta:
         model = models.ObservableValue
         fields = ('__all__')
+        extra_kwargs = {'id': {'read_only': False}}
+
+    def to_representation(self, instance):
+        ret = super(ObservableValueSerializer, self).to_representation(instance)
+        return ret
+
+    def to_internal_value(self, instance):
+        ret = super(ObservableValueSerializer, self).to_internal_value(instance)
+        return ret
+
+    def validate_empty_values(self, data):
+        ret = data.copy()
+        for item, value in data.items():
+            if value is None:
+                self.skip_fields.append(item)
+                ret.pop(item)
+        return (False, data)
+
+    def validate(self, attrs):
+        if "id" in attrs:
+            ObsVal = models.ObservableValue.objects.get(id=attrs["id"])
+            if ObsVal.observable_id:
+                if not int(ObsVal.observable_id) == int(attrs["observable"].id):
+                    raise serializers.ValidationError(
+                            "This value is used by: %s"%
+                            models.Observable.objects.get(
+                                id=int(ObsVal.observable_id)))
+
+        if ("type" and "observable" in attrs):
+            valid = dict()
+
+            id_in_observ = False
+            for item in attrs["observable"].values.values():
+                if attrs["id"] in item.values():
+                    id_in_boserv = True
+            if len(attrs["observable"].values.values()) > 1 and id_in_observ:
+                raise serializers.ValidationError(
+                        "maximum observable values is 2")
+                
+
+            # validate observable
+            if "observable" in attrs:
+                valid["observable"] = attrs["observable"]
+                attrs.pop("observable", None)
+
+            for key, value in attrs.items():
+                valid[key] = None
+
+                if value:
+                    if str(value) == "NULL":
+                        valid[key] = "NULL"
+
+                valid[key] = value
+
+                if str(value) == "NULL":
+                    continue
+
+                if not key in attrs["type"]["type_class"] and value:
+                    if not key == "id":
+                        raise serializers.ValidationError(
+                                '%s field must be empty with type: %s' 
+                                % (key, attrs["type"]["type_class"]))
+
+            return valid
+        else:
+            return attrs
+
+
 
     def select_serializer(self):
         serializer = {
             "ip": IpValuesSerializer,
             "email": EmailValuesSerializer,
-            "string": StringValuesSerializer,
-            "type": ObservableTypeSerializer 
+            "string": StringValuesSerializer
         }
         return serializer
 
@@ -284,28 +344,67 @@ class ObservableValueSerializer(serializers.Serializer):
         }
         return value
 
+    @transaction.atomic
     def update(self, instance, validated_data):
-        info = model_meta.get_field_info(instance)
+        pk = instance.id
+        #object = models.ObservableValue.objects.filter(id=pk)
+        #serializer = self.select_serializer()
+        #for key, value in validated_data.items():
+        #    if key in serializer and value:
+        #        svalue = serializer[key](data=value)
+        #        if not svalue.is_valid():
+        #            print(serializer.errors)
+        #        else:
+        #            new = svalue.save()
+        #            svalue.update(new, svalue.validated_data)
+        #            new.obs_values.add(instance)
+        #            continue
+        #    elif value:
+        #        if "observable" in key and not isinstance(value, int):
+        #            value.values.add(instance)
 
-        # update all values
-        for attr, value in validated_data.items():
-            # Deal with related fields
-            if attr in info.relations and attr in self.select_serializer() and value:
-                RelatedModel = info.relations[attr].related_model
-                object = RelatedModel.objects.get(values=instance.id)
-                new = set()
-                serializer = self.select_serializer()[attr](object, data=value)
-                if serializer.is_valid():
-                    new.add(serializer.save())
-                else:
-                    print(serializer.errors)
-
-            else:
-                pass
-
-        instance.save()
+        #instance.refresh_from_db()
         return instance
 
+    def get_serializer(self):
+        serializers = {
+                "ip":IpValuesSerializer,
+                "email":EmailValuesSerializer,
+                "string":StringValuesSerializer
+                }
+
+        return serializers
+
+    @transaction.atomic
+    def create(self, validated_data):
+        print("Createing ObservableValues")
+        obj = None
+        values = None
+        type = None
+        send = dict()
+        observable = validated_data.pop("observable")
+        type = validated_data.pop("type")
+
+        type_serial = ObservableTypeSerializer(data=type)
+        if type_serial.is_valid():
+            type = type_serial.save()
+            send["type"] = type
+        else:
+            raise serializers.ValidationError(type.errors)
+
+        for key, value in validated_data.items():
+
+            if key in self.get_serializer() and value:
+                values_serial = self.get_serializer()[key](data=value)
+                if values_serial.is_valid():
+                    values = values_serial.save()
+                    send[key] = values
+                else:
+                    raise serializers.ValidationError(values.errors)
+
+        send["observable"] = observable
+        values, created = self.Meta().model.objects.update_or_create(**send)
+        return values
 
 class EventField(serializers.Field):
 
@@ -317,14 +416,7 @@ class EventField(serializers.Field):
 
 
 class EventObservablesSerializer(serializers.ModelSerializer):
-
-    observable = serializers.SlugRelatedField(
-            read_only=True,
-            many=False,
-            slug_field='name',
-            required = False
-            )
-
+    observable = serializers.PrimaryKeyRelatedField(read_only=True)
     event = EventField()
 
     id = serializers.ReadOnlyField()
@@ -332,7 +424,7 @@ class EventObservablesSerializer(serializers.ModelSerializer):
 
     def validate_empty_values(self, data):
         if isinstance(data, str):
-            data = {"event" : data}
+            data = {"observable" : data}
         return (False, data)
 
     def validate(self, attrs):
@@ -344,11 +436,10 @@ class EventObservablesSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super(EventObservablesSerializer, self).to_representation(instance)
-        return ret["event"]
+        return ret
 
     def to_internal_value(self, instance):
         ret = super(EventObservablesSerializer, self).to_internal_value(instance)
-        print("ret is %s" % ret)
         return ret
 
 
@@ -365,23 +456,79 @@ class EventObservablesSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return None
 
+class MinObservableValueSerializer(ObservableValueSerializer):
+
+    def validate_empty_values(self, data):
+        ret = data.copy()
+        print(ret)
+        for item, value in data.items():
+            if value is None:
+                self.skip_fields.append(item)
+                ret.pop(item)
+        return (False, data)
+
+
+    def update(self, instance, validated_data):
+#        print(validated_data)
+#        pk = instance.id
+#        object = models.ObservableValue.objects.filter(id=pk)
+#        serializer = self.select_serializer()
+#        for key, value in validated_data.items():
+#            if key in serializer and value:
+#                svalue = serializer[key](data=value)
+#                if not svalue.is_valid():
+#                    print(serializer.errors)
+#                else:
+#                    new = svalue.save()
+#                    svalue.update(new, svalue.validated_data)
+#                    new.obs_values.add(instance)
+#                    continue
+#            elif value:
+#                if "observable" in key and not isinstance(value, int):
+#                    value.values.add(instance)
+#
+#        instance.refresh_from_db()
+        return instance
+
+
 class ObservableSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
                     view_name="observables:observable-detail",
                     )
 
-
     event = EventObservablesSerializer(many=True, read_only=False)
     id = serializers.ReadOnlyField()
-    values = ObservableValueSerializer(many=True, read_only=False)
-
+    values = MinObservableValueSerializer(many=True, read_only=False)
 
     class Meta:
         model = models.Observable
         fields = ('__all__')
 
-    def validate(self, attrs):
+    def to_representation(self, instance):
+        ret = super(ObservableSerializer,self).to_representation(instance)
+        event = []
+        for item in ret["event"]:
+            event.append(item["event"])
+        ret["event"] = event
+        return ret
 
+    def validate_empty_values(self, data):
+        event = []
+        for item in data["event"]:
+            event.append({"event": item})
+        data["event"] = event
+        if isinstance(data, str):
+            data = {"observable" : data}
+        return (False, data)
+
+
+    def to_internal_value(self, data):
+        to_internal = super(ObservableSerializer,self).to_internal_value(data)
+        return to_internal
+
+
+    def validate(self, attrs):
+      
         if "values" in attrs:
             if attrs["values"]:
                 old_values = (attrs["values"][0]["observable"].values.values())
@@ -396,7 +543,7 @@ class ObservableSerializer(serializers.ModelSerializer):
     def get_serializer(self):
         serializers = {
             "event": EventObservablesSerializer,
-            "values": ObservableValueSerializer,
+            "values": MinObservableValueSerializer,
         }
         return serializers
 
@@ -409,7 +556,6 @@ class ObservableSerializer(serializers.ModelSerializer):
 
 
     def update(self, instance, validated_data):
-        print(validated_data)
         info = model_meta.get_field_info(instance)
 
         # update all values
@@ -417,11 +563,10 @@ class ObservableSerializer(serializers.ModelSerializer):
             # Deal with related fields
             if attr in info.relations and info.relations[attr].to_many:
                 RelatedModel = info.relations[attr].related_model
-                object = RelatedModel.objects.get(values=instance.id)
                 old = set(RelatedModel.objects.filter(observable=instance.id))
                 new = set()
                 for item in value:
-                    serializer = self.get_serializer()[attr](object, data=item)
+                    serializer = self.get_serializer()[attr](instance, data=item)
                     if serializer.is_valid():
                         new.add(serializer.save())
                     else:
@@ -443,10 +588,62 @@ class ObservableSerializer(serializers.ModelSerializer):
                 #        # special case since observable is a through table
                 #        if attr in get_field:
                 #            item.event.add(instance)
-
+                
             else:
                 # set values to self
                 setattr(instance, attr, value)
 
         instance.save()
         return instance
+
+
+#    @transaction.atomic
+#    def update(self, instance, validated_data):
+#        print(validated_data["event"])
+##        for item, value in validated_data.items():
+##            print(item, value)
+#        pk = instance.id
+#        clean_values = validated_data.pop("values")
+#        old_values = models.Observable.objects.get(pk=pk).values.all()
+#        new_values = list()
+#        obsvalues = instance.values.all()
+#        
+#
+#        for index, item in enumerate(clean_values):
+#            item["observable"] = pk
+#
+#            if "id" in item:
+#                ObsVal = models.ObservableValue.objects.get(pk=item["id"])
+#                values = ObservableValueSerializer(ObsVal, data=item)
+#            else:
+#                values = ObservableValueSerializer(data=item)
+#
+#            if not values.is_valid():
+#                raise serializers.ValidationError(
+#                        "%s" % values.errors)
+#
+#            else:
+#                values = values.save()
+#                new_values.append(values)
+#
+#        object = models.Observable.objects.filter(id=pk)
+#        #object.update(**validated_data)
+#        #instance.event.set(event)
+#
+#        if not clean_values:
+#            for item in object.get().values.all():
+#                instance.values.remove(item)
+#
+#        old = set([item for item in old_values])
+#        new = set([item for item in new_values])
+#        rm = new.symmetric_difference(old)
+#        if rm:
+#            for item in rm:
+#               instance.values.remove(item)
+#               item.delete()
+#
+#
+#
+#        instance.refresh_from_db()
+#        return instance
+#

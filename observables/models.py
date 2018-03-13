@@ -169,23 +169,23 @@ class ObservableValue(models.Model):
             null=True,
             blank=True,
             on_delete=models.CASCADE,
-            related_name='obs_values'
+            related_name='values'
             )
     email = models.ForeignKey(EmailValue,
             null=True,
             blank=True,
             on_delete=models.CASCADE,
-            related_name='obs_values'
+            related_name='values'
             )
     string = models.ForeignKey(StringValue,
             null=True,
             blank=True,
             on_delete=models.CASCADE,
-            related_name='obs_values'
+            related_name='values'
             )
     type = models.ForeignKey(ObservableType,
             on_delete=models.CASCADE,
-            related_name='observable_value',
+            related_name='values',
             null=True
             )
 
