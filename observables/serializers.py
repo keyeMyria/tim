@@ -255,6 +255,7 @@ class ObservableValueSerializer(serializers.Serializer):
     string = StringValuesSerializer(required=False, allow_null=True)
     type = ObservableTypeSerializer(required=True)
     skip_fields = list()
+    id = serializers.ReadOnlyField()
 
     class Meta:
         model = models.ObservableValue
@@ -285,25 +286,47 @@ class ObservableValueSerializer(serializers.Serializer):
         return value
 
     def update(self, instance, validated_data):
-        info = model_meta.get_field_info(instance)
-
+        info = model_meta.get_field_info(self.Meta.model)
+        observable = validated_data.pop("observable")
         # update all values
+
+
+        
+        # get value object (email, ip, etc)
+        #val_object = None
+        self_filter = {"observable": observable}
         for attr, value in validated_data.items():
+            print(attr)
             # Deal with related fields
-            if attr in info.relations and attr in self.select_serializer() and value:
+            if value and attr in self.select_serializer():
                 RelatedModel = info.relations[attr].related_model
-                object = RelatedModel.objects.get(values=instance.id)
-                new = set()
-                serializer = self.select_serializer()[attr](object, data=value)
-                if serializer.is_valid():
-                    new.add(serializer.save())
-                else:
-                    print(serializer.errors)
+                related_id = None
+                filter_value = {attr:value['value']}
+                print(observable.values.filter(**filter_value))
+                #serializer = self.select_serializer()[attr](object, data=value)
+                #if serializer.is_valid():
+                #    new.add(serializer.save())
+                #else:
+                #    print(serializer.errors)
 
-            else:
-                pass
 
-        instance.save()
+                self_filter[attr] = val_object
+        
+        object, created  = self.Meta.model.objects.get_or_create(**self_filter)
+        return object
+
+#                new = set()
+#                serializer = self.select_serializer()[attr](object, data=value)
+#                if serializer.is_valid():
+#                    new.add(serializer.save())
+#                else:
+#                    print(serializer.errors)
+#
+#            else:
+#                pass
+#
+#        instance.save()
+#        return instance
         return instance
 
 
@@ -348,19 +371,18 @@ class EventObservablesSerializer(serializers.ModelSerializer):
 
     def to_internal_value(self, instance):
         ret = super(EventObservablesSerializer, self).to_internal_value(instance)
-        print("ret is %s" % ret)
         return ret
 
 
     def update(self, instance, validated_data):
-        try:
-            event = Event.objects.get(title=validated_data["event"])
-            object, create = self.Meta.model.objects.get_or_create(
-                event=event, observable=instance)
-            return object
-        except Exception as error:
-            raise serializers.ValidationError("%s" % error)
-
+        info = model_meta.get_field_info(self.Meta.model)
+        RelatedModel = info.relations["event"].related_model
+        event = RelatedModel.objects.get(title=validated_data["event"])
+        
+        object, created = self.Meta.model.objects.get_or_create(
+            event=event, observable=instance
+        )
+        return object
 
     def create(self, validated_data):
         return None
@@ -400,53 +422,61 @@ class ObservableSerializer(serializers.ModelSerializer):
         }
         return serializers
 
-    def get_field(self, instance):
-        # don't add through tables
-        fields = {
-        }
-
-        return fields
-
 
     def update(self, instance, validated_data):
-        print(validated_data)
+        if not isinstance(instance, self.Meta.model):
+            raise serializers.ValidationError(
+               'instance has to be Observable')
+       
         info = model_meta.get_field_info(instance)
 
         # update all values
         for attr, value in validated_data.items():
             # Deal with related fields
-            if attr in info.relations and info.relations[attr].to_many:
+            new = set()
+            if attr is "event":
                 RelatedModel = info.relations[attr].related_model
-                object = RelatedModel.objects.get(values=instance.id)
-                old = set(RelatedModel.objects.filter(observable=instance.id))
-                new = set()
+                qs = RelatedModel.objects.filter(observable=instance)
+                old = set(qs)
                 for item in value:
-                    serializer = self.get_serializer()[attr](object, data=item)
+                    serializer = self.get_serializer()[attr](instance, data=item)
                     if serializer.is_valid():
                         new.add(serializer.save())
                     else:
                         print(serializer.errors)
 
-                print("new %s " %new)
-                #if isinstance(instance, self.Meta.model):
-                #    rm = old.difference(new)
-                #    get_field = self.get_field(instance)
-                #    for item in rm:
-                #        # special case since observable is a through table
-                #        if not attr in get_field:
-                #            item.delete()
-                #        else:
-                #            get_field[attr].remove(item)
+                rm = old.difference(new)
+                for item in rm:
+                    item.delete()
 
-                #    add = new.difference(old)
-                #    for item in add:
-                #        # special case since observable is a through table
-                #        if attr in get_field:
-                #            item.event.add(instance)
+
+            elif attr is "values":
+                RelatedModel = info.relations[attr].related_model
+                for item in value:
+                    item["observable"] = instance
+                    serializer = self.get_serializer()[attr](instance, data=item)
+                    if serializer.is_valid():
+                        new.add(serializer.save())
+                    else:
+                        print(serializer.errors)
+
+                #old = set([item for item in qs])
+                #for index, object in enumerate(qs):
+                #    serializer = self.get_serializer()[attr](object, 
+                #        data=value[index])
+                #    if serializer.is_valid():
+                #        new.add(serializer.save())
+                #    else:
+                #        print(serializer.errors)
+
+                #rm = old.difference(new)
+                #for item in rm:
+                #    item.delete()
 
             else:
                 # set values to self
                 setattr(instance, attr, value)
+
 
         instance.save()
         return instance
