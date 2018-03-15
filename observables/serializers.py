@@ -365,23 +365,7 @@ class ObservableSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             # Deal with related fields
             new = set()
-            if attr is "event":
-                RelatedModel = info.relations[attr].related_model
-                qs = RelatedModel.objects.filter(observable=instance)
-                old = set(qs)
-                for item in value:
-                    serializer = self.get_serializer()[attr](instance, data=item)
-                    if serializer.is_valid():
-                        new.add(serializer.save())
-                    else:
-                        print(serializer.errors)
-
-                rm = old.difference(new)
-                for item in rm:
-                    item.delete()
-
-
-            elif attr is "values":
+            if attr in self.get_serializer():
                 RelatedModel = info.relations[attr].related_model
                 qs = RelatedModel.objects.filter(observable=instance)
                 for item in value:
