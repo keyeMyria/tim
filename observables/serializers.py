@@ -60,30 +60,18 @@ class IpValuesSerializer(serializers.ModelSerializer):
         return ret
 
     def update(self, instance, validated_data):
-        values = self.Meta().model.objects.filter(
-                **validated_data
-                )
-        obj = self.Meta().model.objects.filter(id=instance.id)
-        if len(values) == 1:
-            validated_data.pop("value")
-        obj.update(**validated_data)
-
-        instance.refresh_from_db()
-        if isinstance(instance, self.Meta.model):
-            return instance
-        else:
-            return obj
+        identify = validated_data.pop("value")
+        object, created = self.Meta.model.objects.update_or_create(
+            value=identify, defaults=(validated_data))
+        return object
 
     @transaction.atomic
     def create(self, validated_data):
-        values, create = self.Meta().model.objects.get_or_create(
-                value=validated_data["value"])
-        if create:
-            do_also = self.Meta().model.objects.filter(id=values.id)
-            do_also.update(**validated_data)
+        identify = validated_data.pop("value")
+        object, created = self.Meta.model.objects.update_or_create(
+            value=identify, defaults=(validated_data))
+        return object
 
-        values.refresh_from_db()
-        return values
 
 class EmailValuesSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
@@ -116,30 +104,17 @@ class EmailValuesSerializer(serializers.ModelSerializer):
         ret = super(EmailValuesSerializer, self).to_internal_value(instance)
         return ret
 
-    @transaction.atomic
     def create(self, validated_data):
-        values, create = self.Meta().model.objects.get_or_create(
-                value=validated_data["value"])
-        if create:
-            do_also = self.Meta().model.objects.filter(id=values.id)
-            do_also.update(**validated_data)
-
-        values.refresh_from_db()
-        return values
+        identify = validated_data.pop("value")
+        object, created = self.Meta.model.objects.update_or_create(
+            value=identify, defaults=(validated_data))
+        return object
 
     def update(self, instance, validated_data):
-        values = self.Meta().model.objects.filter(value = validated_data["value"])
-        obj = self.Meta().model.objects.filter(id=instance.id)
-        if len(values) == 1:
-            validated_data.pop("value")
-        obj.update(**validated_data)
-
-        instance.refresh_from_db()
-        if isinstance(instance, self.Meta.model):
-            return instance
-        else:
-            return obj
-
+        identify = validated_data.pop("value")
+        object, created = self.Meta.model.objects.update_or_create(
+            value=identify, defaults=(validated_data))
+        return object
 
 class StringValuesSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
@@ -168,31 +143,16 @@ class StringValuesSerializer(serializers.ModelSerializer):
         return ret
 
     def update(self, instance, validated_data):
-        values = self.Meta().model.objects.filter(
-                value = validated_data["value"])
-        obj = self.Meta().model.objects.filter(id=instance.id)
-        if len(values) == 1:
-            validated_data.pop("value")
-        obj.update(**validated_data)
+        identify = validated_data.pop("value")
+        object, created = self.Meta.model.objects.update_or_create(
+            value=identify, defaults=(validated_data))
+        return object
 
-        instance.refresh_from_db()
-        if isinstance(instance, self.Meta.model):
-            return instance
-        else:
-            return obj
-
-
-    @transaction.atomic
     def create(self, validated_data):
-        values, create = self.Meta().model.objects.get_or_create(
-                value=validated_data["value"]
-                )
-        if create:
-            do_also = self.Meta().model.objects.filter(id=values.id)
-            do_also.update(**validated_data)
-
-        values.refresh_from_db()
-        return values
+        identify = validated_data.pop("value")
+        object, created = self.Meta.model.objects.update_or_create(
+            value=identify, defaults=(validated_data))
+        return object
 
 
 class FileValuesSerializer(serializers.ModelSerializer):
@@ -222,18 +182,20 @@ class ObservableTypeSerializer(serializers.ModelSerializer):
         ret = super(ObservableTypeSerializer, self).to_internal_value(instance)
         return ret
 
-    @transaction.atomic
     def create(self, validated_data):
-        values, create = self.Meta().model.objects.get_or_create(
-                **validated_data)
-        return values
+        identify_by = validated_data.pop("name")
+        object, created = self.Meta.model.objects.update_or_create(
+            name=identify_by, defaults=validated_data
+        )
+        return object
 
     def update(self, instance, validated_data):
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+        identify_by = validated_data.pop("name")
+        object, created = self.Meta.model.objects.update_or_create(
+            name=identify_by, defaults=validated_data
+        )
 
-        instance.save()
-        return instance
+        return object
 
 
 class ObservableValueSerializer(serializers.Serializer):
@@ -289,45 +251,24 @@ class ObservableValueSerializer(serializers.Serializer):
         info = model_meta.get_field_info(self.Meta.model)
         observable = validated_data.pop("observable")
         # update all values
-
-
         
-        # get value object (email, ip, etc)
-        #val_object = None
         self_filter = {"observable": observable}
+
         for attr, value in validated_data.items():
-            print(attr)
             # Deal with related fields
             if value and attr in self.select_serializer():
                 RelatedModel = info.relations[attr].related_model
                 related_id = None
-                filter_value = {attr:value['value']}
-                print(observable.values.filter(**filter_value))
-                #serializer = self.select_serializer()[attr](object, data=value)
-                #if serializer.is_valid():
-                #    new.add(serializer.save())
-                #else:
-                #    print(serializer.errors)
+                serializer = self.select_serializer()[attr](instance, data=value)
+                if serializer.is_valid():
+                    obj = serializer.save()
+                    self_filter[attr] = obj
+                else:
+                    print(serializer.errors)
 
-
-                self_filter[attr] = val_object
-        
-        object, created  = self.Meta.model.objects.get_or_create(**self_filter)
+        object, created = self.Meta.model.objects.update_or_create(**self_filter)
         return object
 
-#                new = set()
-#                serializer = self.select_serializer()[attr](object, data=value)
-#                if serializer.is_valid():
-#                    new.add(serializer.save())
-#                else:
-#                    print(serializer.errors)
-#
-#            else:
-#                pass
-#
-#        instance.save()
-#        return instance
-        return instance
 
 
 class EventField(serializers.Field):
@@ -403,16 +344,6 @@ class ObservableSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
     def validate(self, attrs):
-
-        if "values" in attrs:
-            if attrs["values"]:
-                old_values = (attrs["values"][0]["observable"].values.values())
-                new_values = attrs["values"]
-
-                if len(attrs["values"]) == 2:
-                    if attrs["values"][0]["type"] == attrs["values"][-1]["type"]:
-                        raise serializers.ValidationError(
-                                'Observables values with same type is not allowed')
         return attrs
 
     def get_serializer(self):
@@ -452,6 +383,7 @@ class ObservableSerializer(serializers.ModelSerializer):
 
             elif attr is "values":
                 RelatedModel = info.relations[attr].related_model
+                qs = RelatedModel.objects.filter(observable=instance)
                 for item in value:
                     item["observable"] = instance
                     serializer = self.get_serializer()[attr](instance, data=item)
@@ -460,18 +392,10 @@ class ObservableSerializer(serializers.ModelSerializer):
                     else:
                         print(serializer.errors)
 
-                #old = set([item for item in qs])
-                #for index, object in enumerate(qs):
-                #    serializer = self.get_serializer()[attr](object, 
-                #        data=value[index])
-                #    if serializer.is_valid():
-                #        new.add(serializer.save())
-                #    else:
-                #        print(serializer.errors)
-
-                #rm = old.difference(new)
-                #for item in rm:
-                #    item.delete()
+                old = set([item for item in qs])
+                rm = old.difference(new)
+                for item in rm:
+                    item.delete()
 
             else:
                 # set values to self
