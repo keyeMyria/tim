@@ -13,7 +13,7 @@ from common.managers import UserAccountManager, PublishedManager
 from observables.models import Observable
 from ttps.models import TTP
 from django_countries.fields import CountryField
-
+from django.template.defaultfilters import slugify
 
 
 LEVELS = (
@@ -80,7 +80,6 @@ class Event(models.Model):
                                                validators=[MaxValueValidator(100),
                                                            MinValueValidator(0)])
 
-    reference = models.CharField(max_length=250, null=True, blank=True)
     motive = models.ManyToManyField(Motive, related_name='event', blank=True)
     sector = models.ManyToManyField(Sector, related_name='event', blank=True)
     tag = TaggableManager() 
@@ -97,7 +96,17 @@ class Event(models.Model):
         return reverse('events:event_detail', args=[self.uuid,
                                                    self.slug])
 
+    def save(self, *args, **kwargs):
+        if getattr(self, '_title_changed', True):
+            self.slug = slugify(self.title)
+        super(Event, self).save(*args, **kwargs)
 
+
+class Reference(models.Model):
+    reference = models.CharField(max_length=512, null=True, blank=True)
+    event = models.ForeignKey(Event,
+        on_delete=models.CASCADE,
+        related_name='reference', null=True, blank=True)
 
 
 class EventDocument(models.Model):

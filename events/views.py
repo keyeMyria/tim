@@ -17,7 +17,7 @@ from django_datatables_view.base_datatable_view import BaseDatatableView
 from django.http import HttpResponseRedirect
 
 from .models import Event, EventComment
-from .forms import CommentForm, EventForm, DocumentFormSet, ObservablesFormSet, ActorsFormset
+from .forms import CommentForm, EventForm, DocumentFormSet, ObservablesFormSet, ActorsFormset, ReferenceFormSet
 from . import models
 from users.models import User
 from users.views import UserCanViewDataMixin
@@ -317,12 +317,14 @@ class NewEventView(UserCanViewDataMixin, CreateView):
         doc_formset = context['doc_formset']
         observables = context['observables']
         actor = context['actors']
-        if doc_formset.is_valid() and observables.is_valid() and threat_actor.is_valid():
+        reference = context['reference']
+        if doc_formset.is_valid() and observables.is_valid() and actor.is_valid() and reference.is_valid():
             self.object = form.save()
             form.instance = self.object
             doc_formset.save()
             observables.save()
             actor.save()
+            reference.save()
             return HttpResponseRedirect(self.get_success_url())
         else:
             return self.render_to_response(self.get_context_data(form=form))
@@ -347,10 +349,12 @@ class NewEventView(UserCanViewDataMixin, CreateView):
             context['doc_formset'] = DocumentFormSet(self.request.POST, self.request.FILES, instance=self.object)
             context['observables'] = ObservablesFormSet(self.request.POST, instance=self.object)
             context['actors'] = ActorsFormset(self.request.POST, instance=self.object)
+            context['reference'] = ReferenceFormSet(self.request.POST, instance=self.object)
         else:
             context['doc_formset'] = DocumentFormSet(instance=self.object)
             context['observables'] = ObservablesFormSet(instance=self.object)
             context['actors'] = ActorsFormset(instance=self.object)
+            context['reference'] = ReferenceFormSet(instance=self.object)
         return context
 
 
@@ -368,13 +372,15 @@ class EventEditView(UserCanViewDataMixin, UpdateView):
         doc_formset = context['doc_formset']
         observables = context['observables']
         actor = context['actors']
+        reference = context['reference']
 
-        if doc_formset.is_valid() and observables.is_valid() and actor.is_valid():
+        if doc_formset.is_valid() and observables.is_valid() and actor.is_valid() and reference.is_valid():
             self.object = form.save()
             form.instance = self.object
             doc_formset.save()
             observables.save()
             actor.save()
+            reference.save()
             return HttpResponseRedirect(self.get_success_url())
         else:
             return self.render_to_response(self.get_context_data(form=form))
@@ -401,10 +407,12 @@ class EventEditView(UserCanViewDataMixin, UpdateView):
             context['doc_formset'] = DocumentFormSet(self.request.POST, self.request.FILES, instance=self.object)
             context['observables'] = ObservablesFormSet(self.request.POST, instance=self.object)
             context['actors'] = ActorsFormset(self.request.POST, instance=self.object)
+            context['reference'] = ReferenceFormSet(self.request.POST, instance=self.object)
         else:
             context['doc_formset'] = DocumentFormSet(instance=self.object)
             context['observables'] = ObservablesFormSet(instance=self.object)
             context['actors'] = ActorsFormset(instance=self.object)
+            context['reference'] = ReferenceFormSet(instance=self.object)
         return context
 
 
@@ -438,7 +446,7 @@ class EventViewSet(UserCanViewDataMixin, viewsets.ModelViewSet):
     """
     API endpoint that allows events to be added, viewed or edited.
     """
-    queryset = Event.objects.all()
+    queryset = models.Event.objects.all()
     serializer_class = serializers.EventSerializer
 
 class TypeViewSet(UserCanViewDataMixin, viewsets.ModelViewSet):

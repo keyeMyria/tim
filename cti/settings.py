@@ -30,6 +30,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'dynamic_formsets',
     'django_datatables_view',
     'django_filters',
     'dal',

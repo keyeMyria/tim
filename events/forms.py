@@ -29,6 +29,7 @@ class EventForm(forms.ModelForm):
                     input_formats=('%d.%m.%Y',)
                 )
 
+    author = forms.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
         self.user_id = kwargs.pop('user_id', None)
@@ -36,8 +37,8 @@ class EventForm(forms.ModelForm):
         self.event_id = kwargs.pop('event_id', None)
         super(EventForm, self).__init__(*args, **kwargs)
 
-#        self.fields['slug'].widget = forms.HiddenInput()
-#        self.fields['author'].widget = forms.HiddenInput()
+        self.fields['slug'].widget = forms.HiddenInput()
+        self.fields['author'].widget = forms.HiddenInput()
 
     class Meta:
         model = Event 
@@ -53,12 +54,10 @@ class EventForm(forms.ModelForm):
         slug = slugify(name)
         if not name:
             raise forms.ValidationError("Please fill in the title field!")
-
         return slug
 
     def clean_country(self):
         countries = self.cleaned_data['country']
-        print("cleaning country %s" % countries)
 
         return countries
 
@@ -66,9 +65,8 @@ class EventForm(forms.ModelForm):
     def clean_author(self):
         name = self.cleaned_data['author']
         author = Account.objects.get(user_id=self.user_id)
-        set_author = None
 
-        if not name.id == author.id:
+        if not name == author.id:
             set_author = author
 
         if self.is_update:
@@ -110,7 +108,12 @@ ObservablesFormSet = inlineformset_factory(models.Event, models.EventObservable,
                                                   # how many inline-forms are sent to the template by default
                                                   extra=1)
 
-ActorsFormset= inlineformset_factory(models.Event, Actor, # inline-form
+ReferenceFormSet = inlineformset_factory(models.Event, models.Reference, # inline-form
+                                                  exclude=('',), 
+                                                  # how many inline-forms are sent to the template by default
+                                                  extra=1)
+
+ActorsFormset = inlineformset_factory(models.Event, Actor, # inline-form
                                                   exclude=('',), 
                                                   # how many inline-forms are sent to the template by default
                                                   extra=1)
