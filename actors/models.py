@@ -50,7 +50,7 @@ class OrganizationDomain(models.Model):
 
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     def get_absolute_url(self):
         return reverse('actor:domain_detail', args=[self.pk])
@@ -58,6 +58,7 @@ class OrganizationDomain(models.Model):
 
 class Organization(models.Model):
     name = models.CharField(max_length=250, unique=True)
+    alias = models.ManyToManyField("self", blank=True)
     author = models.ForeignKey(Account,
         on_delete=models.CASCADE, related_name='constituent_author', null=True)
     motive = models.ForeignKey(Motive,
@@ -100,8 +101,5 @@ class Actor(models.Model):
     class Meta:
         unique_together = (("event", "role"),)
 
-    def __str__(self):
-        return str(self.id)
-
-    def get_absolute_url(self):
-        return reverse('actor:actor', args=[self.pk])
+#    def __str__(self):
+#        return str(self.id)

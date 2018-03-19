@@ -131,9 +131,14 @@
                 <li class="list-group-item"> Type: {{ event.event_type }}
                 </li>
                 <li class="list-group-item"> Rateing: {{ event.rateing }}
+
+
+                <li class="list-group-item"> Reference:
+                {% for reference in event.reference.all %}
+                    {{ reference }}, 
+                {% endfor%}
                 </li>
-                <li class="list-group-item"> Reference: {{ event.reference }}
-                </li>
+
                 </li>
                 <li class="list-group-item"> Motive:
                 {% for motive in event.motive.all %}
@@ -144,17 +149,6 @@
                 {% for sector in event.sector.all %}
                     {{ sector }}, 
                 {% endfor%}
-                 <li class="list-group-item"> Reporters:
-                {% for reporter in event.reporter.all %}
-                    {{ reporter }}, 
-                {% endfor%}
-                </li>
-                 <li class="list-group-item"> Target Org:
-                {% for org in event.targeted_organization.all %}
-                    {{ org }}, 
-                {% endfor%}
-                </li>
-
 
             </ul>
 
@@ -209,7 +203,7 @@
 
          <div class="card ">
             <div class="card-block">
-            <h5 class="card-title text-white bg-info text-center"> Attachments </h5>
+            <h5 class="card-title text-white bg-info text-center"> Documents </h5>
                 <div class="card-body">
                     {% for document in documents %}
                         <li class="list-group-item row">
@@ -229,7 +223,7 @@
                 <div class="card-body">
                     {% for actor in threat_actors %}
                         <li class="list-group-item row">
-                        <a href="{{ actor.threat_actor.get_absolute_url }}" >{{ actor.threat_actor }}</a> 
+                        <a href="{{ actor.get_absolute_url }}" >{{ actor }}</a> 
                         </li>
                     {% empty %}
                         This event has currently no threat actors listed.
@@ -245,12 +239,12 @@
             <h5 class="card-title text-white bg-info text-center"> Similar Events by tags</h5>
                 <div class="card-body">
                     <ul class="list-group ">
-                        {% for event in similar_events %}
+                        {% for event in similar_by_tag %}
                         <li class="list-group-item row">
                                 <a href="{{ event.get_absolute_url }}" >{{ event.title }}</a> 
                         </li>
                         {% empty %}
-                            There are no similar posts yet.
+                            There are no similar events yet.
                         {% endfor %}
                     </ul>
 
@@ -258,37 +252,49 @@
             </div>
         </div>
 
-         <div class="card ">
-            <div class="card-block">
+         <div class="card border-0">
             <h5 class="card-title text-white bg-info text-center"> Similar Events by observable</h5>
-                <div class="card-body">
-                    <ul class="list-group ">
-                        {% for event in similar_events %}
-                        <li class="list-group-item row">
-                                <a href="{{ event.get_absolute_url }}" >{{ event.title }}</a> 
-                        </li>
-                        {% empty %}
-                            There are no similar posts yet.
-                        {% endfor %}
-                    </ul>
+                <div class="container-fluid">
+                    <div class="row border bg-secondary text-white">
+                        <div class="col-3">Event
+                        </div>
+                        <div class="col-9">Observables
+                        </div>
+                    </div>
 
+                    <div class="row">
+                    {% for event, observables in similar_by_observable.items %}
+                        <div class="col-3 border-right border-bottom">
+                            <a href="{{ event.get_absolute_url }}" >{{ event.title }}</a>
+                        </div>
+                        <div class="col-9 border-bottom">
+                             {% for observable in observables %}
+                                <a href="{{ observable.get_absolute_url }}" >{{ observable.name }}</a> 
+                             {% endfor %}
+                        </div>
+                    {% empty %}
+                        There are no similar events yet.
+                    {% endfor %}
+                    </div>
                 </div>
-            </div>
         </div>
 
-         <div class="card ">
+         <div class="card border-0">
             <div class="card-block">
             <h5 class="card-title text-white bg-info text-center"> Observables </h5>
-                <div class="card-body">
-                    <ul class="list-group ">
+                <div class="container-fluid">
                     {% for observable in observables %}
-                        <li class="list-group-item row">
+                    <div class="row">
+                        <div class="col-3 border-bottom">
                         <a href="{{ observable.observable.get_absolute_url }}" >{{ observable.observable.name }}</a> 
-                        </li>
+                        </div>
+                        <div class="col-9 border-bottom">
+                        {{ observable.observable.uuid }}
+                        </div>
+                    </div>
                     {% empty %}
                         This event has currently no observables
                     {% endfor %}
-                    </ul>
                 </div>
             </div>
         </div>

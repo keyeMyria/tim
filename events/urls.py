@@ -28,7 +28,9 @@ urlpatterns = [
 
 
     re_path(r'^([-\w]+)/([-\w]+)/(?P<path>documents/events/[-\S\d]+)$', views.download, name='file_download'),
-
+    path(r'<uuid>/<slug>/observables_data',
+        views.ObservableListViewJson.as_view(),
+        name="observables_list_json"),
     path(r'api/', include(router.urls )),
 
 ] 

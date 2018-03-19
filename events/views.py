@@ -51,7 +51,52 @@ def download(request, path):
             return response
     raise Http404
 
-class SectorAutocomplete(autocomplete.Select2QuerySetView):
+class ObservableListViewJson(UserCanViewDataMixin, BaseDatatableView):
+    model = models.Observable
+    columns = ['id', 'name', 'author', ]
+    order_columns = ['id', 'name', 'author', 'created']
+    slug = None
+
+    def get_initial_queryset(self):
+        print(self.request.GET)
+        ret = self.model.objects.filter(event__event__title=self.slug)
+        return ret
+
+    def filter_queryset(self, qs):
+        sSearch = self.request.GET.get('search[value]', None)
+        if sSearch:
+            qs = qs.filter(Q(name__istartswith=sSearch) |
+                           Q(id__istartswith=sSearch) |
+                           Q(author__user__username__istartswith=sSearch))
+        return qs
+
+    def prepare_results(self, qs):
+        # prepare list with output column data
+        # queryset is already paginated here
+        data = []
+        for item in qs:
+            orig = [self.render_column(item, column) for column in self.get_columns()]
+            additional = list()
+            additional.append(
+                item.created.strftime("%Y-%m-%d %H:%M:%S")
+            ),
+
+            url = item.get_absolute_url()
+            edit = format_html(' <a href="%s/edit">%s</a> '% (url, "Edit"))
+            delete = format_html(' <a href="%s/delete">%s</a> '% (url, "Delete"))
+            additional.append([edit, delete]),
+            send = orig + additional
+            data.append(send)
+
+        return data
+
+    def get_context_data(self, *args, **kwargs):
+        self.slug = kwargs["slug"]
+        ret = super().get_context_data(*args, **kwargs)
+        return ret
+ 
+
+class SectorAutocomplete(UserCanViewDataMixin, autocomplete.Select2QuerySetView):
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !
         if not self.request.user.is_authenticated:
@@ -64,7 +109,7 @@ class SectorAutocomplete(autocomplete.Select2QuerySetView):
 
         return qs
 
-class MotiveAutocomplete(autocomplete.Select2QuerySetView):
+class MotiveAutocomplete(UserCanViewDataMixin, autocomplete.Select2QuerySetView):
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !
         if not self.request.user.is_authenticated:
@@ -133,7 +178,7 @@ class Select2ViewMixin(object):
         )
 
 
-class CountryAutocompleteFromList(Select2ListView):
+class CountryAutocompleteFromList(UserCanViewDataMixin, Select2ListView):
 
 
     def get_list(self):
@@ -175,7 +220,6 @@ class CountryAutocompleteFromList(Select2ListView):
 
 
 class EventListView(UserCanViewDataMixin, TemplateView):
-    template_name = 'observables/observable_list.html'
     context_object_name = 'events'
     template_name = 'events/event_list.html'
 
@@ -221,8 +265,22 @@ class EventListViewJson(UserCanViewDataMixin, BaseDatatableView):
         return data
 
 
-class EventCommentForm(forms.Form):
-    message = forms.CharField()
+class DeleteEventView(UserCanViewDataMixin, DeleteView):
+    model = models.Event
+    template_name_suffix = '_delete'
+    success_url = reverse_lazy('event:event_list')
+
+    def get_object(self, queryset=None):
+        object = super(DeleteEventView, self).get_object()
+        user = self.request.user
+        if user.is_superuser:
+            return object
+        else:
+            org = user.account.organization
+            if org == object.account.organization and user.is_staff:
+                return object
+            raise PermissionDenied('Not allowed')
+
 
 class EventDisplay(DetailView):
     template_name = 'events/event_detail.html'
@@ -243,12 +301,40 @@ class EventDisplay(DetailView):
                                                                              '-created')[:4]
         observables = event.observable.all()
         documents = event.event_document.all()
+        actors = event.actor.all()
+        threat_actors = list()
+        actors_d = {
+            "threat_actor": list(),
+            "reporter": list(),
+            "target": list()
+        }
+
+        for item in actors:
+            if item.role in actors_d:
+                actors_d[item.role] = [item for item in item.actor.select_related()]
+
+        related_by_observable = dict()
+        for observable in observables:
+            for item in observable.observable.event.all().exclude(event=event.id):
+                if item.event in related_by_observable:
+                    adding = related_by_observable[item.event]
+                    adding.append(observable.observable)
+                    related_by_observable[item.event] = adding
+                else:
+                    related_by_observable[item.event] = [observable.observable]
+
+        reporters = event.actor.filter(role="reporter")
+        targeted_org = event.actor.filter(role="target")
 
         context = {'event': event, 
                    'comments': comments,
                    'observables': observables,
                    'documents': documents,
-                   'similar_events': similar_events
+                   'similar_by_tag': similar_events,
+                   'similar_by_observable': related_by_observable,
+                   'threat_actors': actors_d["threat_actor"],
+                   'reporters': actors_d["reporter"],
+                   'targeted_org': actors_d["target"],
                   }
 
         initial = {'author': self.request.user}
@@ -256,22 +342,8 @@ class EventDisplay(DetailView):
         return context
 
 
-class DeleteEventView(UserCanViewDataMixin, DeleteView):
-    model = models.Event
-    template_name_suffix = '_delete'
-    success_url = reverse_lazy('event:event_list')
-
-    def get_object(self, queryset=None):
-        object = super(DeleteEventView, self).get_object()
-        user = self.request.user
-        if user.is_superuser:
-            return object
-        else:
-            org = user.account.organization
-            if org == object.account.organization and user.is_staff:
-                return object
-            raise PermissionDenied('Not allowed')
-
+class EventCommentForm(forms.Form):
+    message = forms.CharField()
 
 class EventComment(SingleObjectMixin, FormView):
     template_name = 'events/event_detail.html'
@@ -340,7 +412,7 @@ class NewEventView(UserCanViewDataMixin, CreateView):
     def get_form_kwargs(self):
         kwargs = super(NewEventView, self).get_form_kwargs()
         kwargs['user_id'] = self.request.user.pk
-        return kwargs
+        return kwargst_jsons
 
 
     def get_context_data(self, **kwargs):
