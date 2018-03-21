@@ -9,15 +9,10 @@ from django.utils.text import slugify
 from users.models import Account
 from actors.models import Actor
 
-class EmailPostForm(forms.Form):
-    name = forms.CharField(max_length=25)
-    email = forms.EmailField()
-    to = forms.EmailField()
-    comments = forms.CharField(required=False, widget=forms.Textarea)
+class AddObservable(forms.Form):
+    event = forms.CharField(max_length=128)
+    observable = forms.CharField(max_length=128)
 
-
-#def get_choice_list():
-#    return ['France', 'Fiji', 'Finland', 'Switzerland']
 
 class EventForm(forms.ModelForm):
 

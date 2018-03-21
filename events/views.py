@@ -7,7 +7,7 @@ from django.views import generic, View
 from django_datatables_view.base_datatable_view import BaseDatatableView
 from django.http import HttpResponseRedirect
 
-from .forms import EventForm, DocumentFormSet, ObservablesFormSet, ActorsFormset, ReferenceFormSet
+from .forms import EventForm, DocumentFormSet, ObservablesFormSet, ActorsFormset, ReferenceFormSet, AddObservable
 from . import models
 from users.views import UserCanViewDataMixin
 
@@ -124,8 +124,19 @@ class EventListViewJson(UserCanViewDataMixin, BaseDatatableView):
 
 class AddObservableView(UserCanViewDataMixin, View):
 
+    form_class = AddObservable
+    template_name = 'events/add_observable.html'
+
+    def get(self, request, *args, **kwargs):
+        form = self.form_class()
+        return render(request, self.template_name, {'form': form})
+
     def post(self, request, *args, **kwargs):
-        print(request, args, kwargs)
+        form = self.form_class(request.POST)
+        if form.is_valid():
+           # <process form cleaned data>
+           return HttpResponseRedirect('/success/')
+        return render(request, self.template_name, {'form': form})
 
 
 class DeleteEventView(UserCanViewDataMixin, generic.DeleteView):

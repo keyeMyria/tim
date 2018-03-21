@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load bootstrap4 %}
+{% load i18n staticfiles %}
+
+{% block content %}
+ <form id="form" role="form"
+{% bootstrap_form form layout='inline' %}
+{% bootstrap_button "Save" button_type="submit" button_class="btn-primary" %}
+</form>
+{% endblock %}
