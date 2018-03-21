@@ -48,8 +48,7 @@ class TTP(models.Model):
         on_delete=models.CASCADE, related_name='ttp_author', null=True)
     category = models.ForeignKey(TTPCategory, 
         on_delete=models.CASCADE, related_name='ttp_category', null=True)  
-    ttp_type = models.ForeignKey(TTPType,
-        on_delete=models.CASCADE, related_name='ttp_type', null=True)  
+    ttp_type = models.ManyToManyField(TTPType, blank=True)  
     reference = models.CharField(max_length=250, null=True, blank=True)
     hunting = models.BooleanField(default=False)
     complete = models.BooleanField(default=False)

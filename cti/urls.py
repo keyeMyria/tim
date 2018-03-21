@@ -18,6 +18,8 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from common.forms import LoginForm
 from events.views import SectorAutocomplete
+from django.conf import settings
+from django.conf.urls import url
 
 urlpatterns = [
 #    path(r'', include('common.urls')),
@@ -31,3 +33,11 @@ urlpatterns = [
     path(r'actors/', include('actors.urls', namespace='actor')),
     path(r'ttps/', include('ttps.urls', namespace='ttp' )),
 ]
+
+
+if settings.DEBUG:
+    from django.conf.urls import include, url
+    import debug_toolbar
+    urlpatterns = [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns
