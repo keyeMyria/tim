@@ -57,7 +57,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_comments',
     'djongo',
-    'channels',
+#    'channels',
     'debug_toolbar',
     'intercoolerjs'
     
@@ -117,6 +117,9 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'cti.wsgi.application'
+ASGI_APPLICATION = 'cti.asgi.application'
+
+
 USE_TZ = True
 TIME_ZONE = 'UTC'
 

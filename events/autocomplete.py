@@ -5,6 +5,7 @@ from django_countries import countries
 from common.models import Sector, Motive
 from dal.autocomplete import Select2ListView
 from users.views import UserCanViewDataMixin
+from django.http import HttpResponse
 
 class SectorAutocomplete(UserCanViewDataMixin, autocomplete.Select2QuerySetView):
     def get_queryset(self):
@@ -67,7 +68,7 @@ class CountryAutocompleteFromList(UserCanViewDataMixin, Select2ListView):
         if self.q:
             results = self.autocomplete_results(results)
 
-        return http.HttpResponse(json.dumps({
+        return HttpResponse(json.dumps({
             'results': self.results(results),
             'pagination': {'more': False}
         }), content_type='application/json')

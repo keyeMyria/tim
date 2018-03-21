@@ -59,7 +59,7 @@ class Event(models.Model):
         ('published', 'Published'),
     )
     title = models.CharField(max_length=250, unique=True)
-    slug = models.SlugField(max_length=250, unique_for_date='created',null=True, blank=True)
+    slug = models.SlugField(max_length=250, null=True, blank=True)
     author = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='event', null=True)
     description = models.TextField(null=True, blank=True)
     event_date = models.DateTimeField(null=True, blank=True)

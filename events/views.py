@@ -272,7 +272,7 @@ class NewEventView(UserCanViewDataMixin, generic.CreateView):
     def get_form_kwargs(self):
         kwargs = super(NewEventView, self).get_form_kwargs()
         kwargs['user_id'] = self.request.user.pk
-        return kwargst_jsons
+        return kwargs
 
 
     def get_context_data(self, **kwargs):
@@ -288,6 +288,7 @@ class NewEventView(UserCanViewDataMixin, generic.CreateView):
             context['observables'] = ObservablesFormSet(instance=self.object)
             context['actors'] = ActorsFormset(instance=self.object)
             context['reference'] = ReferenceFormSet(instance=self.object)
+        initial = {'author': self.request.user}
         return context
 
 

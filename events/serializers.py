@@ -203,17 +203,16 @@ class EventSerializer(CountryFieldMixin, serializers.ModelSerializer):
 
     actor = ActorSerializer(many=True)
     observable = EventObservablesSerializer(many=True)
-    created = serializers.DateTimeField()
-    updated = serializers.DateTimeField()
     motive = MinMotiveSerializer(many=True)
     sector = MinSectorSerializer(many=True)
+    created = serializers.DateTimeField(read_only=True)
+    slug = serializers.CharField(read_only=True)
 
     class Meta:
         country_dict=True
         model = models.Event
         fields = ('__all__')
-#        exclude = ("actor",)
-
+        
 
     def to_internal_value(self, instance):
         ret = super(EventSerializer, self).to_internal_value(instance)
