@@ -122,6 +122,12 @@ class EventListViewJson(UserCanViewDataMixin, BaseDatatableView):
         return data
 
 
+class AddObservableView(UserCanViewDataMixin, View):
+
+    def post(self, request, *args, **kwargs):
+        print(request, args, kwargs)
+
+
 class DeleteEventView(UserCanViewDataMixin, generic.DeleteView):
     model = models.Event
     template_name_suffix = '_delete'
@@ -346,5 +352,6 @@ class EventEditView(UserCanViewDataMixin, generic.UpdateView):
             context['doc_formset'] = DocumentFormSet(instance=self.object)
             context['actors'] = ActorsFormset(instance=self.object)
             context['reference'] = ReferenceFormSet(instance=self.object)
+            context['event'] = self.object 
         return context
 

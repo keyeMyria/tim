@@ -36,6 +36,7 @@ urlpatterns = [
         name="observables_list_json"),
     path(r'api/', include(router.urls )),
     path(r'search-submit', views.SearchSubmitView.as_view(), name = 'search-submit'),
-    path(r'search-ajax-submit', views.SearchAjaxSubmitView.as_view(), name = 'search-ajax-submit')
+    path(r'search-ajax-submit', views.SearchAjaxSubmitView.as_view(), name = 'search-ajax-submit'),
+    path(r'add_observable', views.AddObservableView.as_view(), name = 'add-observable')
 
 ] 
