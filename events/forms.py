@@ -110,4 +110,6 @@ ReferenceFormSet = inlineformset_factory(models.Event, models.Reference, # inlin
 ActorsFormset = inlineformset_factory(models.Event, Actor, # inline-form
                                                   exclude=('',), 
                                                   # how many inline-forms are sent to the template by default
+                                                  max_num=3, 
+                                                  validate_max=True, 
                                                   extra=1)
