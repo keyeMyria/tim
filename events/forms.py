@@ -1,5 +1,5 @@
 from django import forms
-from .models import EventComment, Event
+from .models import Event
 from django.forms.models import inlineformset_factory, modelformset_factory
 from . import models
 from observables.models import Observable
@@ -77,12 +77,6 @@ class EventForm(forms.ModelForm):
             set_author = self.cleaned_data['author']
 
         return set_author
-
-
-class CommentForm(forms.ModelForm):
-    class Meta:
-        model = EventComment
-        fields = ('author', 'body')
 
 
 DocumentFormSet = inlineformset_factory(models.Event,  # parent form

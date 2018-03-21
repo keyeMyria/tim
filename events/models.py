@@ -1,19 +1,19 @@
-from django.db import models
-from django.utils import timezone
-from django.urls import reverse
-from users.models import Account
-import hashlib
 import uuid
-from django.core.validators import MaxValueValidator, MinValueValidator
-from taggit.managers import TaggableManager
-
-from common.models import Comment, Motive, Sector, Reporter
-from django_countries.fields import CountryField
-from common.managers import UserAccountManager, PublishedManager
-from observables.models import Observable
+import hashlib
 from ttps.models import TTP
+from users.models import Account
+from observables.models import Observable
+from common.models import Motive, Sector, Reporter
+from taggit.managers import TaggableManager
+from common.managers import UserAccountManager, PublishedManager
+
+from django.db import models
+from django.urls import reverse
+from django.utils import timezone
+
 from django_countries.fields import CountryField
 from django.template.defaultfilters import slugify
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 LEVELS = (
@@ -123,12 +123,6 @@ class EventDocument(models.Model):
 
     def __str__(self):
         return self.title
-
-
-class EventComment(Comment):
-    event = models.ForeignKey(Event,
-        on_delete=models.CASCADE,
-        related_name='event_comments', null=True, blank=True)
 
 
 class EventTTP(models.Model):

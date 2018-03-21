@@ -3,16 +3,11 @@
 {% load i18n staticfiles %}
 
     {% block scripts %}
-        <link rel="stylesheet"
-            href={% static "css/bootstrap-datetimepicker.css" %}>
-        <link rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/bootstrap.css">
-        <link rel="stylesheet"
-            href="https://cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
-        <link rel="stylesheet"
-            href="https://cdn.datatables.net/buttons/1.5.1/css/buttons.dataTables.min.css">
-        <link rel="stylesheet"
-            href="https://cdn.datatables.net/buttons/1.5.1/css/buttons.bootstrap4.min.css">
+        <link rel="stylesheet" href={% static "css/bootstrap-datetimepicker.css" %}>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/bootstrap.css">
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
+        <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.5.1/css/buttons.dataTables.min.css">
+        <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.5.1/css/buttons.bootstrap4.min.css">
         <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
         <script src="https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap4.min.js"></script>
         <script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
@@ -28,7 +23,7 @@
         {{ form.media }}
         <script src="{% static "events/js/ddv_edit.js" %}"></script>
         <script type="text/javascript">
-            var USERS_LIST_JSON_URL = "http://127.0.0.1:8000/events/1af11ecd-8b84-4d73-9c74-3169c8518c16/test1/observables_data";
+             var USERS_LIST_JSON_URL = '{{ obs_data }}';
             // translations for datatables
 
             var dt_language = {
@@ -55,7 +50,7 @@
                 }
             }
         </script>
-        <script src="{% static "intercoolerjs/js/intercooler.min.js" %}"></script>
+
 
     {% endblock scripts %}
 
@@ -76,17 +71,13 @@
   <div class="card text-center border-0" id="EventTabs">
     <div class="card-header">
       <ul class="nav nav-tabs card-header-tabs ">
-        <li class="nav-item"><a href="#tab1"
-            data-toggle="tab" class="nav-link active" >Details</a></li>
-        <li class="nav-item"><a href="#tab2"
-            data-toggle="tab" class="nav-link" >Description</a></li>
-        <li class="nav-item"><a href="#tab3"
-            data-toggle="tab" class="nav-link" >Observables</a></li>
+        <li class="nav-item"><a href="#tab1" data-toggle="tab" class="nav-link active" >Details</a></li>
+        <li class="nav-item"><a href="#tab2" data-toggle="tab" class="nav-link " >Description</a></li>
+        <li class="nav-item"><a href="#tab3" data-toggle="tab" class="nav-link " >Observables</a></li>
       </ul>
     </div>
     <div class="card-body">
-        <form action="" method="post",
-            enctype="multipart/form-data", class="tab-content", id="eventEdit">
+        <form action="" method="post", enctype="multipart/form-data", class="tab-content", id="eventEdit">
         <div class="card text-center">
             {% bootstrap_button "Save" button_type="submit" button_class="btn-primary" %}
         </div>
@@ -109,14 +100,13 @@
                       <div class="card-block">
                         <h5 class="card-title text-white bg-info text-center border-0"> Actors </h5>
                         <div class="card-body">
-                            {% bootstrap_formset actors show_label=False layout='inline' %}
+                        {% bootstrap_formset actors show_label=False layout='inline' %}
                         </div>
                     </div>
                   </div>
                   <div class="card p-0">
                       <div class="card-block">
-                        <h5 class="card-title
-                            text-white bg-info text-center border-0"> Documents </h5>
+                        <h5 class="card-title text-white bg-info text-center border-0"> Documents </h5>
                         <div class="card-body">
                             {% bootstrap_formset doc_formset show_label=False layout='inline' %}
                         </div>
@@ -124,8 +114,7 @@
                   </div>
                   <div class="card p-0">
                     <div class="card-block">
-                        <h5 class="card-title
-                            text-white bg-info text-center border-0"> Reference </h5>
+                        <h5 class="card-title text-white bg-info text-center border-0"> Reference </h5>
                         <div class="card-body">
                             {% bootstrap_formset reference show_label=True layout='inline' %}
                         </div>
@@ -137,30 +126,34 @@
             <div class="tab-pane form-group fade in" id="tab2">
                   <div class="card p-0">
                     <div class="card-block border-0">
-                        <h5 class="card-title
-                            text-white bg-info text-center border-0"> Description </h5>
+                        <h5 class="card-title text-white bg-info text-center border-0"> Description </h5>
                         <div class="card-body border-0">
                             {% bootstrap_field form.description show_label=False layout='inline' %}
                         </div>
                     </div>
                  </div>
+
             </div>
 
             <div class="tab-pane form-group fade in" id="tab3">
-                <div class="example">
-                    <form id="form" role="form" 
-                        action="{% url 'events:search-submit' %}" method="post">
-                        {% csrf_token %}
-                    <input name="search"
-                        id="search"
-                        type="search"
-                        placeholder="Start typing here"
-                        ic-post-to="{% url 'events:search-ajax-submit' %}"
-                        ic-trigger-on="keyup changed"
-                        ic-trigger-delay="300ms"
-                        ic-target="#search-result-container"/>
-                    </form>
-                    <span id="search-result-container"></span>
+        <form action="" method="post", enctype="multipart/form-data", class="tab-content", id="addObserv">
+                {% bootstrap_form add_observable show_label=True layout='inline' %}
+            {% bootstrap_button "Save" button_type="submit" button_class="btn-primary" %}
+        </form>
+                <div class="card border-white">
+                      <div class="card-body">
+                        <table class="datatable table table-striped">
+                            <thead class="thead-dark">
+                                <th>{% trans "id" %}</th>
+                                <th>{% trans "name" %}</th>
+                                <th>{% trans "author" %}</th>
+                                <th>{% trans "created" %}</th>
+                                <th>{% trans "actions" %}</th>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                      </div>
                 </div>
             </div>
 
