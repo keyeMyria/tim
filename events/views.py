@@ -134,7 +134,7 @@ class AddObservableView(UserCanViewDataMixin, View):
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST)
         if form.is_valid():
-           # <process form cleaned data>
+           print(form)
            return HttpResponseRedirect('/success/')
         return render(request, self.template_name, {'form': form})
 

@@ -3,9 +3,9 @@
 	<h3>You searched for: <i>{{ query }}</i></h3>
 	<p>{{ title }}</p>
 	{% if items %}
-		<ul>
+		<ul style="list-style-type: none;">
 		{% for item in items %}
-			<li>{{ item.name }}</li>
+			<li><span data-uuid="{{ item.uuid }}" onclick="myFunction(this)">{{ item.name }}</span></li>
 		{% endfor %}
 		</ul>
 	{% endif %}

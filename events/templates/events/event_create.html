@@ -56,6 +56,33 @@
             }
         </script>
         <script src="{% static "intercoolerjs/js/intercooler.min.js" %}"></script>
+        <script type="text/javascript">
+            var eventUuid = "{{ event.uuid }}";
+            var postUrl = "{% url 'events:add-observable' %}";
+
+            function myFunction(elem) {
+              var el = $(elem);
+              var csrftoken = $("[name=csrfmiddlewaretoken]").val();
+              var observableUuid = el.attr("data-uuid");
+ 
+              var data = {
+                csrfmiddlewaretoken: csrftoken,
+                event: eventUuid,
+                observable: observableUuid 
+              };
+
+              postAddObservable(postUrl, data);
+            }
+
+            function postAddObservable(url, postData) {
+              var posting = $.post(url, postData);
+              
+              // 
+              posting.done(function(data) {
+                console.log(data);
+              });
+            }
+        </script>
 
     {% endblock scripts %}
 
@@ -147,11 +174,10 @@
             </div>
         </form>
 
-            <div class="tab-pane form-group fade in" id="tab3">
+            <div class="tab-pane fade in" id="tab3">
                 <div class="example">
-                    <form id="form" role="form" 
-                        action="{% url 'events:search-submit' %}" method="post">
-                        {% csrf_token %}
+                    <form id="form" role="form" action="{% url 'events:search-submit' %}" method="post">
+                    {% csrf_token %}
                     <input name="search"
                         id="search"
                         type="search"
@@ -167,9 +193,6 @@
 
     </div>
   </div>
-
-
-
 
 {% endblock content %}
 
