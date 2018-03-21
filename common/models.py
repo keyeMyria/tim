@@ -13,17 +13,6 @@ LEVELS = (
     ('unknown', 'unknown'),
 )
 
-class Comment(models.Model):
-    author = models.ForeignKey(Account, null=True, related_name='comment_author', on_delete=models.CASCADE)
-    body = models.TextField()
-    created = models.DateTimeField(auto_now_add=True, blank=True)
-    updated = models.DateTimeField(auto_now=True, blank=True)
-    active = models.BooleanField(default=True)
-
-    class Meta:
-        ordering = ('created',)
-        abstract = True
-
 class GeoLocation(models.Model):
     country = CountryField(null=True)
     city = models.CharField(max_length=50, null=True, blank=True)

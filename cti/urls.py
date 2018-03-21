@@ -17,7 +17,6 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from common.forms import LoginForm
-from events.views import SectorAutocomplete
 from django.conf import settings
 from django.conf.urls import url
 
@@ -32,6 +31,7 @@ urlpatterns = [
     path(r'observables/', include('observables.urls', namespace='observables' )),
     path(r'actors/', include('actors.urls', namespace='actor')),
     path(r'ttps/', include('ttps.urls', namespace='ttp' )),
+    path(r'comments/', include('django_comments.urls')),
 ]
 
 

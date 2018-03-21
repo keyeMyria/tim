@@ -49,11 +49,13 @@ INSTALLED_APPS = [
     'common',
     'users.apps.UsersConfig',
     'django.contrib.admin',
+    'django.contrib.sites',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_comments',
     'djongo',
     'channels',
     'debug_toolbar',
@@ -96,6 +98,7 @@ CONFIG_DEFAULTS = {
 }
 
 ROOT_URLCONF = 'cti.urls'
+SITE_ID = 1
 
 TEMPLATES = [
     {

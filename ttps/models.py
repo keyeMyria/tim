@@ -7,7 +7,7 @@ import uuid
 from django.core.validators import MaxValueValidator, MinValueValidator
 from taggit.managers import TaggableManager
 
-from common.models import Comment, GeoLocation, Motive, Sector, Reporter, KillChain, Intentsion
+from common.models import GeoLocation, Motive, Sector, Reporter, KillChain, Intentsion
 from common.managers import UserAccountManager, PublishedManager
 from django.core.exceptions import ObjectDoesNotExist
 
