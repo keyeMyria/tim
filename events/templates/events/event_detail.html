@@ -214,7 +214,8 @@
                             {{ form.timestamp }}
                             {{ form.security_hash }}
                             <input type="hidden" name="next"
-                            value="{% url 'events:event_detail' uuid=event.uuid slug=event.slug %}"/>                     {% bootstrap_button "Save" button_type="submit" button_class="btn-primary" %}
+                            value="{% url 'events:event_detail' uuid=event.uuid slug=event.slug %}"/>
+                            {% bootstrap_button "Save" button_type="submit" button_class="btn-primary" %}
                             </form>
                         {% else %}
                             <p>Please <a href="{% url 'auth_login' %}">log in</a>

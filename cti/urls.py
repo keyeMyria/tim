@@ -32,6 +32,7 @@ urlpatterns = [
     path(r'actors/', include('actors.urls', namespace='actor')),
     path(r'ttps/', include('ttps.urls', namespace='ttp' )),
     path(r'comments/', include('django_comments.urls')),
+    path(r'', include('dashboard.urls')),
 ]
 
 

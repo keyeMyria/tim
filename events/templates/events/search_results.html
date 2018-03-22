@@ -1,12 +1,30 @@
 <!-- This is the search_results.html sub-template -->
-{% if query %}
-	<h3>You searched for: <i>{{ query }}</i></h3>
-	<p>{{ title }}</p>
-	{% if items %}
-		<ul style="list-style-type: none;">
-		{% for item in items %}
-			<li><span data-uuid="{{ item.uuid }}" onclick="myFunction(this)">{{ item.name }}</span></li>
-		{% endfor %}
-		</ul>
-	{% endif %}
-{% endif %}
+
+{% block scripts %}
+{% endblock scripts %}
+
+<table class="table datatable">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Observable</th>
+      <th scope="col"></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in items %}
+    <tr>
+      <th scope="row">{{ forloop.counter }}</th>
+      <td>
+        <a href="{{ item.get_absolute_url }}">{{ item.name }}</a> 
+      </td>
+      <td>
+        <button class="btn btn-danger" data-uuid="{{ item.uuid }}" onclick="myFunction(this)">
+          ADD 
+          <i class="ic-indicator fa fa-spinner fa-spin" style="display: none"></i>
+        </button>
+        </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

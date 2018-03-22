@@ -1,0 +1,28 @@
+{% load bootstrap4 %}
+{% load static %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <title>TIM - Threat Intal Manager</title>
+  <!-- Bootstrap core CSS-->
+  <!-- Custom fonts for this template-->
+  <link href="{{ STATIC_URL }}/static/vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" >
+  <!-- Custom styles for this template-->
+  <link href="{{ STATIC_URL }}/static/css/sb-admin.css" rel="stylesheet">
+  <script src="{{ STATIC_URL }}/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- Core plugin JavaScript-->
+  <script src="{{ STATIC_URL }}/vendor/jquery-easing/jquery.easing.min.js"></script>
+  <!-- Page level plugin JavaScript-->
+  <script src="{{ STATIC_URL }}/js/sb-admin.min.js"></script>
+  <!-- Custom scripts for this page-->
+
+</head>
+
+{% include "navbar.html" %}
