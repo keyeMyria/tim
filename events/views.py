@@ -167,9 +167,10 @@ class EventDisplay(generic.DetailView):
                                    status='published')
 
         event_tag_ids = event.tag.values_list('id', flat=True)
-        similar_events = models.Event.published.filter(tag__in=event_tag_ids).exclude(id=event.id)
-        similar_events = similar_events.annotate(same_tags=Count('tag')).order_by('-same_tags',
-                                                                             '-created')[:4]
+        similar_events = models.Event.published.filter(
+            tag__in=event_tag_ids).exclude(id=event.id)
+        similar_events = similar_events.annotate(
+            same_tags=Count('tag')).order_by('-same_tags', '-created')[:4]
         observables = event.observable.all()
         documents = event.event_document.all()
         actors = event.actor.all()
@@ -182,11 +183,14 @@ class EventDisplay(generic.DetailView):
 
         for item in actors:
             if item.role in actors_d:
-                actors_d[item.role] = [item for item in item.actor.select_related()]
+                actors_d[item.role] = [
+                item for item in item.actor.select_related()
+                ]
 
         related_by_observable = dict()
         for observable in observables:
-            for item in observable.observable.event.all().exclude(event=event.id):
+            for item in observable.observable.event.all().exclude(
+                event=event.id):
                 if item.event in related_by_observable:
                     adding = related_by_observable[item.event]
                     adding.append(observable.observable)
@@ -239,7 +243,8 @@ class SearchSubmitView(View):
         # A simple query for Item objects whose title contain 'query'
         items = models.Observable.objects.filter(name__icontains=query)
 
-        context = {'title': self.response_message, 'query': query, 'items': items}
+        context = {'title': self.response_message,
+                    'query': query, 'items': items}
         rendered_template = template.render(context, request)
 
         return HttpResponse(rendered_template, content_type='text/html')
