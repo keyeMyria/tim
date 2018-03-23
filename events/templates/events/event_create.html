@@ -4,73 +4,6 @@
 {# Load the tag library #}
 
 
-    {% block scripts %}
-        <link rel="stylesheet"
-            href={% static "css/bootstrap-datetimepicker.css" %}>
-
-        <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
-        <script src="https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap4.min.js"></script>
-        <script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
-        <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.bootstrap4.min.js"></script>
-        <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.html5.min.js"></script>
-
-        <script src="{% static "js/moment.js" %}"></script>
-        <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
-        <script src="{% static "events/js/custom.js" %}"></script>
-        {{ form.media }}
-        <script src="{% static "events/js/ddv_edit.js" %}"></script>
-        <script src="{% static "intercoolerjs/js/intercooler.min.js" %}"></script>
-        <script type="text/javascript">
-            var eventUuid = "{{ event.uuid }}";
-            var postUrl = "{% url 'events:add-observable' %}";
-
-            function myFunction(elem) {
-              var el = $(elem);
-              var csrftoken = $("[name=csrfmiddlewaretoken]").val();
-              var observableUuid = el.attr("data-uuid");
- 
-              var data = {
-                csrfmiddlewaretoken: csrftoken,
-                event: eventUuid,
-                observable: observableUuid 
-              };
-
-              postAddObservable(postUrl, data);
-            }
-
-            function postAddObservable(url, postData) {
-              var posting = $.post(url, postData);
-              
-              // 
-              posting.done(function(data) {
-                console.log(data);
-              });
-            }
-        </script>
-
-        <script>
-        $(document).ready(function(){
-            $(".nav-item a").click(function(){
-                $(this).tab('show');
-            });
-        });
-
-        </script>
-
-    <style>
-        .makeScroll {
-          overflow-y: scroll;
-        }
-        br {
-            display: block; /* makes it have a width */
-            content: ""; /* clears default height */
-            margin-top: 10px; /* change this to whatever height you want it */
-        }
-
-    </style>
-
-    {% endblock scripts %}
-
 {% block content %}
 
 <div class="card text-center border-0">
@@ -159,9 +92,28 @@
     </div>
     </form>
 
+
+
     <div role="tabpanel" class="tab-pane fade" id="observables">
+
         <br>
         <div class="card-deck">
+          <div class="card">
+            <div class="card-body">
+                <table class="datatable table table-striped" id="observable_dt">
+                    <thead class="thead-dark">
+                        <th>{% trans "id" %}</th>
+                        <th>{% trans "name" %}</th>
+                        <th>{% trans "author" %}</th>
+                        <th>{% trans "created" %}</th>
+                        <th>{% trans "actions" %}</th>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+          </div>
+
           <div class="card">
             <div class="card-header bg-transparent border-0">
                <form id="form" role="form" ic-post-to="{% url 'events:search-ajax-submit' %}" ic-target="#search-result-container" method="post">
@@ -186,4 +138,101 @@
 </div>
 
 {% endblock content %}
+{% block scripts %}
+        <link rel="stylesheet" href={% static "css/bootstrap-datetimepicker.css" %}>
+        <link rel="stylesheet" href="{% static "/css/bootstrap.css" %}">
+        <link rel="stylesheet" href="{% static "/css/datatables/dataTables.bootstrap4.min.css" %}">
+        <link rel="stylesheet" href="{% static "/css/datatables/buttons.dataTables.min.css" %}">
+        <link rel="stylesheet" href="{% static "/css/datatables/buttons.bootstrap4.min.css" %}">
 
+        <script src="{% static "js/datatables/jquery.dataTables.min.js" %} "></script>
+        <script src="{% static "js/datatables/dataTables.bootstrap4.min.js" %} "></script>
+        <script src="{% static "js/datatables/dataTables.buttons.min.js" %} "></script>
+        <script src="{% static "js/datatables/buttons.bootstrap4.min.js" %} "></script>
+        <script src="{% static "js/datatables/buttons.html5.min.js" %} "></script>
+    
+        <script src="{% static "js/moment.js" %}"></script>
+        <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
+        <script src="{% static "events/js/custom.js" %}"></script>
+        {{ form.media }}
+        <script src="{% static "events/js/ddv_event.js" %}"></script>
+        <script src="{% static "intercoolerjs/js/intercooler.min.js" %}"></script>
+        <script type="text/javascript">
+            var eventUuid = "{{ event.uuid }}";
+            var postUrl = "{% url 'events:add-observable' %}";
+
+            function myFunction(elem) {
+              var el = $(elem);
+              var csrftoken = $("[name=csrfmiddlewaretoken]").val();
+              var observableUuid = el.attr("data-uuid");
+ 
+              var data = {
+                csrfmiddlewaretoken: csrftoken,
+                event: eventUuid,
+                observable: observableUuid 
+              };
+
+              postAddObservable(postUrl, data);
+            }
+
+            function postAddObservable(url, postData) {
+              var posting = $.post(url, postData);
+              
+              // 
+              posting.done(function(data) {
+                console.log(data);
+              });
+            }
+        </script>
+
+        <script>
+        $(document).ready(function(){
+            $(".nav-item a").click(function(){
+                $(this).tab('show');
+            });
+        });
+
+        </script>
+
+        <script type="text/javascript">
+            var USERS_LIST_JSON_URL = '{% url "events:observables_list_json" event.uuid event.slug %}';
+            // translations for datatables
+
+            var dt_language = {
+                "emptyTable":     "{% trans "No data available in table" %}",
+                "info":           "{% trans "Showing _START_ to _END_ of _TOTAL_ entries" %}",
+                "infoEmpty":      "{% trans "Showing 0 to 0 of 0 entries" %}",
+                "infoFiltered":   "{% trans "(filtered from _MAX_ total entries)" %}",
+                "infoPostFix":    "",
+                "thousands":      ",",
+                "lengthMenu":     "{% trans "Show _MENU_ entries" %}",
+                "loadingRecords": "{% trans "Loading..." %}",
+                "processing":     "{% trans "Processing..." %}",
+                "search":         "{% trans "Search:" %}",
+                "zeroRecords":    "{% trans "No matching records found" %}",
+                "paginate": {
+                    "first":      "{% trans "First" %}",
+                    "last":       "{% trans "Last" %}",
+                    "next":       "{% trans "Next" %}",
+                    "previous":   "{% trans "Previous" %}"
+                },
+                "aria": {
+                    "sortAscending":  "{% trans ": activate to sort column ascending" %}",
+                    "sortDescending": "{% trans ": activate to sort column descending" %}"
+                }
+            }
+        </script>
+
+        <style>
+            .makeScroll {
+              overflow-y: scroll;
+            }
+            br {
+                display: block; /* makes it have a width */
+                content: ""; /* clears default height */
+                margin-top: 10px; /* change this to whatever height you want it */
+            }
+
+        </style>
+
+{% endblock scripts %}

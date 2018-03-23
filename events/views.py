@@ -31,6 +31,46 @@ def download(request, path):
             return response
     raise Http404
 
+
+#class RemoveObservableView(generic.TemplateView):
+#
+#    template_name = 'events/remove_observable.html'
+#
+#    def post(self, request, *args, **kwargs):
+#        print(request.POST["value"])
+#        return HttpResponse(request)
+
+class RemoveObservableView(UserCanViewDataMixin, generic.DeleteView):
+    model = models.EventObservable
+    template_name_suffix = '_delete'
+    success_url = reverse_lazy('event:event_list')
+
+    def get_context_data(self, **kwargs):
+        print(kwargs)
+        """Insert the single object into the context dict."""
+        context = {}
+        if self.object:
+            context['object'] = self.object
+            context_object_name = self.get_context_object_name(self.object)
+            if context_object_name:
+                context[context_object_name] = self.object
+        context.update(kwargs)
+        return super().get_context_data(**context)
+
+    def get_object(self, queryset=None):
+        object = super(RemoveObservableView, self).get_object()
+        print(self.kwargs)
+        user = self.request.user
+        if user.is_superuser:
+            return object
+        else:
+            org = user.account.organization
+            if org == object.account.organization and user.is_staff:
+                return object
+            raise PermissionDenied('Not allowed')
+
+
+
 class ObservableListViewJson(UserCanViewDataMixin, BaseDatatableView):
     model = models.Observable
     columns = ['id', 'name', 'author', ]
@@ -38,7 +78,6 @@ class ObservableListViewJson(UserCanViewDataMixin, BaseDatatableView):
     slug = None
 
     def get_initial_queryset(self):
-        print(self.request.GET)
         ret = self.model.objects.filter(event__event__title=self.slug)
         return ret
 
@@ -61,10 +100,10 @@ class ObservableListViewJson(UserCanViewDataMixin, BaseDatatableView):
                 item.created.strftime("%Y-%m-%d %H:%M:%S")
             ),
 
-            url = item.get_absolute_url()
-            edit = format_html(' <a href="%s/edit">%s</a> '% (url, "Edit"))
-            delete = format_html(' <a href="%s/delete">%s</a> '% (url, "Delete"))
-            additional.append([edit, delete]),
+            url = "/events/%s/%s/remove_observable" % (item.uuid, item.slug)
+#            url = item.get_absolute_url()
+            remove = format_html(' <a href="%s" class="btn btn-info" role="button">%s</a> '% (url, "remove"))
+            additional.append([remove]),
             send = orig + additional
             data.append(send)
 
@@ -79,6 +118,7 @@ class ObservableListViewJson(UserCanViewDataMixin, BaseDatatableView):
 class EventListView(UserCanViewDataMixin, generic.TemplateView):
     context_object_name = 'events'
     template_name = 'events/event_list.html'
+
 
 
 class EventListViewJson(UserCanViewDataMixin, BaseDatatableView):
@@ -126,18 +166,18 @@ class AddObservableView(UserCanViewDataMixin, View):
 
     form_class = AddObservable
     template_name = 'events/add_observable.html'
+    initial = {'key': 'value'}
 
     def get(self, request, *args, **kwargs):
-        form = self.form_class()
+        form = self.form_class(initial=self.initial)
         return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST)
         if form.is_valid():
-           print(form)
-           return HttpResponseRedirect('/success/')
+            # <process form cleaned data>
+            return HttpResponseRedirect('/success/')
         return render(request, self.template_name, {'form': form})
-
 
 class DeleteEventView(UserCanViewDataMixin, generic.DeleteView):
     model = models.Event
@@ -232,13 +272,11 @@ class SearchSubmitView(View):
 
     def get_context_data(self, **kwargs):
         context = super(EventEditView, self).get_context_data(**kwargs)
-        print("context %s" % context)
         return context
 
     def post(self, request):
         template = loader.get_template(self.template)
         query = request.POST.get('search', '')
-        print(query)
 
         # A simple query for Item objects whose title contain 'query'
         items = models.Observable.objects.filter(name__icontains=query)

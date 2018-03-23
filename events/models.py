@@ -132,15 +132,22 @@ class EventTTP(models.Model):
         related_name='ttp_ev', on_delete=models.CASCADE, null=True, blank=True)
 
 
+class EventManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset()
+
+
 class EventObservable(models.Model):
     observable = models.ForeignKey(Observable,
         on_delete=models.CASCADE, related_name='event', blank=True)
     event = models.ForeignKey(Event,
         on_delete=models.CASCADE, related_name='observable', blank=True)
+    objects = models.Manager()
+    events = EventManager()
 
     class Meta:
         unique_together = (("observable", "event"),)
 
     def __str__(self):
-        return "EO: %s | %s " % (str(self.observable), str(self.event))
+        return "%s" % (str(self.observable))
 
