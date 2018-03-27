@@ -17,8 +17,12 @@
         <a class="nav-link" href="#description" role="tab" data-toggle="tab">Description</a>
       </li>
       <li class="nav-item">
+        <a class="nav-link" href="#observablesFormset" role="tab" data-toggle="tab">Observables Formset</a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link" href="#observables" role="tab" data-toggle="tab">Observables</a>
       </li>
+
     </ul>
   </div>
 
@@ -74,6 +78,7 @@
         </div>
     </div>
     <div role="tabpanel" class="tab-pane fade" id="description">
+
        <br>
        <div class="card text-center">
            {% bootstrap_button "Save" button_type="submit" button_class="btn-primary" %}
@@ -90,8 +95,36 @@
           </div>
         </div>
     </div>
-    </form>
 
+
+    <div role="tabpanel" class="tab-pane fade" id="observablesFormset">
+       <br>
+       <div class="card text-center">
+           {% bootstrap_button "Save" button_type="submit" button_class="btn-primary" %}
+       </div>
+       <br>
+
+
+        <div id="form-container" method="post" action="">
+            <table border="0" cellpadding="0" cellspacing="0">
+                <tbody>
+                    {% for form in observables.forms %}
+                    <tr>
+                       <td>
+                          {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
+                          {{ form.observable }}
+                       </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {{ observable.management_form }}
+        </div>
+
+
+
+    </form>
+    </div>
 
 
     <div role="tabpanel" class="tab-pane fade" id="observables">
@@ -156,6 +189,14 @@
         <script src="{% static "events/js/custom.js" %}"></script>
         {{ form.media }}
         <script src="{% static "events/js/ddv_event.js" %}"></script>
+        <script src="{% static "events/js/jquery.formset.js" %}"></script>
+        <script type="text/javascript">
+            $(function() {
+                $('#form-container').formset({
+                    prefix: '{{ observables.prefix }}'
+                });
+            })
+        </script>
         <script src="{% static "intercoolerjs/js/intercooler.min.js" %}"></script>
         <script type="text/javascript">
             var eventUuid = "{{ event.uuid }}";

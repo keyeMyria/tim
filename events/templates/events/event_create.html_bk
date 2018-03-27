@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% load bootstrap4 %}
+{% load i18n staticfiles %}
+{# Load the tag library #}
+
+
+{% block content %}
+
+<div class="card text-center border-0">
+  <div class="card-header">
+
+    <ul class="nav nav-tabs card-header-tabs" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" href="#details" role="tab" data-toggle="tab">Details</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#description" role="tab" data-toggle="tab">Description</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#observables" role="tab" data-toggle="tab">Observables</a>
+      </li>
+    </ul>
+  </div>
+
+{% block scripts %}
+        <link rel="stylesheet" href={% static "css/bootstrap-datetimepicker.css" %}>
+        <link rel="stylesheet" href="{% static "/css/bootstrap.css" %}">
+        <link rel="stylesheet" href="{% static "/css/datatables/dataTables.bootstrap4.min.css" %}">
+        <link rel="stylesheet" href="{% static "/css/datatables/buttons.dataTables.min.css" %}">
+        <link rel="stylesheet" href="{% static "/css/datatables/buttons.bootstrap4.min.css" %}">
+
+        <script src="{% static "js/datatables/jquery.dataTables.min.js" %} "></script>
+        <script src="{% static "js/datatables/dataTables.bootstrap4.min.js" %} "></script>
+        <script src="{% static "js/datatables/dataTables.buttons.min.js" %} "></script>
+        <script src="{% static "js/datatables/buttons.bootstrap4.min.js" %} "></script>
+        <script src="{% static "js/datatables/buttons.html5.min.js" %} "></script>
+    
+        <script src="{% static "js/moment.js" %}"></script>
+        <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
+        <script src="{% static "events/js/custom.js" %}"></script>
+        {{ form.media }}
+        <script src="{% static "intercoolerjs/js/intercooler.min.js" %}"></script>
+        <script src="{% static "events/js/ddv_event.js" %}"></script>
+        <script type="text/javascript">
+            var eventUuid = "{{ event.uuid }}";
+            var postUrl = "{% url 'events:add-observable' %}";
+
+            function myFunction(elem) {
+              var el = $(elem);
+              var csrftoken = $("[name=csrfmiddlewaretoken]").val();
+              var observableUuid = el.attr("data-uuid");
+ 
+              var data = {
+                csrfmiddlewaretoken: csrftoken,
+                event: eventUuid,
+                observable: observableUuid 
+              };
+
+              postAddObservable(postUrl, data);
+            }
+
+            function postAddObservable(url, postData) {
+              var posting = $.post(url, postData);
+              
+              // 
+              posting.done(function(data) {
+                console.log(data);
+              });
+            }
+        </script>
+
+        <script>
+        $(document).ready(function(){
+            $(".nav-item a").click(function(){
+                $(this).tab('show');
+            });
+        });
+
+        </script>
+
+        <script type="text/javascript">
+            var USERS_LIST_JSON_URL = '{% url "events:observables_list_json" event.uuid event.slug %}';
+            // translations for datatables
+
+            var dt_language = {
+                "emptyTable":     "{% trans "No data available in table" %}",
+                "info":           "{% trans "Showing _START_ to _END_ of _TOTAL_ entries" %}",
+                "infoEmpty":      "{% trans "Showing 0 to 0 of 0 entries" %}",
+                "infoFiltered":   "{% trans "(filtered from _MAX_ total entries)" %}",
+                "infoPostFix":    "",
+                "thousands":      ",",
+                "lengthMenu":     "{% trans "Show _MENU_ entries" %}",
+                "loadingRecords": "{% trans "Loading..." %}",
+                "processing":     "{% trans "Processing..." %}",
+                "search":         "{% trans "Search:" %}",
+                "zeroRecords":    "{% trans "No matching records found" %}",
+                "paginate": {
+                    "first":      "{% trans "First" %}",
+                    "last":       "{% trans "Last" %}",
+                    "next":       "{% trans "Next" %}",
+                    "previous":   "{% trans "Previous" %}"
+                },
+                "aria": {
+                    "sortAscending":  "{% trans ": activate to sort column ascending" %}",
+                    "sortDescending": "{% trans ": activate to sort column descending" %}"
+                }
+            }
+        </script>
+
+        <style>
+            .makeScroll {
+              overflow-y: scroll;
+            s}
+            br {
+                display: block; /* makes it have a width */
+                content: ""; /* clears default height */
+                margin-top: 10px; /* change this to whatever height you want it */
+            }
+
+        </style>
+
+{% endblock scripts %}
+
+
+<!-- Tab panes -->
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane fade show active" id="details">
+        <form action="" method="post", enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="tab-pane form-group fade show active border-0" id="tab1">
+            <br>
+            <div class="card text-center">
+                {% bootstrap_button "Save" button_type="submit" button_class="btn-primary" %}
+            </div>
+            <br>
+
+            <div class="card-columns ">
+              <div class="card p-0 ">
+                <div class="card-block">
+                    <h5 class="card-title text-white bg-info text-center border-0"> Details </h5>
+                    <div class="card-body">
+                        {% bootstrap_form form exclude="description" layout='horizontal' %}
+                    </div>
+                </div>
+              </div>
+              <div class="card">
+                  <div class="card-block">
+                    <h5 class="card-title text-white bg-info text-center border-0"> Actors </h5>
+                    <div class="card-body">
+                        {% bootstrap_formset actors show_label=False layout='inline' %}
+                    </div>
+                </div>
+              </div>
+              <div class="card p-0">
+                  <div class="card-block">
+                    <h5 class="card-title
+                        text-white bg-info text-center border-0"> Documents </h5>
+                    <div class="card-body">
+                        {% bootstrap_formset doc_formset show_label=False layout='inline' %}
+                    </div>
+                  </div>
+              </div>
+              <div class="card p-0">
+                <div class="card-block">
+                    <h5 class="card-title
+                        text-white bg-info text-center border-0"> Reference </h5>
+                    <div class="card-body">
+                        {% bootstrap_formset reference show_label=True layout='inline' %}
+                    </div>
+                </div>
+             </div>
+            </div>
+        </div>
+    </div>
+    <div role="tabpanel" class="tab-pane fade" id="description">
+       <br>
+       <div class="card text-center">
+           {% bootstrap_button "Save" button_type="submit" button_class="btn-primary" %}
+       </div>
+       <br>
+
+        <div class="card p-0">
+          <div class="card-block border-0">
+              <h5 class="card-title
+                  text-white bg-info text-center border-0"> Description </h5>
+              <div class="card-body border-0">
+                  {% bootstrap_field form.description show_label=False layout='inline' %}
+              </div>
+          </div>
+        </div>
+    </div>
+    </form>
+
+
+
+    <div role="tabpanel" class="tab-pane fade" id="observables">
+
+        <br>
+        <div class="card-deck">
+          <div class="card">
+                <div class="card-body" >
+                    <table class="datatable table table-striped observable_dt">
+                        <thead class="thead-dark">
+                            <th>{% trans "id" %}</th>
+                            <th>{% trans "name" %}</th>
+                            <th>{% trans "author" %}</th>
+                            <th>{% trans "created" %}</th>
+                            <th>{% trans "actions" %}</th>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+          </div>
+          <div class="card" id="search-result-container">
+            <div class="card-header bg-transparent border-0">
+                <form id="form" role="form" ic-post-to="{% url 'events:search-ajax-submit' %}" ic-target="#search-result-container" method="post">
+                  {% csrf_token %}
+                  <input name="search"
+                      id="search"
+                      type="search"
+                      placeholder="Start typing here"
+                      ic-post-to="{% url 'events:search-ajax-submit' %}"
+                      ic-trigger-on="keyup changed"
+                      ic-trigger-delay="300ms"
+                      ic-target="#search-result-container"/>
+                </form>
+            </div>
+
+            {% include 'events/search_results.html' %}
+          </div>
+
+        </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+

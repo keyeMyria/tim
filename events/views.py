@@ -32,14 +32,6 @@ def download(request, path):
     raise Http404
 
 
-#class RemoveObservableView(generic.TemplateView):
-#
-#    template_name = 'events/remove_observable.html'
-#
-#    def post(self, request, *args, **kwargs):
-#        print(request.POST["value"])
-#        return HttpResponse(request)
-
 class RemoveObservableView(UserCanViewDataMixin, generic.DeleteView):
     model = models.EventObservable
     template_name_suffix = '_delete'
@@ -101,7 +93,6 @@ class ObservableListViewJson(UserCanViewDataMixin, BaseDatatableView):
             ),
 
             url = "/events/%s/%s/remove_observable" % (item.uuid, item.slug)
-#            url = item.get_absolute_url()
             remove = format_html(' <a href="%s" class="btn btn-info" role="button">%s</a> '% (url, "remove"))
             additional.append([remove]),
             send = orig + additional
@@ -339,17 +330,18 @@ class NewEventView(UserCanViewDataMixin, generic.CreateView):
         context = super(NewEventView, self).get_context_data(**kwargs)
         if self.request.POST:
             context['doc_formset'] = DocumentFormSet(self.request.POST,
-                self.request.FILES, instance=self.object)
-            context['observables'] = ObservablesFormSet(self.request.POST, instance=self.object)
-            context['actors'] = ActorsFormset(self.request.POST, instance=self.object)
-            context['reference'] = ReferenceFormSet(self.request.POST, instance=self.object)
+                self.request.FILES, instance=self.object, prefix='documents')
+            context['observables'] = ObservablesFormSet(self.request.POST, instance=self.object, prefix='observables')
+            context['actors'] = ActorsFormset(self.request.POST, instance=self.object, prefix='actors')
+            context['reference'] = ReferenceFormSet(self.request.POST, instance=self.object, prefix='reference')
         else:
-            context['doc_formset'] = DocumentFormSet(instance=self.object)
-            context['observables'] = ObservablesFormSet(instance=self.object)
-            context['actors'] = ActorsFormset(instance=self.object)
-            context['reference'] = ReferenceFormSet(instance=self.object)
+            context['doc_formset'] = DocumentFormSet(instance=self.object, prefix='documents')
+            context['observables'] = ObservablesFormSet(instance=self.object, prefix='observables')
+            context['actors'] = ActorsFormset(instance=self.object, prefix='actors')
+            context['reference'] = ReferenceFormSet(instance=self.object, prefix='reference')
         initial = {'author': self.request.user}
         return context
+
 
 
 class EventEditView(UserCanViewDataMixin, generic.UpdateView):
@@ -363,16 +355,18 @@ class EventEditView(UserCanViewDataMixin, generic.UpdateView):
         self.object = form.save(commit=False)
         context = self.get_context_data()
         doc_formset = context['doc_formset']
+        observables = context['observables']
         actor = context['actors']
         reference = context['reference']
-
         if (doc_formset.is_valid() and
+            observables.is_valid() and
             actor.is_valid() and
             reference.is_valid()):
 
             self.object = form.save()
             form.instance = self.object
             doc_formset.save()
+            observables.save()
             actor.save()
             reference.save()
             return HttpResponseRedirect(self.get_success_url())
@@ -399,13 +393,16 @@ class EventEditView(UserCanViewDataMixin, generic.UpdateView):
         context = super(EventEditView, self).get_context_data(**kwargs)
         if self.request.POST:
             context['doc_formset'] = DocumentFormSet(self.request.POST,
-                self.request.FILES, instance=self.object)
-            context['actors'] = ActorsFormset(self.request.POST, instance=self.object)
-            context['reference'] = ReferenceFormSet(self.request.POST, instance=self.object)
+                self.request.FILES, instance=self.object, prefix='documents')
+            context['observables'] = ObservablesFormSet(self.request.POST, instance=self.object, prefix='observables')
+            context['actors'] = ActorsFormset(self.request.POST, instance=self.object, prefix='actors')
+            context['reference'] = ReferenceFormSet(self.request.POST, instance=self.object, prefix='reference')
         else:
-            context['doc_formset'] = DocumentFormSet(instance=self.object)
-            context['actors'] = ActorsFormset(instance=self.object)
-            context['reference'] = ReferenceFormSet(instance=self.object)
-            context['event'] = self.object 
+            context['doc_formset'] = DocumentFormSet(instance=self.object, prefix='documents')
+            context['observables'] = ObservablesFormSet(instance=self.object, prefix='observables')
+            context['actors'] = ActorsFormset(instance=self.object, prefix='actors')
+            context['reference'] = ReferenceFormSet(instance=self.object, prefix='reference')
+        initial = {'author': self.request.user}
         return context
+
 
